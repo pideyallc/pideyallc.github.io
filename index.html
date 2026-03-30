@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PIDEYA LLC — Plataforma de Pedidos por WhatsApp</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;background:#fff;}
+nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:40px;height:40px;background:#1D9E75;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;}
+.logo-text{font-size:20px;font-weight:800;color:#1D9E75;letter-spacing:-0.5px;}
+.logo-sub{font-size:11px;color:#6b7280;margin-top:-2px;}
+.nav-cta{background:#1D9E75;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;border:none;cursor:pointer;}
+.hero{background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0f9ff 100%);padding:80px 24px;text-align:center;}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:900;line-height:1.1;color:#111;margin-bottom:20px;letter-spacing:-1px;}
+.hero h1 span{color:#1D9E75;}
+.hero p{font-size:18px;color:#6b7280;max-width:600px;margin:0 auto 36px;line-height:1.6;}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:#1D9E75;color:#fff;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+.btn-secondary{background:#fff;color:#1D9E75;padding:14px 28px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;border:2px solid #1D9E75;}
+.wa-badge{display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;margin-top:24px;}
+.section{padding:72px 24px;max-width:1100px;margin:0 auto;}
+.section-label{font-size:12px;font-weight:800;color:#1D9E75;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;}
+.section-title{font-size:clamp(28px,4vw,40px);font-weight:900;color:#111;line-height:1.2;margin-bottom:16px;}
+.section-sub{font-size:17px;color:#6b7280;max-width:600px;line-height:1.6;}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:48px;}
+.feature{background:#f9fafb;border-radius:16px;padding:28px;border:1px solid #e5e7eb;}
+.feature-icon{width:48px;height:48px;background:#d1fae5;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px;}
+.feature h3{font-size:17px;font-weight:800;margin-bottom:8px;color:#111;}
+.feature p{font-size:14px;color:#6b7280;line-height:1.6;}
+.how{background:#f9fafb;padding:72px 24px;}
+.how-inner{max-width:1100px;margin:0 auto;}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-top:48px;}
+.step{text-align:center;}
+.step-num{width:48px;height:48px;background:#1D9E75;border-radius:50%;color:#fff;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.step h3{font-size:15px;font-weight:800;margin-bottom:6px;}
+.step p{font-size:13px;color:#6b7280;line-height:1.5;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;margin-top:48px;}
+.stat{text-align:center;padding:32px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;}
+.stat-num{font-size:42px;font-weight:900;color:#1D9E75;line-height:1;}
+.stat-label{font-size:14px;color:#6b7280;margin-top:8px;}
+.cta-section{background:#1D9E75;padding:72px 24px;text-align:center;}
+.cta-section h2{font-size:clamp(28px,4vw,40px);font-weight:900;color:#fff;margin-bottom:16px;}
+.cta-section p{font-size:17px;color:rgba(255,255,255,.8);margin-bottom:32px;}
+.btn-white{background:#fff;color:#1D9E75;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:800;text-decoration:none;display:inline-block;}
+footer{background:#111;color:#9ca3af;padding:40px 24px;text-align:center;}
+footer .footer-logo{color:#1D9E75;font-size:20px;font-weight:900;margin-bottom:8px;}
+footer p{font-size:13px;line-height:1.6;}
+footer a{color:#9ca3af;text-decoration:none;}
+.contact-info{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:16px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🍽️</div>
+    <div>
+      <div class="logo-text">PIDEYA</div>
+      <div class="logo-sub">Food Ordering Platform</div>
+    </div>
+  </div>
+  <a href="#contacto" class="nav-cta">Contactar</a>
+</nav>
+
+<div class="hero">
+  <h1>Más pedidos para tu<br/>restaurante por <span>WhatsApp</span></h1>
+  <p>PIDEYA conecta restaurantes con nuevos clientes a través de WhatsApp con automatización inteligente, gestión de pedidos en tiempo real y pagos integrados.</p>
+  <div class="hero-btns">
+    <a href="#contacto" class="btn-primary">🚀 Comenzar ahora</a>
+    <a href="#como-funciona" class="btn-secondary">Ver cómo funciona</a>
+  </div>
+  <div>
+    <span class="wa-badge">📱 Powered by WhatsApp Business API</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">Plataforma completa</div>
+  <div class="section-title">Todo lo que necesita tu restaurante</div>
+  <div class="section-sub">Una solución completa para gestionar pedidos, clientes y pagos desde WhatsApp sin complicaciones.</div>
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🤖</div>
+      <h3>Automatización inteligente</h3>
+      <p>El bot atiende a tus clientes 24/7, envía el menú, toma pedidos y confirma automáticamente sin intervención humana.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>Dashboard en tiempo real</h3>
+      <p>Visualiza pedidos por día, totales por restaurante y métricas de ventas con filtros por fecha y hora.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🖨️</div>
+      <h3>Impresión en cocina</h3>
+      <p>Cada pedido se imprime automáticamente en la cocina con nombre, dirección, teléfono y detalle del pedido.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">💳</div>
+      <h3>Pagos integrados</h3>
+      <p>Acepta tarjeta de crédito, Zelle y Tap to Pay directamente desde WhatsApp con Stripe y Chase.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">👥</div>
+      <h3>Equipo de agentes</h3>
+      <p>Hasta 3 agentes conectados simultáneamente con inbox compartido y control de disponibilidad.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📈</div>
+      <h3>Escalable por diseño</h3>
+      <p>Agrega nuevos restaurantes fácilmente. El sistema crece contigo sin necesidad de reconstruir nada.</p>
+    </div>
+  </div>
+</div>
+
+<div class="how" id="como-funciona">
+  <div class="how-inner">
+    <div style="text-align:center;">
+      <div class="section-label">Proceso simple</div>
+      <div class="section-title">¿Cómo funciona PIDEYA?</div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Cliente escribe</h3>
+        <p>El cliente envía "Hola" al número de WhatsApp del restaurante.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Bot responde</h3>
+        <p>El sistema envía el menú con fotos, precios y opciones de pedido automáticamente.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Cliente ordena</h3>
+        <p>Selecciona productos, cantidad, extras e ingresa su dirección y teléfono.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Pago confirmado</h3>
+        <p>El sistema genera el enlace de pago y confirma el pedido al cliente.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <h3>Restaurante recibe</h3>
+        <p>El pedido llega al dashboard y se imprime en cocina con todos los detalles.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div style="text-align:center;">
+    <div class="section-label">Resultados</div>
+    <div class="section-title">Números que hablan por sí solos</div>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">10%</div>
+      <div class="stat-label">Comisión por pedido generado</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">Atención automática al cliente</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3min</div>
+      <div class="stat-label">Tiempo promedio de pedido</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Restaurantes que puedes agregar</div>
+    </div>
+  </div>
+</div>
+
+<div class="cta-section" id="contacto">
+  <h2>¿Listo para crecer?</h2>
+  <p>Únete a PIDEYA y empieza a recibir más pedidos desde WhatsApp hoy mismo.</p>
+  <a href="https://wa.me/12017727540" class="btn-white">📱 Escribir por WhatsApp</a>
+</div>
+
+<footer>
+  <div class="footer-logo">PIDEYA LLC</div>
+  <p>Plataforma de servicios tecnológicos para restaurantes</p>
+  <p>Manejo de pedidos, delivery y automatización por WhatsApp</p>
+  <div class="contact-info">
+    <span>📍 70 County Ave, Apt. 2, Secaucus, NJ 07094</span>
+    <span>📱 <a href="tel:+12017727540">(201) 772-7540</a></span>
+    <span>✉️ <a href="mailto:pideya.nj@gmail.com">pideya.nj@gmail.com</a></span>
+  </div>
+  <p style="margin-top:16px;font-size:12px;">© 2026 PIDEYA LLC · EIN: 41-4483073 · NJ LLC #0451420099</p>
+</footer>
+
+</body>
+</html>

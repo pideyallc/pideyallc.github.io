@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>La Mesa Caliente — Menú Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--green:#16a34a;--green-light:#22c55e;--green-pale:#f0fdf4;--dark:#0f172a;--muted:#64748b;--border:#e2e8f0;--white:#fff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Open Sans',sans-serif;background:#f8fafc;color:var(--dark);}
+header{background:linear-gradient(135deg,var(--green) 0%,var(--green-light) 100%);padding:32px 24px;text-align:center;position:relative;overflow:hidden;}
+header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:rgba(255,255,255,0.08);border-radius:50%;}
+header::after{content:'';position:absolute;bottom:-40px;left:-40px;width:150px;height:150px;background:rgba(255,255,255,0.06);border-radius:50%;}
+.header-inner{position:relative;z-index:1;}
+.header-logo{font-size:32px;margin-bottom:8px;}
+.header-name{font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:white;letter-spacing:-0.5px;}
+.header-sub{font-size:13px;color:rgba(255,255,255,0.75);margin-top:4px;}
+.header-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:white;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;margin-top:14px;}
+.dot{width:7px;height:7px;background:#86efac;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.3);}}
+.order-bar{background:white;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.order-bar-text{font-size:13px;color:var(--muted);}
+.order-bar-text strong{color:var(--dark);}
+.wa-btn{display:inline-flex;align-items:center;gap:8px;background:#25D366;color:white;text-decoration:none;padding:9px 18px;border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;transition:all 0.2s;}
+.wa-btn:hover{background:#128C7E;transform:translateY(-1px);}
+.content{max-width:600px;margin:0 auto;padding:24px 16px 48px;}
+.category{margin-bottom:32px;}
+.cat-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.cat-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.items{display:flex;flex-direction:column;gap:12px;}
+.item{background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;display:flex;align-items:stretch;transition:box-shadow 0.2s;}
+.item:hover{box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+.item-img{width:110px;min-height:110px;object-fit:cover;flex-shrink:0;}
+.item-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;justify-content:space-between;}
+.item-name{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.item-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;}
+.item-footer{display:flex;align-items:center;justify-content:space-between;}
+.item-price{font-family:'Poppins',sans-serif;font-size:17px;font-weight:800;color:var(--green);}
+.item-num{background:var(--green-pale);color:var(--green);border:1px solid #bbf7d0;border-radius:6px;padding:3px 10px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;}
+.cta-section{background:linear-gradient(135deg,var(--green) 0%,var(--green-light) 100%);border-radius:20px;padding:28px 24px;text-align:center;margin-top:8px;}
+.cta-title{font-family:'Poppins',sans-serif;font-size:20px;font-weight:800;color:white;margin-bottom:8px;}
+.cta-sub{font-size:14px;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;background:white;color:var(--green);text-decoration:none;padding:14px 28px;border-radius:12px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.12);transition:all 0.2s;}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.15);}
+.how-to{background:white;border-radius:16px;border:1px solid var(--border);padding:20px;margin-bottom:24px;}
+.how-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--dark);margin-bottom:12px;}
+.how-steps{display:flex;flex-direction:column;gap:8px;}
+.how-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);}
+.how-n{width:22px;height:22px;background:var(--green);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-logo">🍽️</div>
+    <div class="header-name">La Mesa Caliente</div>
+    <div class="header-sub">Menú Digital · PIDEYA LLC</div>
+    <div class="header-badge"><span class="dot"></span> Pedidos abiertos ahora</div>
+  </div>
+</header>
+
+<div class="order-bar">
+  <div class="order-bar-text">Ordena por <strong>WhatsApp</strong> — fácil y rápido</div>
+  <a href="https://wa.me/14155238886" class="wa-btn">📱 Ordenar</a>
+</div>
+
+<div class="content">
+
+  <div class="how-to">
+    <div class="how-title">📝 ¿Cómo ordenar?</div>
+    <div class="how-steps">
+      <div class="how-step"><span class="how-n">1</span> Escoge los platos que deseas del menú</div>
+      <div class="how-step"><span class="how-n">2</span> Anota los números y cantidades (ej: 2x1, 1x3)</div>
+      <div class="how-step"><span class="how-n">3</span> Envía tu selección por WhatsApp al bot</div>
+      <div class="how-step"><span class="how-n">4</span> Confirma tu nombre, dirección y listo! ✅</div>
+    </div>
+  </div>
+
+  <!-- PLATOS PRINCIPALES -->
+  <div class="category">
+    <div class="cat-title">🍽️ Platos principales</div>
+    <div class="items">
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=220&h=220&fit=crop" alt="Tacos al Pastor"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Tacos al Pastor x3</div>
+            <div class="item-desc">3 tacos de pastor con cilantro, cebolla y salsa verde. Tortilla de maíz artesanal.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$12.99</span>
+            <span class="item-num">Plato #1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1641745704757-ce8a0f78bd8a?w=220&h=220&fit=crop" alt="Pupusas"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Pupusas de Queso x4</div>
+            <div class="item-desc">4 pupusas rellenas de queso fundido, servidas con curtido y salsa roja.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$10.50</span>
+            <span class="item-num">Plato #2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=220&h=220&fit=crop" alt="Burrito"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Burrito Grande</div>
+            <div class="item-desc">Burrito jumbo con arroz, frijoles, carne asada, queso, crema y guacamole.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$13.50</span>
+            <span class="item-num">Plato #3</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1618040996337-56904b7850b9?w=220&h=220&fit=crop" alt="Quesadillas"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Quesadillas x2</div>
+            <div class="item-desc">2 quesadillas de harina con queso derretido, pollo y pico de gallo fresco.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$9.99</span>
+            <span class="item-num">Plato #4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1604467794349-0b74285de7e7?w=220&h=220&fit=crop" alt="Combo Familiar"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Combo Familiar</div>
+            <div class="item-desc">Tacos x6, arroz, frijoles y sopa del día. Perfecto para compartir en familia.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$24.99</span>
+            <span class="item-num">Plato #5</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EXTRAS -->
+  <div class="category">
+    <div class="cat-title">🥤 Extras y bebidas</div>
+    <div class="items">
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1581006852262-e4307cf6283a?w=220&h=220&fit=crop" alt="Soda"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Soda</div>
+            <div class="item-desc">Refresco de tu elección: Coca Cola, Pepsi, Sprite o naranja.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$2.99</span>
+            <span class="item-num">Extra #6</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=220&h=220&fit=crop" alt="Agua Fresca"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Agua Fresca</div>
+            <div class="item-desc">Agua fresca del día: jamaica, horchata o tamarindo. Natural y refrescante.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$3.50</span>
+            <span class="item-num">Extra #7</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=220&h=220&fit=crop" alt="Salsa Extra"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Salsa Extra</div>
+            <div class="item-desc">Porción extra de salsa verde o roja hecha en casa. Picante al gusto.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$1.00</span>
+            <span class="item-num">Extra #8</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <img class="item-img" src="https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?w=220&h=220&fit=crop" alt="Arroz y Frijoles"/>
+        <div class="item-body">
+          <div>
+            <div class="item-name">Arroz y Frijoles</div>
+            <div class="item-desc">Porción de arroz mexicano y frijoles negros refritos. El acompañante perfecto.</div>
+          </div>
+          <div class="item-footer">
+            <span class="item-price">$4.50</span>
+            <span class="item-num">Extra #9</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-title">¿Listo para ordenar? 🚀</div>
+    <p class="cta-sub">Regresa al chat de WhatsApp y escribe los números de los platos que deseas. Por ejemplo: <strong>2x1, 1x3, 2x6</strong></p>
+    <a href="https://wa.me/14155238886" class="cta-btn">
+      <span style="font-size:20px">📱</span> Ordenar por WhatsApp
+    </a>
+  </div>
+
+</div>
+</body>
+</html>

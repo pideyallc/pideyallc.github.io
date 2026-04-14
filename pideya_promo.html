@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA – Haz tu pedido por WhatsApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #25D366;
+    --green-dark: #128C7E;
+    --green-light: #DCF8C6;
+    --bg: #0a0a0a;
+    --accent: #FFD60A;
+    --white: #ffffff;
+    --bubble-out: #DCF8C6;
+    --bubble-in: #ffffff;
+    --phone-bg: #ECE5DD;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Animated background */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(37,211,102,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,211,102,0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 20s linear infinite;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(60px); }
+  }
+
+  .bg-glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(37,211,102,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  .bg-glow2 {
+    position: fixed;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,214,10,0.08) 0%, transparent 70%);
+    bottom: -50px; left: -50px;
+    animation: glowPulse 6s ease-in-out infinite reverse;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+
+  /* Main layout */
+  .container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    padding: 40px;
+    max-width: 1200px;
+    width: 100%;
+  }
+
+  /* Left side — branding */
+  .brand-side {
+    flex: 1;
+    color: var(--white);
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(37,211,102,0.15);
+    border: 1px solid rgba(37,211,102,0.3);
+    border-radius: 100px;
+    padding: 8px 20px;
+    margin-bottom: 32px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    animation: fadeInUp 0.6s ease both;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .brand-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(52px, 7vw, 88px);
+    font-weight: 800;
+    line-height: 0.95;
+    margin-bottom: 24px;
+    animation: fadeInUp 0.6s 0.1s ease both;
+  }
+
+  .brand-title .highlight {
+    color: var(--green);
+    display: block;
+  }
+
+  .brand-title .yellow {
+    color: var(--accent);
+  }
+
+  .brand-subtitle {
+    font-size: 20px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    max-width: 420px;
+    margin-bottom: 40px;
+    animation: fadeInUp 0.6s 0.2s ease both;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeInUp 0.6s 0.3s ease both;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.5s ease;
+  }
+
+  .step.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(37,211,102,0.15);
+    border: 1px solid rgba(37,211,102,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    font-size: 16px;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .step-text strong {
+    color: white;
+  }
+
+  /* WhatsApp number CTA */
+  .cta-box {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    animation: fadeInUp 0.6s 0.4s ease both;
+  }
+
+  .wa-number {
+    background: var(--green);
+    color: white;
+    padding: 16px 32px;
+    border-radius: 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 0 40px rgba(37,211,102,0.4);
+    animation: numberPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes numberPulse {
+    0%, 100% { box-shadow: 0 0 40px rgba(37,211,102,0.4); }
+    50% { box-shadow: 0 0 60px rgba(37,211,102,0.7); }
+  }
+
+  .wa-label {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.4;
+  }
+
+  .wa-label strong {
+    display: block;
+    color: white;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  /* Phone mockup */
+  .phone-side {
+    flex-shrink: 0;
+    animation: fadeInUp 0.6s 0.2s ease both;
+  }
+
+  .phone {
+    width: 300px;
+    background: #1a1a1a;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.1),
+      0 40px 80px rgba(0,0,0,0.6),
+      0 0 60px rgba(37,211,102,0.15);
+    position: relative;
+  }
+
+  .phone-screen {
+    background: var(--phone-bg);
+    border-radius: 34px;
+    overflow: hidden;
+    height: 580px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* WhatsApp header */
+  .wa-header {
+    background: var(--green-dark);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .wa-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .wa-contact { flex: 1; }
+
+  .wa-contact-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: white;
+  }
+
+  .wa-contact-status {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Chat area */
+  .chat-area {
+    flex: 1;
+    padding: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+
+  .date-divider {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(0,0,0,0.4);
+    background: rgba(255,255,255,0.6);
+    border-radius: 20px;
+    padding: 4px 12px;
+    align-self: center;
+    margin: 4px 0;
+  }
+
+  .bubble {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: pre-line;
+  }
+
+  .bubble.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .bubble-out {
+    background: var(--bubble-out);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    color: #303030;
+  }
+
+  .bubble-in {
+    background: var(--bubble-in);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    color: #303030;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .bubble-time {
+    font-size: 10px;
+    color: rgba(0,0,0,0.4);
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  .bubble-out .bubble-time { color: rgba(0,100,50,0.6); }
+
+  /* Typing indicator */
+  .typing {
+    background: white;
+    align-self: flex-start;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border-bottom-left-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .typing.visible { opacity: 1; }
+
+  .typing-dot {
+    width: 6px; height: 6px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 50%;
+    animation: typingBounce 1.2s ease-in-out infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* Input bar */
+  .wa-input-bar {
+    background: #f0f0f0;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .wa-input {
+    flex: 1;
+    background: white;
+    border-radius: 24px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #666;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wa-input-text {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .wa-input-text.visible { opacity: 1; }
+
+  .wa-send {
+    width: 36px; height: 36px;
+    background: var(--green-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wa-send svg { fill: white; }
+
+  /* Floating badge */
+  .floating-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(255,214,10,0.4);
+  }
+
+  /* Restart button */
+  .restart-btn {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: rgba(37,211,102,0.15);
+    border: 1px solid rgba(37,211,102,0.4);
+    color: var(--green);
+    padding: 12px 24px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 100;
+    transition: all 0.2s;
+    opacity: 0;
+  }
+
+  .restart-btn:hover {
+    background: rgba(37,211,102,0.25);
+    transform: scale(1.05);
+  }
+
+  .restart-btn.visible { opacity: 1; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    height: 3px;
+    background: var(--green);
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px var(--green);
+    z-index: 100;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .container { flex-direction: column; gap: 40px; padding: 24px; }
+    .brand-side { text-align: center; }
+    .brand-subtitle { margin: 0 auto 32px; }
+    .steps { align-items: center; }
+    .cta-box { justify-content: center; }
+    .phone { width: 260px; }
+    .phone-screen { height: 500px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+
+<div class="progress-bar" id="progressBar" style="width:0%"></div>
+
+<div class="container">
+  <!-- Brand side -->
+  <div class="brand-side">
+    <div class="logo-badge">
+      <div class="logo-dot"></div>
+      Disponible ahora
+    </div>
+
+    <h1 class="brand-title">
+      PIDE<span class="highlight">YA</span>
+      <span style="font-size:0.55em; color:rgba(255,255,255,0.5); display:block; font-weight:700; margin-top:8px;">Ordena en segundos<br>por <span class="yellow">WhatsApp</span></span>
+    </h1>
+
+    <p class="brand-subtitle">
+      Sin apps, sin filas, sin complicaciones.<br>
+      Haz tu pedido directamente desde tu WhatsApp y recíbelo en 20-30 minutos.
+    </p>
+
+    <div class="steps">
+      <div class="step" id="step1">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Escribe "Hola"</strong> al número de PIDEYA</div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Elige tus platos</strong> del menú digital</div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Confirma y paga</strong> — recibe tu orden en casa</div>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <div class="wa-number">📱 (201) 772-7540</div>
+      <div class="wa-label">
+        <strong>Escríbenos por WhatsApp</strong>
+        Disponible Lun-Jue 11am-10pm<br>Vie-Sab 11am-11pm
+      </div>
+    </div>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="phone-side">
+    <div class="phone">
+      <div class="floating-badge">¡Pruébalo ahora!</div>
+      <div class="phone-screen">
+        <!-- WhatsApp Header -->
+        <div class="wa-header">
+          <div class="wa-avatar">P</div>
+          <div class="wa-contact">
+            <div class="wa-contact-name">PIDEYA</div>
+            <div class="wa-contact-status" id="statusText">en línea</div>
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="chat-area" id="chatArea">
+          <div class="date-divider">Hoy</div>
+        </div>
+
+        <!-- Input bar -->
+        <div class="wa-input-bar">
+          <div class="wa-input">
+            <div class="wa-input-text" id="inputText">Escribe un mensaje</div>
+          </div>
+          <div class="wa-send">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="restart-btn" id="restartBtn" onclick="restartAnimation()">↺ Ver de nuevo</button>
+
+<script>
+  const chatArea = document.getElementById('chatArea');
+  const inputText = document.getElementById('inputText');
+  const progressBar = document.getElementById('progressBar');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const now = new Date();
+  const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  const conversation = [
+    { type: 'out', text: 'Hola 👋', delay: 1000, inputShow: 'Hola 👋' },
+    { type: 'typing', delay: 800 },
+    { type: 'in', text: 'Bienvenido a PIDEYA! 🍽️\n\n1 - Ver menu y hacer pedido\n3 - Hablar con un agente\n\n📩 Escribe SUSCRIBIR para recibir el menu diario', delay: 0 },
+    { type: 'out', text: '1', delay: 1200, inputShow: '1' },
+    { type: 'typing', delay: 600 },
+    { type: 'in', text: '🍴 Menu con fotos y precios:\n\npideyallc.github.io/pideya_menu.html\n\nEscribe el número del plato para agregarlo.\nEjemplo: *1* Tacos, *3* Burrito.', delay: 0 },
+    { type: 'out', text: '1', delay: 1400, inputShow: '1' },
+    { type: 'typing', delay: 500 },
+    { type: 'in', text: '✅ *Tacos al Pastor x3* agregado!\n\n🧂 ¿Alguna preferencia?\n(Ej: sin cebolla, extra picante)\n\nEscribe tu preferencia o *NO*:', delay: 0 },
+    { type: 'out', text: 'Sin cebolla', delay: 1200, inputShow: 'Sin cebolla' },
+    { type: 'typing', delay: 500 },
+    { type: 'in', text: '✅ *Tacos al Pastor x3* agregado!\nNota: Sin cebolla\n\n🛒 Tu carrito:\n\n1x Tacos al Pastor x3 - $12.99\n💼 Gestion: $2.00\n\n💰 Total: $14.99', delay: 0 },
+    { type: 'out', text: 'LISTO', delay: 1400, inputShow: 'LISTO' },
+    { type: 'typing', delay: 600 },
+    { type: 'in', text: '🛒 Tu pedido:\n\n1x Tacos al Pastor x3 - $12.99\n💼 Gestion: $2.00\n\n💰 Total: $14.99\n\nEscribe tu *nombre completo*:', delay: 0 },
+    { type: 'out', text: 'Carlos Mendez', delay: 1200, inputShow: 'Carlos Mendez' },
+    { type: 'typing', delay: 500 },
+    { type: 'in', text: 'Gracias *Carlos*! 😊\n\nEscribe tu *dirección de entrega*:\n(Calle, Apt, Ciudad, Estado, Zip)', delay: 0 },
+    { type: 'out', text: '70 County Ave, Apt 2\nSecaucus, NJ 07094', delay: 1400, inputShow: '70 County Ave...' },
+    { type: 'typing', delay: 800 },
+    { type: 'in', text: 'Distancia: 2.3 millas ✅\n\n📋 *Resumen de tu pedido*\n\nNombre: Carlos Mendez\nDireccion: 70 County Ave\n\n1x Tacos al Pastor x3 - $12.99\n💼 Gestion: $2.00\n💰 Total: $14.99\n\nEscribe *CONFIRMAR*', delay: 0 },
+    { type: 'out', text: 'CONFIRMAR', delay: 1400, inputShow: 'CONFIRMAR' },
+    { type: 'typing', delay: 1000 },
+    { type: 'in', text: '✅ *¡Pedido confirmado!*\n\nOrden: PY-2024\nNombre: Carlos Mendez\nDireccion: 70 County Ave\n\n💳 Paga aquí:\nstripe.com/pay/...\n\n⏱️ Tiempo estimado: 20-30 min\n\n¡Gracias por usar PIDEYA! 🚀', delay: 0 },
+  ];
+
+  let currentIndex = 0;
+  let typingEl = null;
+  let animationTimeout = null;
+  let totalSteps = conversation.filter(m => m.type !== 'typing').length;
+  let visibleSteps = 0;
+
+  function addBubble(type, text) {
+    const bubble = document.createElement('div');
+    bubble.className = `bubble bubble-${type}`;
+    const timeEl = document.createElement('div');
+    timeEl.className = 'bubble-time';
+    timeEl.textContent = timeStr;
+    bubble.innerHTML = text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    bubble.appendChild(timeEl);
+    chatArea.appendChild(bubble);
+    requestAnimationFrame(() => {
+      bubble.classList.add('visible');
+      chatArea.scrollTop = chatArea.scrollHeight;
+    });
+    return bubble;
+  }
+
+  function showTyping() {
+    typingEl = document.createElement('div');
+    typingEl.className = 'typing';
+    typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    chatArea.appendChild(typingEl);
+    requestAnimationFrame(() => {
+      typingEl.classList.add('visible');
+      chatArea.scrollTop = chatArea.scrollHeight;
+    });
+  }
+
+  function hideTyping() {
+    if (typingEl) {
+      typingEl.remove();
+      typingEl = null;
+    }
+  }
+
+  function updateProgress() {
+    const pct = Math.round((visibleSteps / totalSteps) * 100);
+    progressBar.style.width = pct + '%';
+  }
+
+  function showStepHints(index) {
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    if (index >= 2) step1.classList.add('visible');
+    if (index >= 6) step2.classList.add('visible');
+    if (index >= 14) step3.classList.add('visible');
+  }
+
+  function runNext() {
+    if (currentIndex >= conversation.length) {
+      restartBtn.classList.add('visible');
+      return;
+    }
+
+    const msg = conversation[currentIndex];
+    currentIndex++;
+
+    if (msg.type === 'typing') {
+      showTyping();
+      animationTimeout = setTimeout(runNext, msg.delay);
+      return;
+    }
+
+    hideTyping();
+
+    if (msg.inputShow) {
+      inputText.textContent = msg.inputShow;
+      inputText.classList.add('visible');
+      setTimeout(() => {
+        inputText.classList.remove('visible');
+        inputText.textContent = 'Escribe un mensaje';
+      }, 600);
+    }
+
+    addBubble(msg.type, msg.text);
+    visibleSteps++;
+    updateProgress();
+    showStepHints(currentIndex);
+
+    animationTimeout = setTimeout(runNext, msg.delay || 1000);
+  }
+
+  function restartAnimation() {
+    if (animationTimeout) clearTimeout(animationTimeout);
+    currentIndex = 0;
+    visibleSteps = 0;
+    typingEl = null;
+    progressBar.style.width = '0%';
+    restartBtn.classList.remove('visible');
+
+    // Clear chat
+    const bubbles = chatArea.querySelectorAll('.bubble, .typing');
+    bubbles.forEach(b => b.remove());
+
+    // Reset steps
+    ['step1','step2','step3'].forEach(id => {
+      document.getElementById(id).classList.remove('visible');
+    });
+
+    setTimeout(runNext, 800);
+  }
+
+  // Start
+  setTimeout(runNext, 1500);
+</script>
+</body>
+</html>

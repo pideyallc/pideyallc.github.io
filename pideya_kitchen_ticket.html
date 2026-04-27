@@ -1,294 +1,131 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PIDEYA — Ticket de Cocina</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA - Ticket de Cocina</title>
 <style>
-/* PRINT OPTIMIZED — 80mm thermal paper width */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
-  width: 80mm;
-  margin: 0 auto;
-  background: white;
-  color: black;
-}
-.ticket {
-  padding: 8px;
-  border: 1px dashed #ccc;
-  margin-bottom: 16px;
-}
-.header {
-  text-align: center;
-  border-bottom: 2px dashed black;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-}
-.header h1 {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 3px;
-}
-.header h2 {
-  font-size: 13px;
-  font-weight: normal;
-}
-.header .restaurant {
-  font-size: 15px;
-  font-weight: bold;
-  margin-top: 4px;
-}
-.order-num {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  background: black;
-  color: white;
-  padding: 4px;
-  margin: 8px 0;
-  letter-spacing: 2px;
-}
-.section {
-  margin: 6px 0;
-  border-bottom: 1px dashed black;
-  padding-bottom: 6px;
-}
-.section-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #555;
-  margin-bottom: 4px;
-}
-.row {
-  display: flex;
-  justify-content: space-between;
-  margin: 2px 0;
-}
-.row .label { font-weight: normal; }
-.row .value { font-weight: bold; text-align: right; max-width: 55mm; word-break: break-word; }
-.items-list { margin: 4px 0; }
-.item-row {
-  display: flex;
-  justify-content: space-between;
-  margin: 3px 0;
-  font-size: 13px;
-}
-.item-name { flex: 1; }
-.item-price { font-weight: bold; white-space: nowrap; margin-left: 8px; }
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  font-weight: bold;
-  border-top: 2px solid black;
-  padding-top: 6px;
-  margin-top: 4px;
-}
-.qr-section {
-  text-align: center;
-  margin: 8px 0;
-  padding: 6px 0;
-  border-top: 1px dashed black;
-  border-bottom: 1px dashed black;
-}
-.qr-section img {
-  width: 60mm;
-  height: 60mm;
-}
-.qr-label {
-  font-size: 11px;
-  margin-top: 4px;
-  color: #555;
-}
-.footer {
-  text-align: center;
-  font-size: 11px;
-  margin-top: 8px;
-  color: #555;
-}
-.status-badge {
-  text-align: center;
-  border: 2px solid black;
-  padding: 4px;
-  margin: 6px 0;
-  font-size: 14px;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-@media print {
-  body { width: 80mm; }
-  .no-print { display: none; }
-  .ticket { border: none; }
-}
-
-/* SCREEN PREVIEW STYLES */
-.preview-bar {
-  background: #16a34a;
-  color: white;
-  padding: 12px 16px;
-  font-family: sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
-}
-.print-btn {
-  background: white;
-  color: #16a34a;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 13px;
-}
-.wrapper {
-  margin-top: 52px;
-  display: flex;
-  justify-content: center;
-  padding: 24px;
-  background: #f1f5f9;
-  min-height: 100vh;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Courier New', monospace; background: #f5f5f5; display: flex; justify-content: center; padding: 20px; }
+  .ticket { background: white; width: 320px; padding: 16px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 12px; margin-bottom: 12px; }
+  .logo { font-size: 22px; font-weight: bold; letter-spacing: 2px; }
+  .restaurant { font-size: 13px; color: #555; margin-top: 4px; }
+  .order-id { font-size: 18px; font-weight: bold; margin: 8px 0 4px; }
+  .timestamp { font-size: 11px; color: #777; }
+  .section { margin: 12px 0; }
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #777; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+  .info-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+  .info-label { color: #555; }
+  .info-value { font-weight: bold; text-align: right; max-width: 180px; word-break: break-word; }
+  .items-section { margin: 12px 0; }
+  .item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px dotted #eee; }
+  .item-name { flex: 1; }
+  .item-qty { font-weight: bold; margin-right: 8px; color: #333; }
+  .item-price { font-weight: bold; white-space: nowrap; }
+  .item-note { font-size: 11px; color: #888; font-style: italic; padding: 2px 0 4px 0; }
+  .totals { border-top: 2px dashed #333; margin-top: 12px; padding-top: 10px; }
+  .total-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+  .total-row.grand { font-size: 16px; font-weight: bold; border-top: 1px solid #333; margin-top: 6px; padding-top: 6px; }
+  .footer { text-align: center; margin-top: 14px; padding-top: 12px; border-top: 2px dashed #333; font-size: 11px; color: #777; }
+  .print-btn { display: block; width: 100%; padding: 10px; background: #25D366; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 16px; }
+  @media print {
+    body { background: white; padding: 0; }
+    .ticket { box-shadow: none; border: none; width: 100%; }
+    .print-btn { display: none; }
+  }
 </style>
 </head>
 <body>
-
-<!-- PREVIEW BAR (hidden when printing) -->
-<div class="preview-bar no-print">
-  <span>🖨️ Vista previa del ticket de cocina</span>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
-</div>
-
-<div class="wrapper">
-<div class="ticket" id="ticket">
-
-  <!-- HEADER -->
+<div class="ticket">
   <div class="header">
-    <h1>PIDEYA</h1>
-    <h2>Sistema de Pedidos WhatsApp</h2>
-    <div class="restaurant" id="restaurant-name">La Mesa Caliente</div>
-    <div id="ticket-datetime" style="font-size:11px;margin-top:4px;"></div>
+    <div class="logo">🍽️ PIDEYA</div>
+    <div class="restaurant">El Conuco Restaurante</div>
+    <div class="order-id" id="order-id">---</div>
+    <div class="timestamp" id="timestamp">---</div>
   </div>
 
-  <!-- ORDER NUMBER -->
-  <div class="order-num" id="order-num">PY — — — — —</div>
-
-  <!-- STATUS -->
-  <div class="status-badge">⏳ NUEVO PEDIDO</div>
-
-  <!-- CUSTOMER INFO -->
   <div class="section">
-    <div class="section-title">Datos del cliente</div>
-    <div class="row">
-      <span class="label">Nombre:</span>
-      <span class="value" id="customer-name">—</span>
-    </div>
-    <div class="row">
-      <span class="label">Teléfono:</span>
-      <span class="value" id="customer-phone">—</span>
-    </div>
-    <div class="row">
-      <span class="label">Dirección:</span>
-      <span class="value" id="customer-address">—</span>
-    </div>
+    <div class="section-title">Cliente</div>
+    <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value" id="customer-name">---</span></div>
+    <div class="info-row"><span class="info-label">Teléfono:</span><span class="info-value" id="customer-phone">---</span></div>
+    <div class="info-row"><span class="info-label">Dirección:</span><span class="info-value" id="customer-address">---</span></div>
   </div>
 
-  <!-- ORDER ITEMS -->
-  <div class="section">
+  <div class="items-section">
     <div class="section-title">Pedido</div>
-    <div class="items-list" id="items-list">
-      <!-- Items injected by JS -->
-    </div>
-    <div class="total-row">
-      <span>TOTAL:</span>
-      <span id="order-total">$0.00</span>
-    </div>
+    <div id="items-list">---</div>
   </div>
 
-  <!-- QR CODE FOR DELIVERY -->
-  <div class="qr-section" id="qr-section">
-    <div class="section-title">📱 QR para delivery — escanear para navegar</div>
-    <img id="qr-img" src="" alt="QR Code"/>
-    <div class="qr-label" id="qr-address-text"></div>
+  <div class="totals">
+    <div class="total-row"><span>Subtotal:</span><span id="subtotal">---</span></div>
+    <div class="total-row"><span>Tax NJ (6.625%):</span><span id="tax">---</span></div>
+    <div class="total-row"><span>Gestión:</span><span id="gestion">---</span></div>
+    <div class="total-row grand"><span>TOTAL:</span><span id="total">---</span></div>
   </div>
 
-  <!-- FOOTER -->
   <div class="footer">
     <div>715 Summit Ave, Union City, NJ 07087</div>
-    <div>WhatsApp: +1 (201) 772-7540</div>
-    <div style="margin-top:4px;">— PIDEYA LLC — pideya.nj@gmail.com —</div>
+    <div style="margin-top:4px;">PIDEYA LLC | pideyallc.github.io</div>
   </div>
 
-</div>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir Ticket</button>
 </div>
 
 <script>
-// Get order data from URL parameters
-// Example: ?order=PY123&name=John&phone=+1234&address=123+Main+St&items=2x+Tacos+$12.99|1x+Burrito+$13.50&total=$26.49
-function getParam(name) {
-  const url = new URLSearchParams(window.location.search);
-  return url.get(name) || '';
-}
+  function getParam(name) {
+    return new URLSearchParams(window.location.search).get(name) || '';
+  }
+  function formatPhone(p) {
+    return p.replace('whatsapp:', '').replace(/(\+\d{1})(\d{3})(\d{3})(\d{4})/, '$1 ($2) $3-$4');
+  }
+  window.onload = function() {
+    const order    = getParam('order');
+    const name     = getParam('name');
+    const phone    = getParam('phone');
+    const address  = getParam('address');
+    const itemsRaw = getParam('items');
+    const subtotal = getParam('subtotal');
+    const tax      = getParam('tax');
+    const gestion  = getParam('gestion');
+    const total    = getParam('total');
 
-function loadOrder() {
-  const orderId = getParam('order') || 'PY' + Math.random().toString(36).substr(2,8).toUpperCase();
-  const name = getParam('name') || 'Cliente';
-  const phone = getParam('phone') || '—';
-  const address = getParam('address') || '—';
-  const itemsRaw = getParam('items') || '1x Tacos al Pastor x3 - $12.99|1x Burrito Grande - $13.50';
-  const total = getParam('total') || '$0.00';
+    document.getElementById('order-id').textContent = order ? '#' + order : '#---';
+    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US', { timeZone: 'America/New_York', dateStyle: 'short', timeStyle: 'short' });
+    document.getElementById('customer-name').textContent = name || '---';
+    document.getElementById('customer-phone').textContent = phone ? formatPhone(phone) : '---';
+    document.getElementById('customer-address').textContent = address || '---';
 
-  // Set order number
-  document.getElementById('order-num').textContent = '#' + orderId;
+    // Parse and render items
+    const itemsList = document.getElementById('items-list');
+    if (itemsRaw) {
+      const items = itemsRaw.split('|');
+      itemsList.innerHTML = '';
+      items.forEach(item => {
+        const trimmed = item.trim();
+        if (!trimmed) return;
+        const noteMatch = trimmed.match(/\(([^)]+)\)/);
+        const note = noteMatch ? noteMatch[1] : '';
+        const cleanItem = trimmed.replace(/\([^)]+\)/, '').trim();
+        const parts = cleanItem.split(' - ');
+        const nameQty = parts[0] || cleanItem;
+        const price = parts[1] || '';
+        const qtyMatch = nameQty.match(/^(\d+)x\s+(.+)$/);
+        const qty = qtyMatch ? qtyMatch[1] : '1';
+        const itemName = qtyMatch ? qtyMatch[2].trim() : nameQty;
+        const div = document.createElement('div');
+        div.innerHTML = `<div class="item"><span class="item-qty">${qty}x</span><span class="item-name">${itemName}</span><span class="item-price">${price}</span></div>${note ? `<div class="item-note">📝 ${note}</div>` : ''}`;
+        itemsList.appendChild(div);
+      });
+    }
 
-  // Set datetime
-  const now = new Date();
-  document.getElementById('ticket-datetime').textContent =
-    now.toLocaleDateString('es', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
-    now.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'});
-
-  // Set customer info
-  document.getElementById('customer-name').textContent = name;
-  document.getElementById('customer-phone').textContent = phone.replace('whatsapp:','');
-  document.getElementById('customer-address').textContent = address;
-
-  // Set items
-  const items = itemsRaw.split('|');
-  const itemsList = document.getElementById('items-list');
-  itemsList.innerHTML = '';
-  items.forEach(item => {
-    if (!item.trim()) return;
-    const parts = item.trim().split(' - ');
-    const itemName = parts[0] || item;
-    const itemPrice = parts[1] || '';
-    const row = document.createElement('div');
-    row.className = 'item-row';
-    row.innerHTML = '<span class="item-name">' + itemName + '</span>' +
-                    '<span class="item-price">' + itemPrice + '</span>';
-    itemsList.appendChild(row);
-  });
-
-  // Set total
-  document.getElementById('order-total').textContent = total;
-
-  // Generate QR code
-  const mapsUrl = 'https://maps.google.com/?q=' + encodeURIComponent(address);
-  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(mapsUrl);
-  document.getElementById('qr-img').src = qrUrl;
-  document.getElementById('qr-address-text').textContent = address;
-}
-
-loadOrder();
+    // Financial breakdown
+    document.getElementById('subtotal').textContent = subtotal ? '$' + parseFloat(subtotal).toFixed(2) : '---';
+    document.getElementById('tax').textContent = tax ? '$' + parseFloat(tax).toFixed(2) : '---';
+    document.getElementById('gestion').textContent = gestion ? '$' + parseFloat(gestion).toFixed(2) : '$2.00';
+    document.getElementById('total').textContent = total ? '$' + parseFloat(total).toFixed(2) : '---';
+    document.title = 'Ticket ' + (order || '') + ' - PIDEYA';
+  };
 </script>
 </body>
 </html>

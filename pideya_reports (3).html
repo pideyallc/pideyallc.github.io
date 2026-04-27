@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Reportes Contables</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--green:#25D366;--dark:#0a0f0d;--mid:#1a2620;--card:#111a15;--border:#1e2e24;--text:#e8f0eb;--muted:#6b8a74;--accent:#3dff8a;--red:#ff5252;--yellow:#ffd166;--blue:#66b2ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
+.header{background:var(--mid);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--accent);letter-spacing:2px;}
+.logo span{color:var(--muted);font-weight:400;}
+.subtitle{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.header-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{padding:9px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-primary{background:var(--green);color:#000;font-weight:600;}
+.btn-primary:hover{background:var(--accent);}
+.filters{background:var(--card);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.filter-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.quick-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.quick-btn{padding:6px 12px;border-radius:5px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s;}
+.quick-btn:hover,.quick-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(61,255,138,0.05);}
+.date-input{background:var(--mid);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;}
+.date-input:focus{border-color:var(--accent);}
+.restaurant-select{background:var(--mid);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:13px;outline:none;}
+.main{padding:28px 32px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden;}
+.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.summary-card.green::before{background:var(--green);}
+.summary-card.accent::before{background:var(--accent);}
+.summary-card.yellow::before{background:var(--yellow);}
+.summary-card.red::before{background:var(--red);}
+.summary-card.blue::before{background:var(--blue);}
+.card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.card-value{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;}
+.card-value.green{color:var(--green);}
+.card-value.accent{color:var(--accent);}
+.card-value.yellow{color:var(--yellow);}
+.card-value.blue{color:var(--blue);}
+.card-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:28px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead tr{border-bottom:1px solid var(--border);}
+th{padding:12px 16px;text-align:left;font-size:11px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:500;white-space:nowrap;}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(30,46,36,0.5);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.td-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+.td-green{color:var(--green);font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.td-accent{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.td-yellow{color:var(--yellow);font-family:'IBM Plex Mono',monospace;}
+.td-muted{color:var(--muted);font-size:12px;}
+.badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+.badge-green{background:rgba(37,211,102,0.15);color:var(--green);}
+.totals-row td{border-top:1px solid var(--border);font-weight:600;background:rgba(61,255,138,0.03);}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:12px;}
+.loading{text-align:center;padding:40px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+.alert{padding:14px 20px;border-radius:8px;font-size:13px;margin-bottom:20px;border:1px solid;}
+.alert-yellow{background:rgba(255,209,102,0.08);border-color:rgba(255,209,102,0.3);color:var(--yellow);}
+.footer{padding:20px 32px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+@media print{
+  @page{margin:1.5cm;size:A4;}
+  body{background:white;color:#111;}
+  .header{background:#111;color:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .header-actions,.filters .btn,.quick-btns{display:none!important;}
+  .summary-card{border:1px solid #ddd;background:#f9f9f9;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .card-value{color:#111!important;}
+  .card-label,.card-sub{color:#666!important;}
+  .table-wrap{border:1px solid #ddd;}
+  th{color:#444!important;background:#f0f0f0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  td{color:#111!important;border-color:#eee!important;}
+  .td-green,.td-accent,.td-yellow{color:#111!important;}
+  .td-muted{color:#666!important;}
+  .badge-green{background:#e6f9ef;color:#1a7a40;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .totals-row td{background:#f0f9f4!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .section-title{color:#666!important;}
+  .footer{color:#888!important;border-color:#ddd!important;}
+  .no-print{display:none!important;}
+  .main{padding:20px 0;}
+  .summary-grid{grid-template-columns:repeat(5,1fr);}
+  .alert{display:none!important;}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">PIDEYA <span>LLC</span></div>
+    <div class="subtitle">Reportes Contables y Fiscales</div>
+  </div>
+  <div class="header-actions no-print">
+    <button class="btn btn-outline" onclick="exportCSV()">Exportar CSV</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / PDF</button>
+  </div>
+</div>
+
+<div class="filters no-print">
+  <span class="filter-label">Período:</span>
+  <div class="quick-btns">
+    <button class="quick-btn" onclick="setRange('today',this)">Hoy</button>
+    <button class="quick-btn" onclick="setRange('week',this)">Esta semana</button>
+    <button class="quick-btn active" onclick="setRange('month',this)">Este mes</button>
+    <button class="quick-btn" onclick="setRange('all',this)">Todo</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="filter-label">Desde:</span>
+    <input type="date" class="date-input" id="date-from" oninput="renderReport()">
+    <span class="filter-label">Hasta:</span>
+    <input type="date" class="date-input" id="date-to" oninput="renderReport()">
+  </div>
+</div>
+
+<div class="main">
+  <div id="alert-area"></div>
+  <div id="report-header" style="margin-bottom:16px;font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;"></div>
+  <div class="summary-grid" id="summary-cards"><div class="loading">Cargando datos...</div></div>
+  <div class="section-title">Detalle de Ordenes</div>
+  <div class="table-wrap" id="orders-table"><div class="loading">Cargando ordenes...</div></div>
+  <div class="section-title">Resumen Fiscal</div>
+  <div class="table-wrap" id="tax-summary"><div class="loading">Calculando...</div></div>
+</div>
+
+<div class="footer">
+  <span>PIDEYA LLC — El Conuco Restaurante | 715 Summit Ave, Union City, NJ 07087</span>
+  <span id="print-date"></span>
+</div>
+
+<script>
+var SHEET_ID = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+var allOrders = [];
+
+function fmt(n){
+  var v = parseFloat(String(n).replace(/[^0-9.\-]/g,''));
+  return isNaN(v) ? '$0.00' : '$' + v.toFixed(2);
+}
+function toNum(n){
+  var v = parseFloat(String(n).replace(/[^0-9.\-]/g,''));
+  return isNaN(v) ? 0 : v;
+}
+
+async function fetchOrders(){
+  try{
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Sheet1';
+    var resp = await fetch(url);
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    var text = await resp.text();
+    var json = JSON.parse(text.replace(/^[^(]*\(/,'').replace(/\);\s*$/,''));
+    var cols = (json.table.cols||[]).map(function(c){return c.label||c.id;});
+    var rows = (json.table.rows||[]).map(function(row){
+      var obj={};
+      (row.c||[]).forEach(function(cell,i){
+        obj[cols[i]] = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : '') : '';
+      });
+      return obj;
+    });
+    var filtered = rows.filter(function(r){return r['Order ID']||r['order id']||r['Orden'];});
+    if(filtered.length === 0) throw new Error('empty');
+    // Show success
+    document.getElementById('alert-area').innerHTML='';
+    return filtered;
+  }catch(e){
+    document.getElementById('alert-area').innerHTML =
+      '<div class="alert alert-yellow">⚠️ No se pudo conectar con Google Sheets en tiempo real. Asegúrate de que la hoja esté compartida como "Cualquier persona con el enlace puede ver". Mostrando datos de ejemplo.</div>';
+    return getSampleData();
+  }
+}
+
+function getSampleData(){
+  var today = new Date().toISOString().split('T')[0];
+  return [
+    {'Order ID':'PY001','Timestamp':today+'T12:00:00Z','Phone':'+12015550101','Name':'Carlos Perez','Address':'70 County Ave, Secaucus NJ','Items':'2x Tacos al Pastor - $25.98','Subtotal':25.98,'Tax':1.72,'Gestion':2.00,'Total':29.70,'Status':'Confirmed'},
+    {'Order ID':'PY002','Timestamp':today+'T13:30:00Z','Phone':'+12015550202','Name':'Maria Garcia','Address':'45 Park Ave, Union City NJ','Items':'1x Combo Familiar - $24.99','Subtotal':24.99,'Tax':1.66,'Gestion':2.00,'Total':28.65,'Status':'Confirmed'},
+    {'Order ID':'PY003','Timestamp':today+'T15:00:00Z','Phone':'+12015550303','Name':'Jose Martinez','Address':'123 Bergenline Ave, Union City NJ','Items':'3x Agua Fresca - $10.50','Subtotal':10.50,'Tax':0.70,'Gestion':2.00,'Total':13.20,'Status':'Confirmed'},
+  ];
+}
+
+function parseDate(ts){
+  if(!ts) return null;
+  var d = new Date(ts);
+  return isNaN(d) ? null : d;
+}
+
+function setRange(type, btn){
+  document.querySelectorAll('.quick-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  var now = new Date();
+  var from;
+  if(type==='today') from = new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  else if(type==='week'){from=new Date(now);from.setDate(now.getDate()-now.getDay());}
+  else if(type==='month') from = new Date(now.getFullYear(),now.getMonth(),1);
+  else from = new Date(2020,0,1);
+  document.getElementById('date-from').value = from.toISOString().split('T')[0];
+  document.getElementById('date-to').value = now.toISOString().split('T')[0];
+  renderReport();
+}
+
+function filterOrders(){
+  var from = document.getElementById('date-from').value;
+  var to = document.getElementById('date-to').value;
+  var fromD = from ? new Date(from+'T00:00:00') : null;
+  var toD = to ? new Date(to+'T23:59:59') : null;
+  return allOrders.filter(function(o){
+    var d = parseDate(o['Timestamp']);
+    if(fromD && d && d < fromD) return false;
+    if(toD && d && d > toD) return false;
+    return true;
+  });
+}
+
+function renderReport(){
+  var orders = filterOrders();
+  var from = document.getElementById('date-from').value;
+  var to = document.getElementById('date-to').value;
+
+  document.getElementById('report-header').textContent =
+    'Generado: ' + new Date().toLocaleString('es-US',{timeZone:'America/New_York'}) +
+    (from ? ' | Período: ' + from + ' → ' + to : '');
+  document.getElementById('print-date').textContent =
+    'Generado: ' + new Date().toLocaleString('es-US',{timeZone:'America/New_York'});
+
+  var totalSales=0, totalTax=0, totalGestion=0, totalRevenue=0;
+  orders.forEach(function(o){
+    totalSales   += toNum(o['Subtotal']);
+    totalTax     += toNum(o['Tax']);
+    totalGestion += toNum(o['Gestion']);
+    totalRevenue += toNum(o['Total']);
+  });
+
+  // Cards
+  document.getElementById('summary-cards').innerHTML =
+    card('green','Total de Ordenes',orders.length,orders.length+' pedido'+(orders.length!==1?'s':'')) +
+    card('accent','Ventas Netas',fmt(totalSales),'Subtotal sin impuestos') +
+    card('yellow','Impuesto NJ (6.625%)',fmt(totalTax),'Tax estatal recaudado') +
+    card('red','Gestion Cobrada',fmt(totalGestion),'Cargo de servicio PIDEYA') +
+    card('blue','Total Recaudado',fmt(totalRevenue),'Ventas + Tax + Gestion');
+
+  // Orders table
+  if(!orders.length){
+    document.getElementById('orders-table').innerHTML='<div class="empty"><div class="empty-icon">📋</div><div>No hay ordenes en este período</div></div>';
+  }else{
+    var rows = orders.map(function(o){
+      var d = parseDate(o['Timestamp']);
+      var ds = d ? d.toLocaleString('es-US',{timeZone:'America/New_York',dateStyle:'short',timeStyle:'short'}) : '---';
+      return '<tr>'+
+        '<td class="td-mono td-muted">'+(o['Order ID']||'---')+'</td>'+
+        '<td class="td-muted">'+ds+'</td>'+
+        '<td>'+(o['Name']||'---')+'</td>'+
+        '<td class="td-muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(o['Items']||'---')+'</td>'+
+        '<td class="td-green">'+fmt(o['Subtotal'])+'</td>'+
+        '<td class="td-yellow">'+fmt(o['Tax'])+'</td>'+
+        '<td class="td-muted">'+fmt(o['Gestion'])+'</td>'+
+        '<td class="td-accent">'+fmt(o['Total'])+'</td>'+
+        '<td><span class="badge badge-green">'+(o['Status']||'Confirmed')+'</span></td>'+
+        '</tr>';
+    });
+    rows.push(
+      '<tr class="totals-row">'+
+      '<td colspan="4" style="color:var(--muted);font-size:12px;font-family:\'IBM Plex Mono\',monospace;">TOTALES — '+orders.length+' órdenes</td>'+
+      '<td class="td-green">'+fmt(totalSales)+'</td>'+
+      '<td class="td-yellow">'+fmt(totalTax)+'</td>'+
+      '<td class="td-muted">'+fmt(totalGestion)+'</td>'+
+      '<td class="td-accent">'+fmt(totalRevenue)+'</td>'+
+      '<td></td></tr>'
+    );
+    document.getElementById('orders-table').innerHTML=
+      '<table><thead><tr><th>Orden #</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Subtotal</th><th>Tax NJ</th><th>Gestion</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
+  }
+
+  // Tax summary
+  var avg = orders.length ? totalRevenue/orders.length : 0;
+  document.getElementById('tax-summary').innerHTML=
+    '<table><thead><tr><th>Concepto</th><th>Monto</th><th>% del Total</th><th>Descripcion</th></tr></thead><tbody>'+
+    taxRow('Ventas Netas (Subtotal)',totalSales,totalRevenue,'Ingresos por ventas antes de impuestos')+
+    taxRow('Impuesto Estatal NJ (6.625%)',totalTax,totalRevenue,'Sales tax de New Jersey — Declarar ante el estado')+
+    taxRow('Cargo de Gestion PIDEYA',totalGestion,totalRevenue,'Ingreso de servicio de PIDEYA LLC')+
+    taxRow('Total Recaudado',totalRevenue,totalRevenue,'Total cobrado a clientes via Stripe')+
+    '<tr><td style="color:var(--muted);font-size:12px;">Ticket promedio</td>'+
+    '<td class="td-accent td-mono">'+fmt(avg)+'</td>'+
+    '<td class="td-muted">—</td><td class="td-muted">Por orden confirmada</td></tr>'+
+    '</tbody></table>';
+}
+
+function card(color,label,value,sub){
+  return '<div class="summary-card '+color+'"><div class="card-label">'+label+'</div><div class="card-value '+color+'">'+value+'</div><div class="card-sub">'+sub+'</div></div>';
+}
+function taxRow(label,amount,total,desc){
+  var pct = total>0 ? ((amount/total)*100).toFixed(1)+'%' : '0%';
+  return '<tr><td style="font-weight:500;">'+label+'</td><td class="td-accent td-mono">'+fmt(amount)+'</td><td class="td-muted td-mono">'+pct+'</td><td class="td-muted">'+desc+'</td></tr>';
+}
+
+function exportCSV(){
+  var orders = filterOrders();
+  var headers = ['Order ID','Fecha','Cliente','Telefono','Direccion','Items','Subtotal','Tax NJ','Gestion','Total','Estado'];
+  var rows = [headers.join(',')];
+  orders.forEach(function(o){
+    var d = parseDate(o['Timestamp']);
+    var ds = d ? d.toLocaleString('es-US',{timeZone:'America/New_York'}) : '';
+    rows.push([
+      o['Order ID'],'"'+ds+'"','"'+(o['Name']||'')+'"','"'+(o['Phone']||'')+'"',
+      '"'+(o['Address']||'')+'"','"'+(o['Items']||'')+'"',
+      o['Subtotal'],o['Tax'],o['Gestion'],o['Total'],o['Status']||'Confirmed'
+    ].join(','));
+  });
+  var blob = new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'PIDEYA_Reporte_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+}
+
+// Init
+window.onload = async function(){
+  var now = new Date();
+  document.getElementById('date-from').value = new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+  document.getElementById('date-to').value = now.toISOString().split('T')[0];
+  allOrders = await fetchOrders();
+  renderReport();
+};
+</script>
+</body>
+</html>

@@ -47,8 +47,8 @@
   <div class="section">
     <div class="section-title">Cliente</div>
     <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value" id="customer-name">---</span></div>
-    <div class="info-row"><span class="info-label">Teléfono:</span><span class="info-value" id="customer-phone">---</span></div>
-    <div class="info-row"><span class="info-label">Dirección:</span><span class="info-value" id="customer-address">---</span></div>
+    <div class="info-row"><span class="info-label">Telefono:</span><span class="info-value" id="customer-phone">---</span></div>
+    <div class="info-row"><span class="info-label">Direccion:</span><span class="info-value" id="customer-address">---</span></div>
   </div>
   <div class="items-section">
     <div class="section-title">Pedido</div>
@@ -57,8 +57,8 @@
   <div class="totals">
     <div class="total-row"><span>Subtotal:</span><span id="val-subtotal">---</span></div>
     <div class="total-row"><span>Tax NJ (6.625%):</span><span id="val-tax">---</span></div>
-    <div class="total-row"><span>Gestión:</span><span id="val-gestion">---</span></div>
-    <div class="total-row grand"><span>TOTAL:</span><span id="val-total">---</span></div>
+    <div class="total-row"><span>Gestion:</span><span id="val-gestion">---</span></div>
+    <div class="total-row grand"><span>TOTAL A PAGAR:</span><span id="val-total">---</span></div>
   </div>
   <div class="footer">
     <div>715 Summit Ave, Union City, NJ 07087</div>
@@ -67,51 +67,80 @@
   <button class="print-btn" onclick="window.print()">Imprimir Ticket</button>
 </div>
 <script>
+  // Safe param reader — strips $ sign if present
   function p(name) {
-    return new URLSearchParams(window.location.search).get(name) || '';
+    var val = new URLSearchParams(window.location.search).get(name) || '';
+    return val.replace('$', '').trim();
   }
-  function fmtPhone(ph) {
-    return ph.replace('whatsapp:','').replace(/(\+\d{1})(\d{3})(\d{3})(\d{4})/, '$1 ($2) $3-$4');
-  }
-  function fmtMoney(val) {
-    var n = parseFloat(val);
-    return isNaN(n) ? '---' : '$' + n.toFixed(2);
-  }
-  window.onload = function() {
-    // Basic info
-    document.getElementById('order-id').textContent = p('order') ? '#' + p('order') : '#---';
-    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US', {timeZone:'America/New_York', dateStyle:'short', timeStyle:'short'});
-    document.getElementById('customer-name').textContent    = p('name')    || '---';
-    document.getElementById('customer-phone').textContent   = p('phone')   ? fmtPhone(p('phone'))  : '---';
-    document.getElementById('customer-address').textContent = p('address') || '---';
 
-    // Items
-    var itemsRaw = p('items');
+  // Safe money formatter
+  function fmt(val) {
+    var n = parseFloat(val);
+    return isNaN(n) ? null : n;
+  }
+
+  function fmtDisplay(val) {
+    var n = fmt(val);
+    return n === null ? '---' : '$' + n.toFixed(2);
+  }
+
+  function fmtPhone(ph) {
+    return ph.replace('whatsapp:', '').replace(/(\+\d{1})(\d{3})(\d{3})(\d{4})/, '$1 ($2) $3-$4');
+  }
+
+  window.onload = function() {
+    document.getElementById('order-id').textContent = p('order') ? '#' + p('order') : '#---';
+    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US', {
+      timeZone: 'America/New_York', dateStyle: 'short', timeStyle: 'short'
+    });
+    document.getElementById('customer-name').textContent    = decodeURIComponent(p('name'))    || '---';
+    document.getElementById('customer-phone').textContent   = p('phone') ? fmtPhone(decodeURIComponent(p('phone'))) : '---';
+    document.getElementById('customer-address').textContent = decodeURIComponent(p('address')) || '---';
+
+    // Parse and render items — also compute subtotal from items as fallback
+    var itemsRaw = decodeURIComponent(new URLSearchParams(window.location.search).get('items') || '');
     var itemsList = document.getElementById('items-list');
+    var computedSubtotal = 0;
+
     if (itemsRaw) {
       itemsList.innerHTML = '';
       itemsRaw.split('|').forEach(function(item) {
         var t = item.trim(); if (!t) return;
         var noteMatch = t.match(/\(([^)]+)\)/);
         var note = noteMatch ? noteMatch[1] : '';
-        var clean = t.replace(/\([^)]+\)/,'').trim();
+        var clean = t.replace(/\([^)]+\)/, '').trim();
         var parts = clean.split(' - ');
         var nameQty = parts[0] || clean;
-        var price = parts[1] || '';
+        var priceStr = (parts[1] || '').replace('$','').trim();
+        var price = parseFloat(priceStr);
+        if (!isNaN(price)) computedSubtotal += price;
         var qm = nameQty.match(/^(\d+)x\s+(.+)$/);
         var qty = qm ? qm[1] : '1';
         var itemName = qm ? qm[2].trim() : nameQty;
         var div = document.createElement('div');
-        div.innerHTML = '<div class="item"><span class="item-qty">'+qty+'x</span><span class="item-name">'+itemName+'</span><span class="item-price">'+price+'</span></div>'+(note?'<div class="item-note">Nota: '+note+'</div>':'');
+        div.innerHTML = '<div class="item">'
+          + '<span class="item-qty">' + qty + 'x</span>'
+          + '<span class="item-name">' + itemName + '</span>'
+          + '<span class="item-price">' + (priceStr ? '$' + parseFloat(priceStr).toFixed(2) : '') + '</span>'
+          + '</div>'
+          + (note ? '<div class="item-note">Nota: ' + note + '</div>' : '');
         itemsList.appendChild(div);
       });
     }
 
-    // ✅ Financial breakdown — each value read from its own URL parameter
-    document.getElementById('val-subtotal').textContent = fmtMoney(p('subtotal'));
-    document.getElementById('val-tax').textContent      = fmtMoney(p('tax'));
-    document.getElementById('val-gestion').textContent  = p('gestion') ? fmtMoney(p('gestion')) : '$2.00';
-    document.getElementById('val-total').textContent    = fmtMoney(p('total'));
+    // Financial breakdown — read each param, fallback to computed values
+    var subtotal = fmt(p('subtotal')) !== null ? fmt(p('subtotal')) : computedSubtotal;
+    var TAX_RATE = 0.06625;
+    var GESTION  = 2.00;
+    var tax      = fmt(p('tax'))      !== null ? fmt(p('tax'))      : parseFloat((subtotal * TAX_RATE).toFixed(2));
+    var gestion  = fmt(p('gestion'))  !== null ? fmt(p('gestion'))  : GESTION;
+    // ✅ Always compute total as sum — never trust passed total alone
+    var total    = parseFloat((subtotal + tax + gestion).toFixed(2));
+
+    document.getElementById('val-subtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('val-tax').textContent      = '$' + tax.toFixed(2);
+    document.getElementById('val-gestion').textContent  = '$' + gestion.toFixed(2);
+    document.getElementById('val-total').textContent    = '$' + total.toFixed(2);
 
     document.title = 'Ticket ' + (p('order') || '') + ' - PIDEYA';
   };

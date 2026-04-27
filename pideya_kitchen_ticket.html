@@ -39,92 +39,81 @@
 <body>
 <div class="ticket">
   <div class="header">
-    <div class="logo">🍽️ PIDEYA</div>
+    <div class="logo">PIDEYA</div>
     <div class="restaurant">El Conuco Restaurante</div>
     <div class="order-id" id="order-id">---</div>
     <div class="timestamp" id="timestamp">---</div>
   </div>
-
   <div class="section">
     <div class="section-title">Cliente</div>
     <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value" id="customer-name">---</span></div>
     <div class="info-row"><span class="info-label">Teléfono:</span><span class="info-value" id="customer-phone">---</span></div>
     <div class="info-row"><span class="info-label">Dirección:</span><span class="info-value" id="customer-address">---</span></div>
   </div>
-
   <div class="items-section">
     <div class="section-title">Pedido</div>
     <div id="items-list">---</div>
   </div>
-
   <div class="totals">
-    <div class="total-row"><span>Subtotal:</span><span id="subtotal">---</span></div>
-    <div class="total-row"><span>Tax NJ (6.625%):</span><span id="tax">---</span></div>
-    <div class="total-row"><span>Gestión:</span><span id="gestion">---</span></div>
-    <div class="total-row grand"><span>TOTAL:</span><span id="total">---</span></div>
+    <div class="total-row"><span>Subtotal:</span><span id="val-subtotal">---</span></div>
+    <div class="total-row"><span>Tax NJ (6.625%):</span><span id="val-tax">---</span></div>
+    <div class="total-row"><span>Gestión:</span><span id="val-gestion">---</span></div>
+    <div class="total-row grand"><span>TOTAL:</span><span id="val-total">---</span></div>
   </div>
-
   <div class="footer">
     <div>715 Summit Ave, Union City, NJ 07087</div>
     <div style="margin-top:4px;">PIDEYA LLC | pideyallc.github.io</div>
   </div>
-
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir Ticket</button>
+  <button class="print-btn" onclick="window.print()">Imprimir Ticket</button>
 </div>
-
 <script>
-  function getParam(name) {
+  function p(name) {
     return new URLSearchParams(window.location.search).get(name) || '';
   }
-  function formatPhone(p) {
-    return p.replace('whatsapp:', '').replace(/(\+\d{1})(\d{3})(\d{3})(\d{4})/, '$1 ($2) $3-$4');
+  function fmtPhone(ph) {
+    return ph.replace('whatsapp:','').replace(/(\+\d{1})(\d{3})(\d{3})(\d{4})/, '$1 ($2) $3-$4');
+  }
+  function fmtMoney(val) {
+    var n = parseFloat(val);
+    return isNaN(n) ? '---' : '$' + n.toFixed(2);
   }
   window.onload = function() {
-    const order    = getParam('order');
-    const name     = getParam('name');
-    const phone    = getParam('phone');
-    const address  = getParam('address');
-    const itemsRaw = getParam('items');
-    const subtotal = getParam('subtotal');
-    const tax      = getParam('tax');
-    const gestion  = getParam('gestion');
-    const total    = getParam('total');
+    // Basic info
+    document.getElementById('order-id').textContent = p('order') ? '#' + p('order') : '#---';
+    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US', {timeZone:'America/New_York', dateStyle:'short', timeStyle:'short'});
+    document.getElementById('customer-name').textContent    = p('name')    || '---';
+    document.getElementById('customer-phone').textContent   = p('phone')   ? fmtPhone(p('phone'))  : '---';
+    document.getElementById('customer-address').textContent = p('address') || '---';
 
-    document.getElementById('order-id').textContent = order ? '#' + order : '#---';
-    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US', { timeZone: 'America/New_York', dateStyle: 'short', timeStyle: 'short' });
-    document.getElementById('customer-name').textContent = name || '---';
-    document.getElementById('customer-phone').textContent = phone ? formatPhone(phone) : '---';
-    document.getElementById('customer-address').textContent = address || '---';
-
-    // Parse and render items
-    const itemsList = document.getElementById('items-list');
+    // Items
+    var itemsRaw = p('items');
+    var itemsList = document.getElementById('items-list');
     if (itemsRaw) {
-      const items = itemsRaw.split('|');
       itemsList.innerHTML = '';
-      items.forEach(item => {
-        const trimmed = item.trim();
-        if (!trimmed) return;
-        const noteMatch = trimmed.match(/\(([^)]+)\)/);
-        const note = noteMatch ? noteMatch[1] : '';
-        const cleanItem = trimmed.replace(/\([^)]+\)/, '').trim();
-        const parts = cleanItem.split(' - ');
-        const nameQty = parts[0] || cleanItem;
-        const price = parts[1] || '';
-        const qtyMatch = nameQty.match(/^(\d+)x\s+(.+)$/);
-        const qty = qtyMatch ? qtyMatch[1] : '1';
-        const itemName = qtyMatch ? qtyMatch[2].trim() : nameQty;
-        const div = document.createElement('div');
-        div.innerHTML = `<div class="item"><span class="item-qty">${qty}x</span><span class="item-name">${itemName}</span><span class="item-price">${price}</span></div>${note ? `<div class="item-note">📝 ${note}</div>` : ''}`;
+      itemsRaw.split('|').forEach(function(item) {
+        var t = item.trim(); if (!t) return;
+        var noteMatch = t.match(/\(([^)]+)\)/);
+        var note = noteMatch ? noteMatch[1] : '';
+        var clean = t.replace(/\([^)]+\)/,'').trim();
+        var parts = clean.split(' - ');
+        var nameQty = parts[0] || clean;
+        var price = parts[1] || '';
+        var qm = nameQty.match(/^(\d+)x\s+(.+)$/);
+        var qty = qm ? qm[1] : '1';
+        var itemName = qm ? qm[2].trim() : nameQty;
+        var div = document.createElement('div');
+        div.innerHTML = '<div class="item"><span class="item-qty">'+qty+'x</span><span class="item-name">'+itemName+'</span><span class="item-price">'+price+'</span></div>'+(note?'<div class="item-note">Nota: '+note+'</div>':'');
         itemsList.appendChild(div);
       });
     }
 
-    // Financial breakdown
-    document.getElementById('subtotal').textContent = subtotal ? '$' + parseFloat(subtotal).toFixed(2) : '---';
-    document.getElementById('tax').textContent = tax ? '$' + parseFloat(tax).toFixed(2) : '---';
-    document.getElementById('gestion').textContent = gestion ? '$' + parseFloat(gestion).toFixed(2) : '$2.00';
-    document.getElementById('total').textContent = total ? '$' + parseFloat(total).toFixed(2) : '---';
-    document.title = 'Ticket ' + (order || '') + ' - PIDEYA';
+    // ✅ Financial breakdown — each value read from its own URL parameter
+    document.getElementById('val-subtotal').textContent = fmtMoney(p('subtotal'));
+    document.getElementById('val-tax').textContent      = fmtMoney(p('tax'));
+    document.getElementById('val-gestion').textContent  = p('gestion') ? fmtMoney(p('gestion')) : '$2.00';
+    document.getElementById('val-total').textContent    = fmtMoney(p('total'));
+
+    document.title = 'Ticket ' + (p('order') || '') + ' - PIDEYA';
   };
 </script>
 </body>

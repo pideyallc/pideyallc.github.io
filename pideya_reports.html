@@ -148,27 +148,39 @@ function toNum(n){
 
 async function fetchOrders(){
   try{
-    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:jsongviz/tq?tqx=out:json&sheet=Sheet1gid=0';
-    var resp = await fetch(url);
+    // Use CSV export URL — works without CORS issues when sheet is publicly shared
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=0';
+    var resp = await fetch(url, {mode:'cors'});
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    var text = await resp.text();
-    var json = JSON.parse(text.replace(/^[^(]*\(/,'').replace(/\);\s*$/,''));
-    var cols = (json.table.cols||[]).map(function(c){return c.label||c.id;});
-    var rows = (json.table.rows||[]).map(function(row){
-      var obj={};
-      (row.c||[]).forEach(function(cell,i){
-        obj[cols[i]] = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : '') : '';
-      });
-      return obj;
-    });
-    var filtered = rows.filter(function(r){return r['Order ID']||r['order id']||r['Orden'];});
-    if(filtered.length === 0) throw new Error('empty');
-    // Show success
+    var csv = await resp.text();
+    var lines = csv.split('\n').filter(function(l){return l.trim();});
+    if(lines.length < 2) throw new Error('empty');
+    // Parse CSV headers
+    function parseCSVLine(line) {
+      var result = [], current = '', inQuotes = false;
+      for(var i=0;i<line.length;i++){
+        var c = line[i];
+        if(c==='"'){inQuotes=!inQuotes;}
+        else if(c===','&&!inQuotes){result.push(current.trim());current='';}
+        else{current+=c;}
+      }
+      result.push(current.trim());
+      return result;
+    }
+    var headers = parseCSVLine(lines[0]);
+    var rows = [];
+    for(var i=1;i<lines.length;i++){
+      var vals = parseCSVLine(lines[i]);
+      var obj = {};
+      headers.forEach(function(h,j){ obj[h] = vals[j]||''; });
+      if(obj['Order ID']) rows.push(obj);
+    }
+    if(rows.length === 0) throw new Error('no orders yet');
     document.getElementById('alert-area').innerHTML='';
-    return filtered;
+    return rows;
   }catch(e){
     document.getElementById('alert-area').innerHTML =
-      '<div class="alert alert-yellow">⚠️ No se pudo conectar con Google Sheets en tiempo real. Asegúrate de que la hoja esté compartida como "Cualquier persona con el enlace puede ver". Mostrando datos de ejemplo.</div>';
+      '<div class="alert alert-yellow">⚠️ No hay ordenes aún o la hoja no está compartida públicamente. Asegúrate de ir a Google Sheets → Compartir → "Cualquier persona con el enlace puede ver". Mostrando datos de ejemplo.</div>';
     return getSampleData();
   }
 }

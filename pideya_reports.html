@@ -148,7 +148,7 @@ function toNum(n){
 
 async function fetchOrders(){
   try{
-    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json&sheet=Sheet1';
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:jsongviz/tq?tqx=out:json&sheet=Sheet1gid=0';
     var resp = await fetch(url);
     if(!resp.ok) throw new Error('HTTP ' + resp.status);
     var text = await resp.text();

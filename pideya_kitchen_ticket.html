@@ -19,7 +19,7 @@
   .info-label { color: #555; flex-shrink: 0; }
   .info-value { font-weight: bold; text-align: right; word-break: break-word; }
   .item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px dotted #eee; gap: 6px; }
-  .item-qty { font-weight: bold; white-space: nowrap; }
+  .item-qty { font-weight: bold; white-space: nowrap; flex-shrink: 0; }
   .item-name { flex: 1; }
   .item-price { font-weight: bold; white-space: nowrap; }
   .item-note { font-size: 11px; color: #888; font-style: italic; padding: 2px 0 4px 16px; }
@@ -47,152 +47,125 @@
     <div class="order-id" id="order-id">#---</div>
     <div class="timestamp" id="timestamp">---</div>
   </div>
-
   <div class="section">
     <div class="section-title">Cliente</div>
     <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value" id="customer-name">---</span></div>
     <div class="info-row"><span class="info-label">Telefono:</span><span class="info-value" id="customer-phone">---</span></div>
     <div class="info-row"><span class="info-label">Direccion:</span><span class="info-value" id="customer-address">---</span></div>
   </div>
-
   <div class="section">
     <div class="section-title">Pedido</div>
     <div id="items-list"></div>
   </div>
-
   <div class="totals">
     <div class="total-row"><span>Subtotal:</span><span id="val-subtotal">---</span></div>
     <div class="total-row"><span>Tax NJ (6.625%):</span><span id="val-tax">---</span></div>
     <div class="total-row"><span>Gestion:</span><span id="val-gestion">---</span></div>
     <div class="total-row grand"><span>TOTAL A PAGAR:</span><span id="val-total">---</span></div>
   </div>
-
   <div class="qr-section">
     <div class="qr-label">📍 QR Repartidor — Navegar al destino</div>
     <img id="qr-image" src="" alt="QR de navegacion">
     <div class="qr-addr" id="qr-addr"></div>
   </div>
-
   <div class="footer">
     <div>715 Summit Ave, Union City, NJ 07087</div>
     <div style="margin-top:4px;">PIDEYA LLC | pideyallc.github.io</div>
   </div>
-
   <button class="print-btn" onclick="window.print()">🖨️ Imprimir Ticket</button>
 </div>
-
 <script>
-  // Safe URL param reader — fully decodes and strips $ signs for numbers
+  // Simple URL param reader — URLSearchParams handles decoding automatically
   function getParam(name) {
-    var raw = new URLSearchParams(window.location.search).get(name);
-    if (raw === null) return '';
-    try { raw = decodeURIComponent(raw); } catch(e) {}
-    return raw.trim();
+    return new URLSearchParams(window.location.search).get(name) || '';
   }
-
   function toNum(val) {
     var n = parseFloat(String(val).replace(/[^0-9.\-]/g, ''));
     return isNaN(n) ? 0 : n;
   }
-
   function fmtMoney(n) { return '$' + n.toFixed(2); }
-
-  function cleanAddress(addr) {
-    // Replace newlines and multiple spaces with a single space
-    return addr.replace(/[\r\n]+/g, ', ').replace(/\s{2,}/g, ' ').trim();
-  }
-
   function fmtPhone(p) {
     p = p.replace('whatsapp:', '').trim();
-    // Format +1XXXXXXXXXX → +1 (XXX) XXX-XXXX
-    var m = p.match(/^(\+1)(\d{3})(\d{3})(\d{4})$/);
-    if (m) return m[1] + ' (' + m[2] + ') ' + m[3] + '-' + m[4];
-    return p;
+    var m = p.match(/^(\+\d{1,3})(\d{3})(\d{3})(\d{4})$/);
+    return m ? m[1]+' ('+m[2]+') '+m[3]+'-'+m[4] : p;
+  }
+  function cleanAddr(a) {
+    return a.replace(/[\r\n]+/g, ', ').replace(/\s{2,}/g,' ').trim();
   }
 
   window.onload = function() {
     var order   = getParam('order');
     var name    = getParam('name');
     var phone   = getParam('phone');
-    var address = cleanAddress(getParam('address'));
-    var itemsRaw = getParam('items');
-    var qrRaw   = getParam('qr');
+    var address = cleanAddr(getParam('address'));
+    var items   = getParam('items');
 
-    // Header
-    document.getElementById('order-id').textContent  = order ? '#' + order : '#---';
-    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US', {
-      timeZone: 'America/New_York', dateStyle: 'short', timeStyle: 'short'
-    });
-
-    // Customer info
-    document.getElementById('customer-name').textContent    = name    || '---';
-    document.getElementById('customer-phone').textContent   = phone   ? fmtPhone(phone) : '---';
-    document.getElementById('customer-address').textContent = address || '---';
-
-    // QR code — use passed qr param or build from address
-    var qrUrl = '';
-    if (qrRaw) {
-      // qrRaw might be double-encoded — decode once more if needed
-      var decoded = qrRaw;
-      if (decoded.includes('%25')) {
-        try { decoded = decodeURIComponent(decoded); } catch(e) {}
-      }
-      qrUrl = decoded;
-    }
-    if (!qrUrl && address) {
-      qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' +
-              encodeURIComponent('https://maps.google.com/?q=' + address);
-    }
-    if (qrUrl) {
-      document.getElementById('qr-image').src = qrUrl;
-      document.getElementById('qr-addr').textContent = address;
-    }
-
-    // Items
-    var itemsList = document.getElementById('items-list');
-    var computedSubtotal = 0;
-    if (itemsRaw) {
-      itemsRaw.split('|').forEach(function(item) {
-        var t = item.trim(); if (!t) return;
-        var noteMatch = t.match(/\(([^)]+)\)/);
-        var note = noteMatch ? noteMatch[1] : '';
-        var clean = t.replace(/\([^)]+\)/, '').trim();
-        var lastDash = clean.lastIndexOf(' - ');
-        var nameQty  = lastDash >= 0 ? clean.substring(0, lastDash).trim() : clean;
-        var priceStr = lastDash >= 0 ? clean.substring(lastDash + 3).replace(/\$/g,'').trim() : '0';
-        var priceNum = parseFloat(priceStr) || 0;
-        computedSubtotal += priceNum;
-        var qm = nameQty.match(/^(\d+)x\s+(.+)$/);
-        var qty      = qm ? qm[1] : '1';
-        var itemName = qm ? qm[2].trim() : nameQty;
-        var div = document.createElement('div');
-        div.innerHTML =
-          '<div class="item">' +
-            '<span class="item-qty">' + qty + 'x</span>' +
-            '<span class="item-name">' + itemName + '</span>' +
-            '<span class="item-price">' + (priceNum > 0 ? fmtMoney(priceNum) : '') + '</span>' +
-          '</div>' +
-          (note ? '<div class="item-note">Nota: ' + note + '</div>' : '');
-        itemsList.appendChild(div);
-      });
-    }
-
-    // Financials — read from params, fall back to computed values
+    // Financial params
     var subtotal = toNum(getParam('subtotal'));
     var tax      = toNum(getParam('tax'));
     var gestion  = toNum(getParam('gestion'));
 
-    if (subtotal === 0 && computedSubtotal > 0) subtotal = computedSubtotal;
-    if (tax === 0 && subtotal > 0) tax = parseFloat((subtotal * 0.06625).toFixed(2));
-    if (gestion === 0) gestion = 2.00;
-    var total = parseFloat((subtotal + tax + gestion).toFixed(2));
+    // Header
+    document.getElementById('order-id').textContent  = order ? '#'+order : '#---';
+    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US',{timeZone:'America/New_York',dateStyle:'short',timeStyle:'short'});
+
+    // Customer
+    document.getElementById('customer-name').textContent    = name    || '---';
+    document.getElementById('customer-phone').textContent   = phone   ? fmtPhone(phone) : '---';
+    document.getElementById('customer-address').textContent = address || '---';
+
+    // QR — always build from address (short URL, never gets cut off)
+    if (address) {
+      var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+
+                  encodeURIComponent('https://maps.google.com/?q='+address);
+      document.getElementById('qr-image').src = qrUrl;
+      document.getElementById('qr-addr').textContent = address;
+    }
+
+    // Parse items and compute subtotal as fallback
+    var computedSubtotal = 0;
+    var itemsList = document.getElementById('items-list');
+    if (items) {
+      items.split('|').forEach(function(item) {
+        var t = item.trim(); if (!t) return;
+        // Extract note
+        var noteMatch = t.match(/\(([^)]+)\)/);
+        var note = noteMatch ? noteMatch[1] : '';
+        var clean = t.replace(/\([^)]+\)/,'').trim();
+        // Find last " - " to split name from price
+        var lastDash = clean.lastIndexOf(' - ');
+        var nameQty  = lastDash>=0 ? clean.substring(0, lastDash).trim() : clean;
+        var priceStr = lastDash>=0 ? clean.substring(lastDash+3).replace(/\$/g,'').trim() : '0';
+        var priceNum = parseFloat(priceStr) || 0;
+        computedSubtotal += priceNum;
+        // Split qty from name
+        var qm = nameQty.match(/^(\d+)x\s+(.+)$/i);
+        var qty      = qm ? qm[1] : '1';
+        var itemName = qm ? qm[2].trim() : nameQty;
+        var div = document.createElement('div');
+        div.innerHTML =
+          '<div class="item">'+
+            '<span class="item-qty">'+qty+'x</span>'+
+            '<span class="item-name">'+itemName+'</span>'+
+            '<span class="item-price">'+(priceNum>0?fmtMoney(priceNum):'')+'</span>'+
+          '</div>'+
+          (note?'<div class="item-note">Nota: '+note+'</div>':'');
+        itemsList.appendChild(div);
+      });
+    }
+
+    // Use URL params if available, otherwise compute from items
+    if (subtotal===0 && computedSubtotal>0) subtotal = computedSubtotal;
+    if (tax===0 && subtotal>0) tax = parseFloat((subtotal*0.06625).toFixed(2));
+    if (gestion===0) gestion = 2.00;
+    var total = parseFloat((subtotal+tax+gestion).toFixed(2));
 
     document.getElementById('val-subtotal').textContent = fmtMoney(subtotal);
     document.getElementById('val-tax').textContent      = fmtMoney(tax);
     document.getElementById('val-gestion').textContent  = fmtMoney(gestion);
     document.getElementById('val-total').textContent    = fmtMoney(total);
 
-    document.title = 'Ticket ' + (order || '') + ' - PIDEYA';
+    document.title = 'Ticket '+(order||'')+' - PIDEYA';
   };
 </script>
 </body>

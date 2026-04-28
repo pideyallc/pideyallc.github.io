@@ -3,699 +3,211 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PideYa — Panel de Control</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>PIDEYA — Panel de Control</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0f0d;
-    --surface: #111a16;
-    --surface2: #172010;
-    --border: #1e2e22;
-    --green: #22c55e;
-    --green-dim: #16a34a;
-    --green-glow: rgba(34,197,94,0.15);
-    --amber: #f59e0b;
-    --amber-dim: #d97706;
-    --red: #ef4444;
-    --blue: #3b82f6;
-    --text: #e8f5ec;
-    --muted: #4d6b55;
-    --accent: #22c55e;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Sora', sans-serif;
-    min-height: 100vh;
-  }
+:root{--green:#25D366;--dark:#0a0f0d;--mid:#1a2620;--card:#111a15;--border:#1e2e24;--text:#e8f0eb;--muted:#6b8a74;--accent:#3dff8a;--yellow:#ffd166;--blue:#66b2ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
 
-  /* HEADER */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .logo { display:flex; align-items:center; gap:10px; }
-  .logo-icon {
-    width:36px; height:36px; background: var(--green); border-radius:8px;
-    display:flex; align-items:center; justify-content:center; font-size:18px;
-  }
-  .logo h1 { font-size:1.2rem; font-weight:700; letter-spacing:-0.5px; }
-  .logo span { font-size:.75rem; color:var(--muted); font-weight:400; }
-  .live-badge {
-    display:flex; align-items:center; gap:6px;
-    background: var(--green-glow); border:1px solid var(--green-dim);
-    padding:5px 12px; border-radius:20px; font-size:.72rem; color:var(--green);
-    font-family:'JetBrains Mono', monospace;
-  }
-  .live-dot { width:7px; height:7px; background:var(--green); border-radius:50%; animation: pulse 1.4s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+/* Password Screen */
+.password-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.password-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;width:320px;}
+.password-logo{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--accent);letter-spacing:2px;margin-bottom:8px;}
+.password-sub{font-size:12px;color:var(--muted);margin-bottom:28px;text-transform:uppercase;letter-spacing:1px;}
+.password-input{width:100%;padding:12px 16px;background:var(--mid);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:16px;font-family:'IBM Plex Mono',monospace;outline:none;margin-bottom:12px;text-align:center;letter-spacing:3px;}
+.password-input:focus{border-color:var(--accent);}
+.password-btn{width:100%;padding:12px;background:var(--green);color:#000;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+.password-btn:hover{background:var(--accent);}
+.password-error{color:#ff5252;font-size:12px;margin-top:10px;display:none;}
 
-  /* NAV TABS */
-  nav {
-    display:flex; gap:4px; padding:16px 28px 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .tab {
-    padding:9px 18px; border-radius:8px 8px 0 0; font-size:.82rem; font-weight:500;
-    cursor:pointer; border:1px solid transparent; border-bottom:none;
-    color:var(--muted); transition:.2s; background:transparent;
-  }
-  .tab.active { background:var(--bg); color:var(--green); border-color:var(--border); }
-  .tab:hover:not(.active) { color:var(--text); }
-
-  /* MAIN LAYOUT */
-  main { padding:24px 28px; max-width:1200px; margin:0 auto; }
-
-  /* STATS ROW */
-  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-  .stat-card {
-    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px;
-    transition:.2s;
-  }
-  .stat-card:hover { border-color:var(--green-dim); }
-  .stat-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
-  .stat-val { font-size:1.8rem; font-weight:700; font-family:'JetBrains Mono', monospace; color:var(--text); }
-  .stat-sub { font-size:.72rem; color:var(--muted); margin-top:4px; }
-  .stat-val.green { color:var(--green); }
-  .stat-val.amber { color:var(--amber); }
-
-  /* SECTION HEADER */
-  .section-header {
-    display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
-  }
-  .section-title { font-size:.95rem; font-weight:600; color:var(--text); }
-
-  /* STRIPE CONFIG BAR */
-  .stripe-config {
-    background:var(--surface2); border:1px solid var(--border); border-radius:12px;
-    padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:14px;
-    flex-wrap:wrap;
-  }
-  .stripe-config label { font-size:.78rem; color:var(--muted); white-space:nowrap; }
-  .stripe-config input {
-    flex:1; min-width:260px; background:var(--bg); border:1px solid var(--border);
-    color:var(--text); padding:8px 12px; border-radius:8px; font-family:'JetBrains Mono', monospace;
-    font-size:.75rem; outline:none;
-  }
-  .stripe-config input:focus { border-color:var(--green-dim); }
-  .btn-save {
-    background:var(--green); color:#000; font-weight:600; font-size:.78rem;
-    padding:8px 16px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;
-    transition:.15s;
-  }
-  .btn-save:hover { background:var(--green-dim); }
-  .stripe-status { font-size:.72rem; font-family:'JetBrains Mono', monospace; }
-  .stripe-status.ok { color:var(--green); }
-  .stripe-status.err { color:var(--red); }
-
-  /* ORDERS TABLE */
-  .orders-wrap {
-    background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden;
-  }
-  table { width:100%; border-collapse:collapse; font-size:.82rem; }
-  thead th {
-    text-align:left; padding:12px 16px; font-size:.7rem; text-transform:uppercase;
-    letter-spacing:.06em; color:var(--muted); background:var(--surface2);
-    font-weight:500; border-bottom:1px solid var(--border);
-  }
-  tbody tr { border-bottom:1px solid var(--border); transition:.15s; }
-  tbody tr:last-child { border-bottom:none; }
-  tbody tr:hover { background:var(--surface2); }
-  tbody td { padding:13px 16px; vertical-align:middle; }
-  .order-id { font-family:'JetBrains Mono', monospace; color:var(--muted); font-size:.72rem; }
-  .customer-name { font-weight:600; color:var(--text); }
-  .customer-phone { font-size:.72rem; color:var(--muted); font-family:'JetBrains Mono', monospace; }
-  .items-list { font-size:.78rem; color:var(--text); max-width:220px; line-height:1.5; }
-  .amount { font-family:'JetBrains Mono', monospace; font-weight:600; color:var(--green); }
-
-  /* STATUS BADGE */
-  .badge {
-    display:inline-flex; align-items:center; gap:5px;
-    padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600;
-    text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
-  }
-  .badge-pending    { background:rgba(245,158,11,.15); color:var(--amber); border:1px solid rgba(245,158,11,.3); }
-  .badge-preparing  { background:rgba(59,130,246,.15); color:var(--blue); border:1px solid rgba(59,130,246,.3); }
-  .badge-ready      { background:rgba(34,197,94,.15);  color:var(--green); border:1px solid rgba(34,197,94,.3); }
-  .badge-dispatched { background:rgba(34,197,94,.08);  color:#86efac; border:1px solid rgba(34,197,94,.2); }
-  .badge-delivered  { background:#111; color:var(--muted); border:1px solid var(--border); }
-
-  /* PAYMENT BADGE */
-  .pay-badge {
-    display:inline-flex; align-items:center; gap:5px;
-    padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600;
-    letter-spacing:.04em; white-space:nowrap;
-  }
-  .pay-paid    { background:rgba(34,197,94,.15); color:var(--green); border:1px solid rgba(34,197,94,.3); }
-  .pay-unpaid  { background:rgba(245,158,11,.12); color:var(--amber); border:1px solid rgba(245,158,11,.25); }
-  .pay-pending { background:rgba(107,114,128,.1); color:#6b7280; border:1px solid rgba(107,114,128,.2); }
-
-  /* ACTIONS */
-  .actions { display:flex; gap:6px; flex-wrap:wrap; }
-  .btn {
-    padding:5px 11px; border-radius:7px; font-size:.7rem; font-weight:600;
-    border:1px solid transparent; cursor:pointer; transition:.15s; font-family:'Sora',sans-serif;
-  }
-  .btn-status  { background:var(--surface2); color:var(--text); border-color:var(--border); }
-  .btn-status:hover { border-color:var(--green-dim); color:var(--green); }
-  .btn-stripe  { background:rgba(99,91,255,.15); color:#a5b4fc; border-color:rgba(99,91,255,.3); }
-  .btn-stripe:hover { background:rgba(99,91,255,.25); }
-  .btn-stripe.copied { background:rgba(34,197,94,.15); color:var(--green); border-color:rgba(34,197,94,.3); }
-  .btn-print   { background:var(--surface2); color:var(--muted); border-color:var(--border); }
-  .btn-print:hover { color:var(--text); }
-
-  /* EMPTY STATE */
-  .empty {
-    text-align:center; padding:60px 20px; color:var(--muted);
-  }
-  .empty .icon { font-size:2.5rem; margin-bottom:12px; }
-  .empty p { font-size:.85rem; }
-
-  /* MODAL / TOAST */
-  .toast {
-    position:fixed; bottom:24px; right:24px; z-index:999;
-    background:var(--surface); border:1px solid var(--green-dim); border-radius:10px;
-    padding:12px 18px; font-size:.82rem; color:var(--green);
-    box-shadow:0 4px 24px rgba(0,0,0,.4);
-    animation: slideIn .2s ease; display:none;
-  }
-  @keyframes slideIn { from{transform:translateY(10px);opacity:0;} to{transform:none;opacity:1;} }
-
-  /* SETTINGS TAB */
-  .settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .settings-card {
-    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:22px;
-  }
-  .settings-card h3 { font-size:.9rem; font-weight:600; margin-bottom:14px; color:var(--text); }
-  .field { margin-bottom:12px; }
-  .field label { display:block; font-size:.72rem; color:var(--muted); margin-bottom:5px; }
-  .field input {
-    width:100%; background:var(--bg); border:1px solid var(--border);
-    color:var(--text); padding:9px 12px; border-radius:8px;
-    font-family:'JetBrains Mono', monospace; font-size:.75rem; outline:none;
-  }
-  .field input:focus { border-color:var(--green-dim); }
-  .field-note { font-size:.68rem; color:var(--muted); margin-top:4px; }
-
-  /* PRINT TICKET */
-  @media print {
-    body { background:#fff; color:#000; }
-    header, nav, .stats, .stripe-config, .actions, .btn { display:none !important; }
-  }
-
-  /* RESPONSIVE */
-  @media(max-width:900px) {
-    .stats { grid-template-columns:repeat(2,1fr); }
-    .settings-grid { grid-template-columns:1fr; }
-    main { padding:16px; }
-  }
-  @media(max-width:600px) {
-    .stats { grid-template-columns:1fr 1fr; }
-    thead th:nth-child(4), tbody td:nth-child(4) { display:none; }
-  }
-
-  /* TABS CONTENT */
-  .tab-content { display:none; }
-  .tab-content.active { display:block; }
+.header{background:var(--mid);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--accent);letter-spacing:2px;}
+.logo span{color:var(--muted);font-weight:400;}
+.subtitle{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.live-dot{width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;margin-right:6px;animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.main{padding:28px 32px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden;}
+.summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.summary-card.green::before{background:var(--green);}
+.summary-card.accent::before{background:var(--accent);}
+.summary-card.yellow::before{background:var(--yellow);}
+.summary-card.blue::before{background:var(--blue);}
+.card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.card-value{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;}
+.card-value.green{color:var(--green);}
+.card-value.accent{color:var(--accent);}
+.card-value.yellow{color:var(--yellow);}
+.card-value.blue{color:var(--blue);}
+.card-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:28px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead tr{border-bottom:1px solid var(--border);}
+th{padding:12px 16px;text-align:left;font-size:11px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:500;white-space:nowrap;}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(30,46,36,0.5);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.td-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+.td-green{color:var(--green);font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.td-accent{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.td-muted{color:var(--muted);font-size:12px;}
+.badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+.badge-green{background:rgba(37,211,102,0.15);color:var(--green);}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.loading{text-align:center;padding:40px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+.refresh-btn{padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
+.footer{padding:20px 32px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+@media print{
+  body{background:white;color:#111;}
+  .header{background:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  th{background:#f0f0f0;color:#444!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  td{color:#111!important;border-color:#eee!important;}
+  .td-green,.td-accent{color:#111!important;}
+  .td-muted{color:#666!important;}
+  .refresh-btn{display:none;}
+  .password-screen{display:none!important;}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <div class="logo-icon">🍴</div>
-    <div>
-      <h1>PideYa</h1>
-      <span>Panel de Control</span>
-    </div>
+<!-- Password Screen -->
+<div class="password-screen" id="password-screen">
+  <div class="password-box">
+    <div class="password-logo">PIDEYA LLC</div>
+    <div class="password-sub">Panel de Control — Acceso Restringido</div>
+    <input type="password" class="password-input" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPwd()">
+    <button class="password-btn" onclick="checkPwd()">🔐 Ingresar</button>
+    <div class="password-error" id="pwd-error">Contraseña incorrecta. Intenta de nuevo.</div>
   </div>
-  <div class="live-badge">
-    <span class="live-dot"></span>
-    LIVE
+</div>
+
+<div class="header">
+  <div>
+    <div class="logo">PIDEYA <span>LLC</span></div>
+    <div class="subtitle"><span class="live-dot"></span>Panel de Control — Ordenes en Tiempo Real</div>
   </div>
-</header>
-
-<nav>
-  <div class="tab active" onclick="showTab('orders')">📋 Pedidos</div>
-  <div class="tab" onclick="showTab('settings')">⚙️ Configuración</div>
-</nav>
-
-<main>
-
-  <!-- ORDERS TAB -->
-  <div class="tab-content active" id="tab-orders">
-
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-label">Pedidos Hoy</div>
-        <div class="stat-val" id="stat-total">0</div>
-        <div class="stat-sub">total recibidos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Pendientes</div>
-        <div class="stat-val amber" id="stat-pending">0</div>
-        <div class="stat-sub">esperando preparación</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Cobrado (Stripe)</div>
-        <div class="stat-val green" id="stat-paid">$0.00</div>
-        <div class="stat-sub">pagos confirmados</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Pendiente de Cobro</div>
-        <div class="stat-val amber" id="stat-unpaid">$0.00</div>
-        <div class="stat-sub">sin pago confirmado</div>
-      </div>
-    </div>
-
-    <!-- Stripe Key Config -->
-    <div class="stripe-config">
-      <label>🔑 Stripe Secret Key:</label>
-      <input type="password" id="stripe-key-input" placeholder="sk_test_... o sk_live_..." />
-      <button class="btn-save" onclick="saveStripeKey()">Guardar</button>
-      <span class="stripe-status" id="stripe-status"></span>
-    </div>
-
-    <!-- Add Test Order -->
-    <div class="section-header">
-      <div class="section-title">Pedidos en Tiempo Real</div>
-      <button class="btn btn-status" onclick="addSampleOrder()">+ Simular Pedido</button>
-    </div>
-
-    <div class="orders-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Cliente</th>
-            <th>Pedido</th>
-            <th>Total</th>
-            <th>Estado</th>
-            <th>Pago</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="orders-tbody">
-          <tr>
-            <td colspan="7">
-              <div class="empty">
-                <div class="icon">📭</div>
-                <p>No hay pedidos aún. Los pedidos de WhatsApp aparecerán aquí en tiempo real.</p>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <div style="display:flex;gap:10px;">
+    <button class="refresh-btn" onclick="loadData()">↻ Actualizar</button>
+    <button class="refresh-btn" onclick="window.print()">🖨️ Imprimir</button>
   </div>
+</div>
 
-  <!-- SETTINGS TAB -->
-  <div class="tab-content" id="tab-settings">
-    <div class="settings-grid">
+<div class="main">
+  <div class="summary-grid" id="summary-cards"><div class="loading">Cargando...</div></div>
+  <div class="section-title">Ultimas Ordenes</div>
+  <div class="table-wrap" id="orders-table"><div class="loading">Cargando ordenes...</div></div>
+</div>
 
-      <div class="settings-card">
-        <h3>🔑 Stripe</h3>
-        <div class="field">
-          <label>Secret Key (sk_test_ o sk_live_)</label>
-          <input type="password" id="s-stripe-sk" placeholder="sk_test_51..." />
-          <div class="field-note">Usada para generar links de pago. Nunca la compartas públicamente.</div>
-        </div>
-        <div class="field">
-          <label>Publishable Key (pk_test_ o pk_live_)</label>
-          <input type="text" id="s-stripe-pk" placeholder="pk_test_51..." />
-        </div>
-        <button class="btn-save" onclick="saveSettings()">Guardar Configuración</button>
-      </div>
-
-      <div class="settings-card">
-        <h3>📊 Google Sheets</h3>
-        <div class="field">
-          <label>API Key de Google Sheets</label>
-          <input type="password" id="s-sheets-key" placeholder="AIza..." />
-        </div>
-        <div class="field">
-          <label>Spreadsheet ID</label>
-          <input type="text" id="s-sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" />
-          <div class="field-note">Encontrado en la URL de tu Google Sheet.</div>
-        </div>
-        <button class="btn-save" onclick="saveSettings()">Guardar Configuración</button>
-      </div>
-
-      <div class="settings-card">
-        <h3>📱 WhatsApp Cloud API</h3>
-        <div class="field">
-          <label>Access Token</label>
-          <input type="password" id="s-wa-token" placeholder="EAAx..." />
-        </div>
-        <div class="field">
-          <label>Phone Number ID</label>
-          <input type="text" id="s-wa-phone" placeholder="12345678901234" />
-        </div>
-        <button class="btn-save" onclick="saveSettings()">Guardar Configuración</button>
-      </div>
-
-      <div class="settings-card">
-        <h3>🏪 Restaurante</h3>
-        <div class="field">
-          <label>Nombre del Restaurante</label>
-          <input type="text" id="s-rest-name" value="PideYa" />
-        </div>
-        <div class="field">
-          <label>Dirección</label>
-          <input type="text" id="s-rest-addr" placeholder="New Jersey, USA" />
-        </div>
-        <div class="field">
-          <label>WhatsApp del Restaurante</label>
-          <input type="text" id="s-rest-wa" placeholder="+1 201 772 7540" />
-        </div>
-        <button class="btn-save" onclick="saveSettings()">Guardar Configuración</button>
-      </div>
-
-    </div>
-  </div>
-
-</main>
-
-<div class="toast" id="toast"></div>
+<div class="footer">
+  <span>PIDEYA LLC — El Conuco Restaurante | 715 Summit Ave, Union City, NJ 07087</span>
+  <span id="last-update"></span>
+</div>
 
 <script>
-  // ─── STATE ───────────────────────────────────────────
-  let orders = JSON.parse(localStorage.getItem('pideya_orders') || '[]');
-  let stripeKey = localStorage.getItem('pideya_stripe_sk') || '';
-  let orderCounter = parseInt(localStorage.getItem('pideya_counter') || '1000');
+var SHEET_ID = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+var CORRECT_PASSWORD = 'pideya2024';
+var SESSION_KEY = 'pideya_dashboard_auth';
+var allOrders = [];
 
-  const STATUS_FLOW = ['Pendiente','Preparando','Listo','Despachado','Entregado'];
-  const STATUS_CLASS = {
-    'Pendiente':'badge-pending',
-    'Preparando':'badge-preparing',
-    'Listo':'badge-ready',
-    'Despachado':'badge-dispatched',
-    'Entregado':'badge-delivered'
-  };
+function checkPwd() {
+  var input = document.getElementById('pwd-input').value;
+  if (input === CORRECT_PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('password-screen').style.display = 'none';
+    loadData();
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
 
-  const SAMPLE_ORDERS = [
-    { name:'Carlos Méndez',   phone:'+1 201 555 0182', items:'2x Combo Pollo + 1x Soda',   total:24.50 },
-    { name:'María González',  phone:'+1 201 555 0341', items:'1x Combo Carne + 2x Soda',   total:18.75 },
-    { name:'Luis Ramírez',    phone:'+1 201 555 0097', items:'3x Combo Mixto',              total:37.00 },
-    { name:'Ana Rodríguez',   phone:'+1 201 555 0228', items:'1x Combo Vegetariano',        total:14.00 },
-    { name:'Pedro Castillo',  phone:'+1 201 555 0413', items:'2x Combo Carne + 1x Postre',  total:29.50 },
-  ];
-  let sampleIdx = 0;
+function fmt(n){var v=parseFloat(String(n).replace(/[^0-9.\-]/g,''));return isNaN(v)?'$0.00':'$'+v.toFixed(2);}
+function toNum(n){var v=parseFloat(String(n).replace(/[^0-9.\-]/g,''));return isNaN(v)?0:v;}
 
-  // ─── INIT ─────────────────────────────────────────────
-  window.onload = () => {
-    if (stripeKey) {
-      document.getElementById('stripe-key-input').value = stripeKey;
-      document.getElementById('s-stripe-sk').value = stripeKey;
-      document.getElementById('stripe-status').textContent = '✓ Clave guardada';
-      document.getElementById('stripe-status').className = 'stripe-status ok';
-    }
-    // Load saved settings
-    ['s-sheets-key','s-sheet-id','s-wa-token','s-wa-phone','s-rest-name','s-rest-addr','s-rest-wa'].forEach(id => {
-      const val = localStorage.getItem('pideya_'+id);
-      if (val) document.getElementById(id).value = val;
+async function fetchOrders(){
+  try{
+    var url='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid=0';
+    var resp=await fetch(url,{mode:'cors'});
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    var csv=await resp.text();
+    var lines=csv.split('\n').filter(function(l){return l.trim();});
+    if(lines.length<2)throw new Error('empty');
+    function parseCSVLine(line){var result=[],current='',inQuotes=false;for(var i=0;i<line.length;i++){var c=line[i];if(c==='"'){inQuotes=!inQuotes;}else if(c===','&&!inQuotes){result.push(current.trim());current='';}else{current+=c;}}result.push(current.trim());return result;}
+    var headers=parseCSVLine(lines[0]);
+    var rows=[];
+    for(var i=1;i<lines.length;i++){var vals=parseCSVLine(lines[i]);var obj={};headers.forEach(function(h,j){obj[h]=vals[j]||'';});if(obj['Order ID'])rows.push(obj);}
+    return rows;
+  }catch(e){return [];}
+}
+
+async function loadData(){
+  document.getElementById('summary-cards').innerHTML='<div class="loading">Cargando...</div>';
+  document.getElementById('orders-table').innerHTML='<div class="loading">Cargando ordenes...</div>';
+  allOrders=await fetchOrders();
+
+  // Sort by latest first
+  allOrders.sort(function(a,b){return new Date(b['Timestamp'])-new Date(a['Timestamp']);});
+
+  // Today's orders
+  var today=new Date().toISOString().split('T')[0];
+  var todayOrders=allOrders.filter(function(o){return o['Timestamp']&&o['Timestamp'].startsWith(today);});
+
+  var totalRevenue=0,todayRevenue=0;
+  allOrders.forEach(function(o){totalRevenue+=toNum(o['Total']);});
+  todayOrders.forEach(function(o){todayRevenue+=toNum(o['Total']);});
+
+  // Summary cards
+  document.getElementById('summary-cards').innerHTML=
+    card('green','Ordenes Hoy',todayOrders.length,'Pedidos confirmados hoy')+
+    card('accent','Ventas Hoy',fmt(todayRevenue),'Ingresos del dia de hoy')+
+    card('yellow','Total Ordenes',allOrders.length,'Todos los pedidos historicos')+
+    card('blue','Total Recaudado',fmt(totalRevenue),'Ingresos totales historicos');
+
+  // Orders table — show last 50
+  var recent=allOrders.slice(0,50);
+  if(!recent.length){
+    document.getElementById('orders-table').innerHTML='<div class="empty">No hay ordenes registradas aun.</div>';
+  }else{
+    var rows=recent.map(function(o){
+      var d=o['Timestamp']?new Date(o['Timestamp']):null;
+      var ds=d?d.toLocaleString('es-US',{timeZone:'America/New_York',dateStyle:'short',timeStyle:'short'}):'---';
+      return '<tr>'+
+        '<td class="td-mono td-muted">'+(o['Order ID']||'---')+'</td>'+
+        '<td class="td-muted">'+ds+'</td>'+
+        '<td>'+(o['Name']||'---')+'</td>'+
+        '<td class="td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(o['Items']||'---')+'</td>'+
+        '<td class="td-green">'+fmt(o['Subtotal'])+'</td>'+
+        '<td class="td-muted">'+fmt(o['Tax'])+'</td>'+
+        '<td class="td-accent">'+fmt(o['Total'])+'</td>'+
+        '<td><span class="badge badge-green">'+(o['Status']||'Confirmed')+'</span></td>'+
+        '</tr>';
     });
-    render();
-  };
-
-  // ─── TAB SWITCHING ────────────────────────────────────
-  function showTab(name) {
-    document.querySelectorAll('.tab').forEach((t,i) => {
-      t.classList.toggle('active', ['orders','settings'][i] === name);
-    });
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('tab-'+name).classList.add('active');
+    document.getElementById('orders-table').innerHTML=
+      '<table><thead><tr><th>Orden #</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Subtotal</th><th>Tax NJ</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
   }
 
-  // ─── STRIPE KEY SAVE ──────────────────────────────────
-  function saveStripeKey() {
-    const val = document.getElementById('stripe-key-input').value.trim();
-    if (!val.startsWith('sk_')) {
-      document.getElementById('stripe-status').textContent = '✗ Clave inválida (debe empezar con sk_)';
-      document.getElementById('stripe-status').className = 'stripe-status err';
-      return;
-    }
-    stripeKey = val;
-    localStorage.setItem('pideya_stripe_sk', val);
-    document.getElementById('s-stripe-sk').value = val;
-    document.getElementById('stripe-status').textContent = '✓ Guardada correctamente';
-    document.getElementById('stripe-status').className = 'stripe-status ok';
-    showToast('🔑 Stripe configurado correctamente');
+  document.getElementById('last-update').textContent='Actualizado: '+new Date().toLocaleString('es-US',{timeZone:'America/New_York',timeStyle:'short'});
+}
+
+function card(color,label,value,sub){
+  return '<div class="summary-card '+color+'"><div class="card-label">'+label+'</div><div class="card-value '+color+'">'+value+'</div><div class="card-sub">'+sub+'</div></div>';
+}
+
+window.onload = function() {
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    document.getElementById('password-screen').style.display = 'none';
+    loadData();
+  } else {
+    document.getElementById('pwd-input').focus();
   }
-
-  function saveSettings() {
-    const sk = document.getElementById('s-stripe-sk').value.trim();
-    if (sk) { stripeKey = sk; localStorage.setItem('pideya_stripe_sk', sk); document.getElementById('stripe-key-input').value = sk; }
-    ['s-sheets-key','s-sheet-id','s-wa-token','s-wa-phone','s-rest-name','s-rest-addr','s-rest-wa'].forEach(id => {
-      const val = document.getElementById(id).value.trim();
-      if (val) localStorage.setItem('pideya_'+id, val);
-    });
-    showToast('✅ Configuración guardada');
-  }
-
-  // ─── ADD SAMPLE ORDER ─────────────────────────────────
-  function addSampleOrder() {
-    const s = SAMPLE_ORDERS[sampleIdx % SAMPLE_ORDERS.length]; sampleIdx++;
-    orderCounter++;
-    const order = {
-      id: 'PY-'+orderCounter,
-      name: s.name,
-      phone: s.phone,
-      items: s.items,
-      total: s.total,
-      status: 'Pendiente',
-      payment: 'Unpaid',
-      paymentLink: null,
-      time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-      address: 'Calle Principal 45, Newark NJ'
-    };
-    orders.unshift(order);
-    localStorage.setItem('pideya_orders', JSON.stringify(orders));
-    localStorage.setItem('pideya_counter', orderCounter);
-    render();
-    showToast('📦 Nuevo pedido recibido: '+order.id);
-  }
-
-  // ─── ADVANCE STATUS ───────────────────────────────────
-  function advanceStatus(orderId) {
-    const o = orders.find(x => x.id === orderId);
-    if (!o) return;
-    const idx = STATUS_FLOW.indexOf(o.status);
-    if (idx < STATUS_FLOW.length - 1) o.status = STATUS_FLOW[idx+1];
-    localStorage.setItem('pideya_orders', JSON.stringify(orders));
-    render();
-    showToast('✅ ' + o.id + ' → ' + o.status);
-  }
-
-  // ─── GENERATE STRIPE PAYMENT LINK ────────────────────
-  async function generateStripeLink(orderId) {
-    const o = orders.find(x => x.id === orderId);
-    if (!o) return;
-
-    if (!stripeKey || !stripeKey.startsWith('sk_')) {
-      showToast('⚠️ Primero configura tu Stripe Secret Key', true);
-      return;
-    }
-
-    const btn = document.querySelector(`[data-stripe="${orderId}"]`);
-    if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
-
-    try {
-      // Create Stripe payment link via API
-      const amountCents = Math.round(o.total * 100);
-      
-      // Step 1: Create a price
-      const priceRes = await fetch('https://api.stripe.com/v1/prices', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + stripeKey,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          'unit_amount': amountCents,
-          'currency': 'usd',
-          'product_data[name]': 'Pedido PideYa ' + orderId,
-          'product_data[description]': o.items + ' | ' + o.name
-        })
-      });
-
-      const priceData = await priceRes.json();
-      if (!priceData.id) throw new Error(priceData.error?.message || 'Error creando precio');
-
-      // Step 2: Create payment link
-      const linkRes = await fetch('https://api.stripe.com/v1/payment_links', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + stripeKey,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          'line_items[0][price]': priceData.id,
-          'line_items[0][quantity]': '1',
-          'metadata[order_id]': orderId,
-          'metadata[customer]': o.name,
-          'metadata[phone]': o.phone
-        })
-      });
-
-      const linkData = await linkRes.json();
-      if (!linkData.url) throw new Error(linkData.error?.message || 'Error creando link');
-
-      o.paymentLink = linkData.url;
-      o.payment = 'Link Enviado';
-      localStorage.setItem('pideya_orders', JSON.stringify(orders));
-      render();
-
-      // Copy to clipboard
-      navigator.clipboard.writeText(linkData.url).catch(()=>{});
-      showToast('💳 Link generado y copiado: ' + linkData.url.substring(0,40)+'...');
-
-    } catch (err) {
-      if (btn) { btn.textContent = '💳 Generar Link'; btn.disabled = false; }
-      showToast('⚠️ Error Stripe: ' + err.message, true);
-    }
-  }
-
-  function copyLink(orderId) {
-    const o = orders.find(x => x.id === orderId);
-    if (o?.paymentLink) {
-      navigator.clipboard.writeText(o.paymentLink).catch(()=>{});
-      showToast('📋 Link copiado al portapapeles');
-    }
-  }
-
-  // ─── RENDER ───────────────────────────────────────────
-  function render() {
-    const tbody = document.getElementById('orders-tbody');
-    
-    if (orders.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="icon">📭</div><p>No hay pedidos aún. Los pedidos de WhatsApp aparecerán aquí en tiempo real.</p></div></td></tr>`;
-    } else {
-      tbody.innerHTML = orders.map(o => {
-        const nextStatus = STATUS_FLOW[STATUS_FLOW.indexOf(o.status)+1];
-        const payClass = o.payment === 'Paid' ? 'pay-paid' : o.payment === 'Unpaid' ? 'pay-unpaid' : 'pay-pending';
-        const payLabel = o.payment === 'Paid' ? '✓ Pagado' : o.payment === 'Unpaid' ? '⏳ Sin pago' : '🔗 Link Enviado';
-        
-        let stripeBtn = '';
-        if (o.payment === 'Unpaid') {
-          stripeBtn = `<button class="btn btn-stripe" data-stripe="${o.id}" onclick="generateStripeLink('${o.id}')">💳 Generar Link</button>`;
-        } else if (o.paymentLink) {
-          stripeBtn = `<button class="btn btn-stripe copied" onclick="copyLink('${o.id}')">📋 Copiar Link</button>`;
-        }
-
-        return `
-        <tr>
-          <td><div class="order-id">${o.id}</div><div style="font-size:.65rem;color:var(--muted)">${o.time}</div></td>
-          <td>
-            <div class="customer-name">${o.name}</div>
-            <div class="customer-phone">${o.phone}</div>
-            <div style="font-size:.68rem;color:var(--muted);margin-top:2px">${o.address}</div>
-          </td>
-          <td><div class="items-list">${o.items}</div></td>
-          <td><div class="amount">$${o.total.toFixed(2)}</div></td>
-          <td><span class="badge ${STATUS_CLASS[o.status]}">${o.status}</span></td>
-          <td><span class="pay-badge ${payClass}">${payLabel}</span></td>
-          <td>
-            <div class="actions">
-              ${nextStatus ? `<button class="btn btn-status" onclick="advanceStatus('${o.id}')">→ ${nextStatus}</button>` : ''}
-              ${stripeBtn}
-              <button class="btn btn-print" onclick="printTicket('${o.id}')">🖨️</button>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    // Stats
-    const total = orders.length;
-    const pending = orders.filter(o => o.status === 'Pendiente').length;
-    const paid = orders.filter(o => o.payment === 'Paid').reduce((s,o) => s+o.total, 0);
-    const unpaid = orders.filter(o => o.payment !== 'Paid').reduce((s,o) => s+o.total, 0);
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-pending').textContent = pending;
-    document.getElementById('stat-paid').textContent = '$'+paid.toFixed(2);
-    document.getElementById('stat-unpaid').textContent = '$'+unpaid.toFixed(2);
-  }
-
-  // ─── PRINT TICKET ─────────────────────────────────────
-  function printTicket(orderId) {
-    const o = orders.find(x => x.id === orderId);
-    if (!o) return;
-    const w = window.open('', '_blank', 'width=400,height=600');
-    w.document.write(`
-      <html><head><title>Ticket ${o.id}</title>
-      <style>
-        body { font-family: monospace; padding:20px; max-width:300px; }
-        h2 { text-align:center; margin-bottom:4px; }
-        .line { border-top:1px dashed #000; margin:10px 0; }
-        .row { display:flex; justify-content:space-between; margin:4px 0; font-size:13px; }
-        .total { font-weight:bold; font-size:15px; }
-        .center { text-align:center; font-size:12px; }
-      </style></head><body>
-      <h2>🍴 PideYa</h2>
-      <div class="center">Ticket de Pedido</div>
-      <div class="line"></div>
-      <div class="row"><span>Pedido:</span><span>${o.id}</span></div>
-      <div class="row"><span>Hora:</span><span>${o.time}</span></div>
-      <div class="line"></div>
-      <div class="row"><span>Cliente:</span><span>${o.name}</span></div>
-      <div class="row"><span>Teléfono:</span><span>${o.phone}</span></div>
-      <div class="row"><span>Dirección:</span></div>
-      <div style="font-size:12px;margin:2px 0 8px">${o.address}</div>
-      <div class="line"></div>
-      <div style="font-size:13px;margin:4px 0"><b>Items:</b><br>${o.items}</div>
-      <div class="line"></div>
-      <div class="row total"><span>TOTAL:</span><span>$${o.total.toFixed(2)}</span></div>
-      <div class="row"><span>Pago:</span><span>${o.payment}</span></div>
-      <div class="line"></div>
-      <div class="center">¡Gracias por tu pedido!</div>
-      </body></html>`);
-    w.document.close();
-    w.print();
-  }
-
-  // ─── TOAST ────────────────────────────────────────────
-  function showToast(msg, isErr=false) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
-    t.style.color = isErr ? '#f87171' : 'var(--green)';
-    t.style.borderColor = isErr ? '#ef4444' : 'var(--green-dim)';
-    clearTimeout(window._toast);
-    window._toast = setTimeout(()=>{ t.style.display='none'; }, 3500);
-  }
-
-  // ─── RECEIVE ORDER FROM WHATSAPP (webhook endpoint simulation) ──
-  // This function is called by your n8n webhook to add real orders
-  window.receiveOrder = function(orderData) {
-    orderCounter++;
-    const order = {
-      id: 'PY-'+orderCounter,
-      name: orderData.name || 'Cliente',
-      phone: orderData.phone || '',
-      items: orderData.items || '',
-      total: parseFloat(orderData.total) || 0,
-      status: 'Pendiente',
-      payment: 'Unpaid',
-      paymentLink: null,
-      time: new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
-      address: orderData.address || ''
-    };
-    orders.unshift(order);
-    localStorage.setItem('pideya_orders', JSON.stringify(orders));
-    localStorage.setItem('pideya_counter', orderCounter);
-    render();
-    showToast('📦 Nuevo pedido de WhatsApp: '+order.id);
-    return order.id;
-  };
+};
 </script>
 </body>
 </html>

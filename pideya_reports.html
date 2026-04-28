@@ -88,9 +88,69 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   .summary-grid{grid-template-columns:repeat(5,1fr);}
   .alert{display:none!important;}
 }
+
+  /* Password Screen */
+  .password-screen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--dark);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .password-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    width: 320px;
+  }
+  .password-logo { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent); letter-spacing: 2px; margin-bottom: 8px; }
+  .password-sub { font-size: 12px; color: var(--muted); margin-bottom: 28px; text-transform: uppercase; letter-spacing: 1px; }
+  .password-input {
+    width: 100%; padding: 12px 16px;
+    background: var(--mid); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px;
+    font-size: 16px; font-family: 'IBM Plex Mono', monospace;
+    outline: none; margin-bottom: 12px; text-align: center; letter-spacing: 3px;
+  }
+  .password-input:focus { border-color: var(--accent); }
+  .password-btn {
+    width: 100%; padding: 12px;
+    background: var(--green); color: #000;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .password-btn:hover { background: var(--accent); }
+  .password-error { color: #ff5252; font-size: 12px; margin-top: 10px; display: none; }
+
 </style>
 </head>
-<body>
+<body><script>
+(function(){
+  var PASS = 'pideya2024';
+  var key = 'pideya_auth';
+  if(sessionStorage.getItem(key) !== PASS){
+    var input = prompt('🔒 Acceso restringido\nIngresa la contraseña para continuar:');
+    if(input !== PASS){
+      document.body.innerHTML = '<div style="font-family:sans-serif;text-align:center;padding:100px;background:#0a0f0d;color:#e8f0eb;min-height:100vh;"><h2 style=\"color:#ff5252\">❌ Acceso denegado</h2><p style=\"color:#6b8a74;margin-top:12px\">Contraseña incorrecta. Recarga la página para intentar de nuevo.</p></div>';
+      throw new Error('Access denied');
+    }
+    sessionStorage.setItem(key, PASS);
+  }
+})();
+</script>
+
+<div class="password-screen" id="password-screen">
+  <div class="password-box">
+    <div class="password-logo">PIDEYA LLC</div>
+    <div class="password-sub">Reportes Contables — Acceso Restringido</div>
+    <input type="password" class="password-input" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPwd()">
+    <button class="password-btn" onclick="checkPwd()">🔐 Ingresar</button>
+    <div class="password-error" id="pwd-error">Contraseña incorrecta. Intenta de nuevo.</div>
+  </div>
+</div>
+
 <div class="header">
   <div>
     <div class="logo">PIDEYA <span>LLC</span></div>
@@ -328,14 +388,43 @@ function exportCSV(){
   a.click();
 }
 
-// Init
-window.onload = async function(){
-  var now = new Date();
-  document.getElementById('date-from').value = new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
-  document.getElementById('date-to').value = now.toISOString().split('T')[0];
-  allOrders = await fetchOrders();
-  renderReport();
-};
+
+  // ─── PASSWORD PROTECTION ─────────────────────────────────────────────────
+  var CORRECT_PASSWORD = 'pideya2024';
+  var SESSION_KEY = 'pideya_reports_auth';
+
+  function checkPwd() {
+    var input = document.getElementById('pwd-input').value;
+    if (input === CORRECT_PASSWORD) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('password-screen').style.display = 'none';
+      initApp();
+    } else {
+      document.getElementById('pwd-error').style.display = 'block';
+      document.getElementById('pwd-input').value = '';
+      document.getElementById('pwd-input').focus();
+    }
+  }
+
+  function initApp() {
+    var now = new Date();
+    document.getElementById('date-from').value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    document.getElementById('date-to').value = now.toISOString().split('T')[0];
+    fetchOrders().then(function(orders) {
+      allOrders = orders;
+      renderReport();
+    });
+  }
+
+  window.onload = function() {
+    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+      document.getElementById('password-screen').style.display = 'none';
+      initApp();
+    } else {
+      document.getElementById('pwd-input').focus();
+    }
+  };
+
 </script>
 </body>
 </html>

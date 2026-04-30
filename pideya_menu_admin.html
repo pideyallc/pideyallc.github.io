@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PideYa — Administrador de Menú</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --surface: #111a16;
+    --surface2: #162019;
+    --border: #1e2e22;
+    --green: #22c55e;
+    --green-dim: #16a34a;
+    --green-glow: rgba(34,197,94,0.12);
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --red-dim: #dc2626;
+    --text: #e8f5ec;
+    --muted: #4d6b55;
+    --accent: #22c55e;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Sora',sans-serif; min-height:100vh; }
+
+  /* HEADER */
+  header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; border-bottom:1px solid var(--border);
+    background:var(--surface); position:sticky; top:0; z-index:100;
+  }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-icon { width:36px; height:36px; background:var(--green); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .logo h1 { font-size:1.1rem; font-weight:700; }
+  .logo span { font-size:.72rem; color:var(--muted); }
+  .header-actions { display:flex; gap:10px; align-items:center; }
+  .btn { padding:8px 16px; border-radius:8px; font-size:.78rem; font-weight:600; border:none; cursor:pointer; font-family:'Sora',sans-serif; transition:.15s; }
+  .btn-primary { background:var(--green); color:#000; }
+  .btn-primary:hover { background:var(--green-dim); }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .btn-secondary:hover { border-color:var(--green-dim); }
+  .btn-danger { background:rgba(239,68,68,.15); color:var(--red); border:1px solid rgba(239,68,68,.3); }
+  .btn-danger:hover { background:rgba(239,68,68,.25); }
+  .btn-sm { padding:5px 11px; font-size:.7rem; }
+
+  /* CONFIG BAR */
+  .config-bar {
+    background:var(--surface2); border-bottom:1px solid var(--border);
+    padding:12px 28px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  }
+  .config-bar label { font-size:.72rem; color:var(--muted); white-space:nowrap; }
+  .config-bar input {
+    flex:1; min-width:200px; max-width:340px; background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:7px 11px; border-radius:7px;
+    font-family:'JetBrains Mono',monospace; font-size:.72rem; outline:none;
+  }
+  .config-bar input:focus { border-color:var(--green-dim); }
+  .config-status { font-size:.72rem; font-family:'JetBrains Mono',monospace; }
+  .config-status.ok { color:var(--green); }
+  .config-status.err { color:var(--red); }
+
+  /* MAIN */
+  main { padding:24px 28px; max-width:1100px; margin:0 auto; }
+
+  /* STATS */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .stat { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .stat-val { font-size:1.6rem; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--green); }
+  .stat-label { font-size:.7rem; color:var(--muted); margin-top:3px; }
+
+  /* TOOLBAR */
+  .toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .toolbar-left { display:flex; gap:8px; align-items:center; }
+  .search-input {
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    padding:8px 14px; border-radius:8px; font-size:.8rem; font-family:'Sora',sans-serif;
+    outline:none; width:220px;
+  }
+  .search-input:focus { border-color:var(--green-dim); }
+  .filter-select {
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    padding:8px 12px; border-radius:8px; font-size:.78rem; font-family:'Sora',sans-serif;
+    outline:none; cursor:pointer;
+  }
+
+  /* MENU GRID */
+  .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+
+  /* DISH CARD */
+  .dish-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; transition:.2s; position:relative;
+  }
+  .dish-card:hover { border-color:var(--green-dim); transform:translateY(-2px); }
+  .dish-card.inactive { opacity:.5; }
+  .dish-img {
+    width:100%; height:160px; object-fit:cover; background:var(--surface2);
+    display:flex; align-items:center; justify-content:center; font-size:3rem;
+    position:relative;
+  }
+  .dish-img img { width:100%; height:160px; object-fit:cover; display:block; }
+  .dish-img .no-img { width:100%; height:160px; display:flex; align-items:center; justify-content:center; background:var(--surface2); font-size:3rem; }
+  .dish-body { padding:14px; }
+  .dish-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px; }
+  .dish-name { font-size:.9rem; font-weight:700; color:var(--text); line-height:1.3; }
+  .dish-price { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--green); font-size:.95rem; white-space:nowrap; margin-left:8px; }
+  .dish-desc { font-size:.72rem; color:var(--muted); line-height:1.5; margin-bottom:12px; }
+  .dish-category { display:inline-block; background:var(--green-glow); color:var(--green); border:1px solid rgba(34,197,94,.2); border-radius:20px; padding:2px 10px; font-size:.65rem; font-weight:600; margin-bottom:10px; }
+  .dish-actions { display:flex; gap:6px; }
+  .dish-badge {
+    position:absolute; top:10px; right:10px;
+    background:rgba(239,68,68,.85); color:#fff; border-radius:6px;
+    padding:3px 8px; font-size:.65rem; font-weight:700;
+  }
+  .dish-badge.active-badge { background:rgba(34,197,94,.85); }
+
+  /* ADD CARD */
+  .add-card {
+    background:var(--surface); border:2px dashed var(--border); border-radius:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; min-height:280px; cursor:pointer; transition:.2s;
+  }
+  .add-card:hover { border-color:var(--green-dim); background:var(--green-glow); }
+  .add-icon { font-size:2.5rem; }
+  .add-label { font-size:.85rem; color:var(--muted); font-weight:500; }
+
+  /* MODAL */
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:200;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    width:100%; max-width:520px; max-height:90vh; overflow-y:auto;
+    padding:28px;
+  }
+  .modal-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; color:var(--text); }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:.72rem; color:var(--muted); margin-bottom:5px; font-weight:500; }
+  .field input, .field textarea, .field select {
+    width:100%; background:var(--bg); border:1px solid var(--border);
+    color:var(--text); padding:9px 12px; border-radius:8px;
+    font-family:'Sora',sans-serif; font-size:.8rem; outline:none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--green-dim); }
+  .field textarea { resize:vertical; min-height:70px; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .field-note { font-size:.67rem; color:var(--muted); margin-top:4px; }
+
+  /* PHOTO UPLOAD */
+  .photo-upload {
+    border:2px dashed var(--border); border-radius:10px; padding:20px;
+    text-align:center; cursor:pointer; transition:.2s; position:relative;
+  }
+  .photo-upload:hover { border-color:var(--green-dim); }
+  .photo-upload input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .photo-preview { width:100%; max-height:160px; object-fit:cover; border-radius:8px; margin-top:10px; display:none; }
+  .photo-upload-label { font-size:.8rem; color:var(--muted); }
+  .photo-upload-icon { font-size:2rem; margin-bottom:6px; }
+  .upload-progress { height:4px; background:var(--border); border-radius:2px; margin-top:10px; overflow:hidden; display:none; }
+  .upload-bar { height:100%; background:var(--green); border-radius:2px; width:0; transition:width .3s; }
+
+  /* TOGGLE */
+  .toggle-wrap { display:flex; align-items:center; gap:10px; }
+  .toggle {
+    width:42px; height:24px; background:var(--border); border-radius:12px;
+    position:relative; cursor:pointer; transition:.2s; flex-shrink:0;
+  }
+  .toggle.on { background:var(--green); }
+  .toggle::after {
+    content:''; position:absolute; top:3px; left:3px;
+    width:18px; height:18px; background:#fff; border-radius:50%; transition:.2s;
+  }
+  .toggle.on::after { left:21px; }
+  .toggle-label { font-size:.8rem; color:var(--text); }
+
+  /* MODAL ACTIONS */
+  .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+
+  /* TOAST */
+  .toast {
+    position:fixed; bottom:24px; right:24px; z-index:999;
+    background:var(--surface); border:1px solid var(--green-dim); border-radius:10px;
+    padding:12px 18px; font-size:.82rem; color:var(--green);
+    box-shadow:0 4px 24px rgba(0,0,0,.4); display:none;
+    animation:slideIn .2s ease;
+  }
+  @keyframes slideIn { from{transform:translateY(10px);opacity:0;} to{transform:none;opacity:1;} }
+
+  /* EMPTY */
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); grid-column:1/-1; }
+  .empty .icon { font-size:2.5rem; margin-bottom:12px; }
+
+  @media(max-width:600px) {
+    .stats { grid-template-columns:1fr 1fr; }
+    main { padding:16px; }
+    .config-bar { flex-direction:column; align-items:flex-start; }
+    .toolbar { flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🍴</div>
+    <div>
+      <h1>PideYa — Menú Admin</h1>
+      <span>Gestiona tu catálogo de platos</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="window.open('https://pideyallc.github.io/pideya_menu.html','_blank')">👁 Ver Menú</button>
+    <button class="btn btn-primary" onclick="openModal()">+ Agregar Plato</button>
+  </div>
+</header>
+
+<!-- CONFIG BAR -->
+<div class="config-bar">
+  <label>📋 Google Sheets ID:</label>
+  <input type="text" id="sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" />
+  <label>🔑 Sheets API Key:</label>
+  <input type="password" id="sheets-key" placeholder="AIza..." />
+  <label>🖼 ImgBB API Key:</label>
+  <input type="password" id="imgbb-key" placeholder="Para subir fotos gratis" />
+  <button class="btn btn-primary btn-sm" onclick="saveConfig()">Guardar</button>
+  <span class="config-status" id="config-status"></span>
+</div>
+
+<main>
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Platos totales</div></div>
+    <div class="stat"><div class="stat-val" id="stat-active" style="color:var(--green)">0</div><div class="stat-label">Activos</div></div>
+    <div class="stat"><div class="stat-val" id="stat-inactive" style="color:var(--amber)">0</div><div class="stat-label">Inactivos</div></div>
+    <div class="stat"><div class="stat-val" id="stat-cats">0</div><div class="stat-label">Categorías</div></div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="search-input" type="text" id="search" placeholder="🔍 Buscar plato..." oninput="renderMenu()" />
+      <select class="filter-select" id="filter-cat" onchange="renderMenu()">
+        <option value="">Todas las categorías</option>
+      </select>
+      <select class="filter-select" id="filter-status" onchange="renderMenu()">
+        <option value="">Todos</option>
+        <option value="active">Solo activos</option>
+        <option value="inactive">Solo inactivos</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn btn-secondary btn-sm" onclick="syncFromSheets()">🔄 Sincronizar</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
+    </div>
+  </div>
+
+  <!-- MENU GRID -->
+  <div class="menu-grid" id="menu-grid"></div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Agregar Plato</div>
+
+    <!-- Photo Upload -->
+    <div class="field">
+      <label>Foto del Plato</label>
+      <div class="photo-upload" id="photo-drop">
+        <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)" />
+        <div class="photo-upload-icon">📸</div>
+        <div class="photo-upload-label">Toca para subir foto (JPG, PNG, WEBP)</div>
+        <div class="upload-progress" id="upload-progress"><div class="upload-bar" id="upload-bar"></div></div>
+        <img class="photo-preview" id="photo-preview" alt="Preview" />
+      </div>
+      <div class="field-note" id="photo-status"></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Nombre del Plato *</label>
+        <input type="text" id="f-name" placeholder="Ej: Combo Pollo" />
+      </div>
+      <div class="field">
+        <label>Precio (USD) *</label>
+        <input type="number" id="f-price" placeholder="12.99" step="0.01" min="0" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="f-desc" placeholder="Ej: Pollo a la parrilla con arroz, ensalada y bebida incluida"></textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Categoría</label>
+        <input type="text" id="f-cat" placeholder="Ej: Combos, Bebidas, Postres" list="cat-list" />
+        <datalist id="cat-list"></datalist>
+      </div>
+      <div class="field">
+        <label>Número en Menú</label>
+        <input type="number" id="f-num" placeholder="1" min="1" />
+        <div class="field-note">Orden en que aparece en el bot</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>URL de Foto (opcional si ya tienes link)</label>
+      <input type="url" id="f-img" placeholder="https://..." oninput="previewFromUrl(this.value)" />
+    </div>
+
+    <div class="field">
+      <div class="toggle-wrap">
+        <div class="toggle on" id="f-toggle" onclick="toggleActive()"></div>
+        <span class="toggle-label" id="f-toggle-label">Plato activo (visible en el menú)</span>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btn-delete" onclick="deleteDish()" style="display:none">🗑 Eliminar</button>
+      <button class="btn btn-primary" onclick="saveDish()">💾 Guardar Plato</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+let dishes = JSON.parse(localStorage.getItem('pideya_menu') || '[]');
+let config = JSON.parse(localStorage.getItem('pideya_menu_config') || '{}');
+let editingId = null;
+let isActive = true;
+let uploadedImageUrl = '';
+
+// ─── INIT ────────────────────────────────────────────────
+window.onload = () => {
+  if (config.sheetId) document.getElementById('sheet-id').value = config.sheetId;
+  if (config.sheetsKey) document.getElementById('sheets-key').value = config.sheetsKey;
+  if (config.imgbbKey) document.getElementById('imgbb-key').value = config.imgbbKey;
+  if (config.sheetId && config.sheetsKey) {
+    document.getElementById('config-status').textContent = '✓ Configurado';
+    document.getElementById('config-status').className = 'config-status ok';
+  }
+  if (dishes.length === 0) loadSampleDishes();
+  renderMenu();
+  updateStats();
+};
+
+// ─── SAMPLE DATA ─────────────────────────────────────────
+function loadSampleDishes() {
+  dishes = [
+    { id:'1', num:1, name:'Combo Pollo', price:14.99, desc:'Pollo a la parrilla con arroz, ensalada y bebida', category:'Combos', img:'', active:true },
+    { id:'2', num:2, name:'Combo Carne', price:16.99, desc:'Carne asada con papas fritas y soda incluida', category:'Combos', img:'', active:true },
+    { id:'3', num:3, name:'Combo Mixto', price:18.99, desc:'Combinación de pollo y carne con arroz y ensalada', category:'Combos', img:'', active:true },
+    { id:'4', num:4, name:'Combo Vegetariano', price:12.99, desc:'Vegetales salteados con arroz integral y soda', category:'Combos', img:'', active:true },
+    { id:'5', num:5, name:'Soda 16oz', price:2.50, desc:'Refresco de tu elección', category:'Bebidas', img:'', active:true },
+    { id:'6', num:6, name:'Agua Mineral', price:1.50, desc:'Agua fría incluida', category:'Bebidas', img:'', active:true },
+  ];
+  save();
+}
+
+// ─── SAVE ────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('pideya_menu', JSON.stringify(dishes));
+}
+
+function saveConfig() {
+  config = {
+    sheetId: document.getElementById('sheet-id').value.trim(),
+    sheetsKey: document.getElementById('sheets-key').value.trim(),
+    imgbbKey: document.getElementById('imgbb-key').value.trim(),
+  };
+  localStorage.setItem('pideya_menu_config', JSON.stringify(config));
+  if (config.sheetId && config.sheetsKey) {
+    document.getElementById('config-status').textContent = '✓ Guardado';
+    document.getElementById('config-status').className = 'config-status ok';
+    showToast('⚙️ Configuración guardada');
+  } else {
+    document.getElementById('config-status').textContent = '⚠ Faltan datos';
+    document.getElementById('config-status').className = 'config-status err';
+  }
+}
+
+// ─── RENDER ──────────────────────────────────────────────
+function renderMenu() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const catFilter = document.getElementById('filter-cat').value;
+  const statusFilter = document.getElementById('filter-status').value;
+
+  let filtered = dishes.filter(d => {
+    const matchQ = d.name.toLowerCase().includes(q) || (d.desc||'').toLowerCase().includes(q);
+    const matchCat = !catFilter || d.category === catFilter;
+    const matchStatus = !statusFilter || (statusFilter==='active'?d.active:!d.active);
+    return matchQ && matchCat && matchStatus;
+  }).sort((a,b) => (a.num||999) - (b.num||999));
+
+  const grid = document.getElementById('menu-grid');
+
+  // Update category filter
+  const cats = [...new Set(dishes.map(d=>d.category).filter(Boolean))];
+  const catSel = document.getElementById('filter-cat');
+  const curCat = catSel.value;
+  catSel.innerHTML = '<option value="">Todas las categorías</option>' + cats.map(c=>`<option value="${c}" ${c===curCat?'selected':''}>${c}</option>`).join('');
+  document.getElementById('cat-list').innerHTML = cats.map(c=>`<option value="${c}">`).join('');
+
+  if (filtered.length === 0 && dishes.length > 0) {
+    grid.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>No se encontraron platos</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(d => `
+    <div class="dish-card ${d.active?'':'inactive'}">
+      <div class="dish-img">
+        ${d.img ? `<img src="${d.img}" alt="${d.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-img" style="display:none">🍽️</div>` : `<div class="no-img">🍽️</div>`}
+        <div class="dish-badge ${d.active?'active-badge':''}">${d.active?'Activo':'Inactivo'}</div>
+      </div>
+      <div class="dish-body">
+        ${d.category ? `<span class="dish-category">${d.category}</span>` : ''}
+        <div class="dish-header">
+          <div class="dish-name">${d.num ? `${d.num}. ` : ''}${d.name}</div>
+          <div class="dish-price">$${parseFloat(d.price).toFixed(2)}</div>
+        </div>
+        <div class="dish-desc">${d.desc||'Sin descripción'}</div>
+        <div class="dish-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openModal('${d.id}')">✏️ Editar</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleDishActive('${d.id}')">${d.active?'⏸ Desactivar':'▶ Activar'}</button>
+        </div>
+      </div>
+    </div>
+  `).join('') + `
+    <div class="add-card" onclick="openModal()">
+      <div class="add-icon">+</div>
+      <div class="add-label">Agregar nuevo plato</div>
+    </div>`;
+
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = dishes.length;
+  document.getElementById('stat-active').textContent = dishes.filter(d=>d.active).length;
+  document.getElementById('stat-inactive').textContent = dishes.filter(d=>!d.active).length;
+  document.getElementById('stat-cats').textContent = [...new Set(dishes.map(d=>d.category).filter(Boolean))].length;
+}
+
+// ─── MODAL ───────────────────────────────────────────────
+function openModal(id) {
+  editingId = id || null;
+  isActive = true;
+  uploadedImageUrl = '';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-status').textContent = '';
+  document.getElementById('upload-progress').style.display = 'none';
+
+  if (id) {
+    const d = dishes.find(x=>x.id===id);
+    if (!d) return;
+    document.getElementById('modal-title').textContent = 'Editar Plato';
+    document.getElementById('f-name').value = d.name;
+    document.getElementById('f-price').value = d.price;
+    document.getElementById('f-desc').value = d.desc||'';
+    document.getElementById('f-cat').value = d.category||'';
+    document.getElementById('f-num').value = d.num||'';
+    document.getElementById('f-img').value = d.img||'';
+    isActive = d.active;
+    if (d.img) { document.getElementById('photo-preview').src = d.img; document.getElementById('photo-preview').style.display = 'block'; }
+    document.getElementById('btn-delete').style.display = 'inline-block';
+    uploadedImageUrl = d.img||'';
+  } else {
+    document.getElementById('modal-title').textContent = 'Agregar Plato';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-price').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-cat').value = '';
+    document.getElementById('f-num').value = dishes.length + 1;
+    document.getElementById('f-img').value = '';
+    document.getElementById('btn-delete').style.display = 'none';
+    isActive = true;
+  }
+  updateToggle();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editingId = null;
+}
+
+function toggleActive() {
+  isActive = !isActive;
+  updateToggle();
+}
+
+function updateToggle() {
+  const t = document.getElementById('f-toggle');
+  const l = document.getElementById('f-toggle-label');
+  t.className = 'toggle' + (isActive?' on':'');
+  l.textContent = isActive ? 'Plato activo (visible en el menú)' : 'Plato inactivo (oculto del menú)';
+}
+
+function previewFromUrl(url) {
+  if (url) {
+    document.getElementById('photo-preview').src = url;
+    document.getElementById('photo-preview').style.display = 'block';
+    uploadedImageUrl = url;
+  }
+}
+
+// ─── PHOTO UPLOAD (ImgBB) ────────────────────────────────
+async function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Show local preview immediately
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('photo-preview').src = e.target.result;
+    document.getElementById('photo-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  const imgbbKey = config.imgbbKey || document.getElementById('imgbb-key').value.trim();
+  if (!imgbbKey) {
+    document.getElementById('photo-status').textContent = '⚠️ Agrega tu ImgBB API key para subir fotos. La foto se guardará local por ahora.';
+    document.getElementById('photo-status').style.color = 'var(--amber)';
+    return;
+  }
+
+  // Upload to ImgBB
+  document.getElementById('upload-progress').style.display = 'block';
+  document.getElementById('upload-bar').style.width = '30%';
+  document.getElementById('photo-status').textContent = '⏳ Subiendo foto...';
+  document.getElementById('photo-status').style.color = 'var(--muted)';
+
+  try {
+    const base64 = await new Promise((res,rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    document.getElementById('upload-bar').style.width = '60%';
+
+    const formData = new FormData();
+    formData.append('image', base64);
+    formData.append('key', imgbbKey);
+
+    const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:formData });
+    const data = await res.json();
+
+    document.getElementById('upload-bar').style.width = '100%';
+
+    if (data.success) {
+      uploadedImageUrl = data.data.url;
+      document.getElementById('f-img').value = uploadedImageUrl;
+      document.getElementById('photo-status').textContent = '✅ Foto subida correctamente';
+      document.getElementById('photo-status').style.color = 'var(--green)';
+      showToast('🖼 Foto subida exitosamente');
+    } else {
+      throw new Error(data.error?.message || 'Error subiendo foto');
+    }
+  } catch(e) {
+    document.getElementById('photo-status').textContent = '⚠️ Error: ' + e.message;
+    document.getElementById('photo-status').style.color = 'var(--red)';
+  }
+
+  setTimeout(() => { document.getElementById('upload-progress').style.display = 'none'; }, 1000);
+}
+
+// ─── SAVE DISH ───────────────────────────────────────────
+async function saveDish() {
+  const name = document.getElementById('f-name').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+  if (!name) { showToast('⚠️ El nombre es obligatorio', true); return; }
+  if (isNaN(price) || price < 0) { showToast('⚠️ Precio inválido', true); return; }
+
+  const imgUrl = uploadedImageUrl || document.getElementById('f-img').value.trim();
+
+  const dish = {
+    id: editingId || Date.now().toString(),
+    num: parseInt(document.getElementById('f-num').value) || dishes.length + 1,
+    name,
+    price,
+    desc: document.getElementById('f-desc').value.trim(),
+    category: document.getElementById('f-cat').value.trim(),
+    img: imgUrl,
+    active: isActive,
+  };
+
+  if (editingId) {
+    const idx = dishes.findIndex(x=>x.id===editingId);
+    dishes[idx] = dish;
+  } else {
+    dishes.push(dish);
+  }
+
+  save();
+  await syncToSheets(dish, editingId ? 'update' : 'add');
+  closeModal();
+  renderMenu();
+  showToast(editingId ? '✅ Plato actualizado' : '✅ Plato agregado');
+}
+
+// ─── DELETE DISH ─────────────────────────────────────────
+function deleteDish() {
+  if (!editingId) return;
+  if (!confirm('¿Seguro que quieres eliminar este plato?')) return;
+  dishes = dishes.filter(x=>x.id!==editingId);
+  save();
+  closeModal();
+  renderMenu();
+  showToast('🗑 Plato eliminado');
+}
+
+// ─── TOGGLE ACTIVE ───────────────────────────────────────
+function toggleDishActive(id) {
+  const d = dishes.find(x=>x.id===id);
+  if (!d) return;
+  d.active = !d.active;
+  save();
+  renderMenu();
+  showToast(d.active ? '▶ Plato activado' : '⏸ Plato desactivado');
+}
+
+// ─── SYNC TO GOOGLE SHEETS ───────────────────────────────
+async function syncToSheets(dish, action) {
+  if (!config.sheetId || !config.sheetsKey) return;
+  // This would call the Google Sheets API to update the Menu tab
+  // In production, this goes through your n8n webhook instead
+  // For now we log to console — the n8n webhook handles the real sync
+  console.log('Sync to Sheets:', action, dish);
+}
+
+async function syncFromSheets() {
+  if (!config.sheetId || !config.sheetsKey) {
+    showToast('⚠️ Configura el Google Sheets ID y API Key primero', true);
+    return;
+  }
+
+  showToast('🔄 Sincronizando con Google Sheets...');
+
+  try {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetId}/values/Menu!A2:H100?key=${config.sheetsKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.values) { showToast('⚠️ No se encontraron datos en la hoja Menu', true); return; }
+
+    dishes = data.values.map((row, i) => ({
+      id: row[0] || (i+1).toString(),
+      num: parseInt(row[1]) || i+1,
+      name: row[2] || '',
+      price: parseFloat(row[3]) || 0,
+      desc: row[4] || '',
+      category: row[5] || '',
+      img: row[6] || '',
+      active: (row[7]||'YES').toUpperCase() === 'YES',
+    })).filter(d => d.name);
+
+    save();
+    renderMenu();
+    showToast(`✅ ${dishes.length} platos sincronizados desde Google Sheets`);
+  } catch(e) {
+    showToast('⚠️ Error al sincronizar: ' + e.message, true);
+  }
+}
+
+// ─── EXPORT CSV ──────────────────────────────────────────
+function exportCSV() {
+  const headers = ['ID','Número','Nombre','Precio','Descripción','Categoría','Foto URL','Activo'];
+  const rows = dishes.map(d => [d.id, d.num, d.name, d.price, d.desc||'', d.category||'', d.img||'', d.active?'YES':'NO']);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pideya_menu.csv';
+  a.click();
+  showToast('⬇ CSV exportado');
+}
+
+// ─── TOAST ───────────────────────────────────────────────
+function showToast(msg, isErr=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  t.style.color = isErr ? '#f87171' : 'var(--green)';
+  t.style.borderColor = isErr ? '#ef4444' : 'var(--green-dim)';
+  clearTimeout(window._toast);
+  window._toast = setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+
+// Close modal on overlay click
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

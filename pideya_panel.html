@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PideYa — Panel Principal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0f0d; --surface:#111a16; --surface2:#162019; --border:#1e2e22;
+    --green:#22c55e; --green-dim:#16a34a; --green-glow:rgba(34,197,94,0.12);
+    --amber:#f59e0b; --red:#ef4444; --blue:#3b82f6;
+    --text:#e8f5ec; --muted:#4d6b55;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;display:flex;}
+
+  /* SIDEBAR */
+  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+  .sidebar-logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .logo-text h1{font-size:1rem;font-weight:700;color:var(--text);}
+  .logo-text span{font-size:.65rem;color:var(--muted);}
+  .nav-section{padding:12px 10px 4px;font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;margin:2px 8px;font-size:.82rem;font-weight:500;color:var(--muted);transition:.15s;}
+  .nav-item:hover{background:var(--surface2);color:var(--text);}
+  .nav-item.active{background:var(--green-glow);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+  .nav-item .icon{font-size:1rem;flex-shrink:0;}
+  .nav-badge{margin-left:auto;background:var(--green);color:#000;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:10px;}
+  .sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
+  .live-pill{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--green);font-family:'JetBrains Mono',monospace;}
+  .live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* MAIN CONTENT */
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+  .topbar{padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;}
+  .topbar-title{font-size:1rem;font-weight:700;}
+  .topbar-right{display:flex;gap:8px;align-items:center;}
+  .rest-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:.78rem;font-family:'Sora',sans-serif;outline:none;cursor:pointer;}
+  .btn{padding:8px 16px;border-radius:8px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;font-family:'Sora',sans-serif;transition:.15s;}
+  .btn-primary{background:var(--green);color:#000;}
+  .btn-primary:hover{background:var(--green-dim);}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{border-color:var(--green-dim);}
+  .btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
+  .btn-sm{padding:5px 11px;font-size:.7rem;}
+
+  /* PAGE CONTENT */
+  .page{display:none;padding:24px;}
+  .page.active{display:block;}
+
+  /* STATS GRID */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .stat-card:hover{border-color:var(--green-dim);}
+  .stat-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .stat-val{font-size:1.8rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .stat-val.green{color:var(--green);}
+  .stat-val.amber{color:var(--amber);}
+  .stat-val.red{color:var(--red);}
+  .stat-sub{font-size:.68rem;color:var(--muted);margin-top:3px;}
+
+  /* SECTION */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .section-title{font-size:.9rem;font-weight:600;}
+
+  /* TABLE */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;}
+  thead th{text-align:left;padding:11px 14px;font-size:.67rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--surface2);font-weight:500;border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:.15s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--surface2);}
+  tbody td{padding:12px 14px;vertical-align:middle;}
+  .mono{font-family:'JetBrains Mono',monospace;font-size:.75rem;}
+  .amount{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .badge-pending{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);}
+  .badge-preparing{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3);}
+  .badge-ready{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .badge-delivered{background:#111;color:var(--muted);border:1px solid var(--border);}
+  .badge-paid{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .badge-unpaid{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25);}
+  .badge-active{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+  .badge-inactive{background:#111;color:var(--muted);border:1px solid var(--border);}
+
+  /* MENU GRID */
+  .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:20px;}
+  .dish-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:.2s;}
+  .dish-card:hover{border-color:var(--green-dim);}
+  .dish-img{width:100%;height:130px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;}
+  .dish-img img{width:100%;height:130px;object-fit:cover;display:block;}
+  .dish-body{padding:12px;}
+  .dish-name{font-weight:700;font-size:.85rem;margin-bottom:3px;}
+  .dish-price{font-family:'JetBrains Mono',monospace;color:var(--green);font-weight:700;font-size:.9rem;}
+  .dish-desc{font-size:.7rem;color:var(--muted);margin:4px 0 8px;line-height:1.4;}
+  .dish-actions{display:flex;gap:6px;}
+  .add-dish-card{background:var(--surface);border:2px dashed var(--border);border-radius:12px;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.2s;}
+  .add-dish-card:hover{border-color:var(--green-dim);background:var(--green-glow);}
+
+  /* FINANCE CHARTS */
+  .finance-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+  .finance-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .finance-title{font-size:.82rem;font-weight:600;margin-bottom:14px;color:var(--muted);}
+  .finance-val{font-size:2rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--green);margin-bottom:4px;}
+  .finance-sub{font-size:.72rem;color:var(--muted);}
+  .bar-chart{margin-top:16px;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .bar-label{font-size:.7rem;color:var(--muted);width:60px;text-align:right;flex-shrink:0;}
+  .bar-track{flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .6s;}
+  .bar-val{font-size:.7rem;font-family:'JetBrains Mono',monospace;color:var(--text);width:50px;flex-shrink:0;}
+
+  /* SETTINGS */
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;}
+  .settings-card h3{font-size:.88rem;font-weight:600;margin-bottom:16px;color:var(--text);}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-family:'Sora',sans-serif;font-size:.78rem;outline:none;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green-dim);}
+  .field-note{font-size:.65rem;color:var(--muted);margin-top:3px;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;padding:26px;}
+  .modal-title{font-size:1rem;font-weight:700;margin-bottom:18px;}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* PHOTO UPLOAD */
+  .photo-upload{border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:.2s;position:relative;}
+  .photo-upload:hover{border-color:var(--green-dim);}
+  .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .photo-preview{width:100%;height:120px;object-fit:cover;border-radius:7px;margin-top:8px;display:none;}
+
+  /* TOGGLE */
+  .toggle-wrap{display:flex;align-items:center;gap:10px;}
+  .toggle{width:40px;height:22px;background:var(--border);border-radius:11px;position:relative;cursor:pointer;transition:.2s;flex-shrink:0;}
+  .toggle.on{background:var(--green);}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;}
+  .toggle.on::after{left:21px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--surface);border:1px solid var(--green-dim);border-radius:10px;padding:11px 16px;font-size:.8rem;color:var(--green);box-shadow:0 4px 20px rgba(0,0,0,.4);display:none;}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:48px 20px;color:var(--muted);}
+  .empty .icon{font-size:2.2rem;margin-bottom:10px;}
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    .sidebar{width:60px;}
+    .sidebar .logo-text,.nav-item span,.nav-section,.sidebar-footer .live-pill span{display:none;}
+    .nav-item{justify-content:center;padding:10px;}
+    .main{margin-left:60px;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .finance-grid,.settings-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:600px){
+    .stats{grid-template-columns:1fr 1fr;}
+    .page{padding:14px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text">
+      <h1>PideYa</h1>
+      <span>Panel Principal</span>
+    </div>
+  </div>
+
+  <div class="nav-section">Principal</div>
+  <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span><span>Resumen</span></div>
+  <div class="nav-item" onclick="showPage('orders')"><span class="icon">📋</span><span>Pedidos</span><span class="nav-badge" id="pending-badge">0</span></div>
+
+  <div class="nav-section">Restaurante</div>
+  <div class="nav-item" onclick="showPage('menu')"><span class="icon">🍽️</span><span>Menú</span></div>
+  <div class="nav-item" onclick="showPage('finance')"><span class="icon">💰</span><span>Finanzas</span></div>
+  <div class="nav-item" onclick="showPage('qr')"><span class="icon">📲</span><span>Código QR</span></div>
+
+  <div class="nav-section">Sistema</div>
+  <div class="nav-item" onclick="showPage('settings')"><span class="icon">⚙️</span><span>Configuración</span></div>
+
+  <div class="sidebar-footer">
+    <div class="live-pill"><div class="live-dot"></div><span>Sistema activo</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">📊 Resumen General</div>
+    <div class="topbar-right">
+      <select class="rest-select" id="rest-select" onchange="switchRestaurant()">
+        <option value="pideya">PideYa — New Jersey</option>
+        <option value="conuco">El Conuco</option>
+        <option value="add">+ Agregar Restaurante</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="showPage('settings')">⚙️</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Pedidos Hoy</div><div class="stat-val" id="d-total">0</div><div class="stat-sub">total recibidos</div></div>
+      <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-val amber" id="d-pending">0</div><div class="stat-sub">esperando</div></div>
+      <div class="stat-card"><div class="stat-label">Cobrado Hoy</div><div class="stat-val green" id="d-paid">$0.00</div><div class="stat-sub">pagos confirmados</div></div>
+      <div class="stat-card"><div class="stat-label">Sin Cobrar</div><div class="stat-val amber" id="d-unpaid">$0.00</div><div class="stat-sub">pendiente pago</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+      <div class="finance-card">
+        <div class="finance-title">📈 Ventas esta semana</div>
+        <div class="finance-val" id="d-week">$0.00</div>
+        <div class="finance-sub">ingresos confirmados</div>
+        <div class="bar-chart" id="week-chart"></div>
+      </div>
+      <div class="finance-card">
+        <div class="finance-title">🍽️ Platos más pedidos</div>
+        <div id="top-dishes"><div class="empty" style="padding:20px"><p>Sin datos aún</p></div></div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Últimos Pedidos</div>
+      <button class="btn btn-secondary btn-sm" onclick="showPage('orders')">Ver todos →</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Cliente</th><th>Items</th><th>Total</th><th>Estado</th><th>Pago</th></tr></thead>
+        <tbody id="dash-orders"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════ ORDERS ═══════════ -->
+  <div class="page" id="page-orders">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Total Hoy</div><div class="stat-val" id="o-total">0</div></div>
+      <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-val amber" id="o-pending">0</div></div>
+      <div class="stat-card"><div class="stat-label">Cobrado</div><div class="stat-val green" id="o-paid">$0.00</div></div>
+      <div class="stat-card"><div class="stat-label">Sin Cobrar</div><div class="stat-val amber" id="o-unpaid">$0.00</div></div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Todos los Pedidos</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="addSampleOrder()">+ Simular Pedido</button>
+        <button class="btn btn-primary btn-sm" onclick="openOrderModal()">+ Pedido Manual</button>
+      </div>
+    </div>
+
+    <!-- Stripe Config -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:.72rem;color:var(--muted);">🔑 Stripe Key:</span>
+      <input type="password" id="stripe-key" placeholder="sk_test_..." style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:.72rem;outline:none;" />
+      <button class="btn btn-primary btn-sm" onclick="saveStripe()">Guardar</button>
+      <span id="stripe-status" style="font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--green);"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Cliente</th><th>Pedido</th><th>Total</th><th>Estado</th><th>Pago</th><th>Acciones</th></tr></thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════ MENU ═══════════ -->
+  <div class="page" id="page-menu">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Total Platos</div><div class="stat-val" id="m-total">0</div></div>
+      <div class="stat-card"><div class="stat-label">Activos</div><div class="stat-val green" id="m-active">0</div></div>
+      <div class="stat-card"><div class="stat-label">Inactivos</div><div class="stat-val amber" id="m-inactive">0</div></div>
+      <div class="stat-card"><div class="stat-label">Categorías</div><div class="stat-val" id="m-cats">0</div></div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Catálogo de Platos</div>
+      <button class="btn btn-primary" onclick="openDishModal()">+ Agregar Plato</button>
+    </div>
+    <div class="menu-grid" id="menu-grid"></div>
+  </div>
+
+  <!-- ═══════════ FINANCE ═══════════ -->
+  <div class="page" id="page-finance">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Ingresos Hoy</div><div class="stat-val green" id="f-today">$0.00</div></div>
+      <div class="stat-card"><div class="stat-label">Esta Semana</div><div class="stat-val green" id="f-week">$0.00</div></div>
+      <div class="stat-card"><div class="stat-label">Este Mes</div><div class="stat-val green" id="f-month">$0.00</div></div>
+      <div class="stat-card"><div class="stat-label">Impuesto NJ (6.625%)</div><div class="stat-val amber" id="f-tax">$0.00</div></div>
+    </div>
+
+    <div class="finance-grid">
+      <div class="finance-card">
+        <div class="finance-title">💰 Resumen Financiero</div>
+        <div id="finance-summary"></div>
+      </div>
+      <div class="finance-card">
+        <div class="finance-title">📊 Ventas por Día</div>
+        <div class="bar-chart" id="finance-chart"></div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Historial de Transacciones</div>
+      <button class="btn btn-secondary btn-sm" onclick="exportFinanceCSV()">⬇ Exportar CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Subtotal</th><th>Tax</th><th>Total</th><th>Estado Pago</th></tr></thead>
+        <tbody id="finance-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════ QR ═══════════ -->
+  <div class="page" id="page-qr">
+    <div style="max-width:480px;margin:0 auto;text-align:center;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;">
+        <div style="font-size:2rem;margin-bottom:12px;">📲</div>
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:6px;">Código QR de PideYa</h2>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:24px;">Los clientes escanean este código para ordenar directamente por WhatsApp</p>
+        <div style="background:#fff;border-radius:12px;padding:16px;display:inline-block;margin-bottom:20px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://wa.me/12017727540&format=png" alt="QR PideYa" style="display:block;width:200px;height:200px;" />
+        </div>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Link directo:</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.75rem;background:var(--surface2);padding:8px 12px;border-radius:8px;color:var(--green);">https://wa.me/12017727540</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a href="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=https://wa.me/12017727540&format=png&download=1" class="btn btn-primary" download>⬇ Descargar QR</a>
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+          <a href="https://pideyallc.github.io/pideya_qr.html" target="_blank" class="btn btn-secondary">👁 Ver página QR</a>
+        </div>
+        <p style="font-size:.7rem;color:var(--muted);margin-top:20px;">Imprime y coloca en mesas, ventanas y material de marketing del restaurante</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SETTINGS ═══════════ -->
+  <div class="page" id="page-settings">
+    <div class="settings-grid">
+      <div class="settings-card">
+        <h3>🏪 Restaurante</h3>
+        <div class="field"><label>Nombre</label><input type="text" id="s-name" value="PideYa LLC" /></div>
+        <div class="field"><label>Dirección</label><input type="text" id="s-addr" placeholder="70 County Ave, Secaucus NJ" /></div>
+        <div class="field"><label>WhatsApp</label><input type="text" id="s-wa" placeholder="+1 201-772-7540" /></div>
+        <div class="field"><label>Horario (Lun-Sab)</label><input type="text" id="s-hours1" placeholder="9:00am - 9:40pm" /></div>
+        <div class="field"><label>Horario (Domingo)</label><input type="text" id="s-hours2" placeholder="9:00am - 9:00pm" /></div>
+        <div class="field"><label>Radio de entrega (millas)</label><input type="number" id="s-radius" value="5" /></div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 Guardar</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>💳 Stripe</h3>
+        <div class="field"><label>Secret Key</label><input type="password" id="s-stripe-sk" placeholder="sk_test_..." /></div>
+        <div class="field"><label>Publishable Key</label><input type="text" id="s-stripe-pk" placeholder="pk_test_..." /></div>
+        <div class="field-note" style="margin-bottom:12px;">Las claves de Stripe se usan para generar links de pago automáticos al confirmar un pedido.</div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 Guardar</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>📊 Google Sheets</h3>
+        <div class="field"><label>Spreadsheet ID</label><input type="text" id="s-sheet-id" placeholder="1BxiMV..." /></div>
+        <div class="field"><label>API Key</label><input type="password" id="s-sheets-key" placeholder="AIza..." /></div>
+        <div class="field-note" style="margin-bottom:12px;">El sistema guarda pedidos automáticamente en Google Sheets para tu control.</div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()">💾 Guardar</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>🖼 Fotos (ImgBB)</h3>
+        <div class="field"><label>ImgBB API Key</label><input type="password" id="s-imgbb" placeholder="Para subir fotos de platos" /></div>
+        <div class="field-note" style="margin-bottom:12px;">Crea tu cuenta gratuita en imgbb.com y pega tu API key aquí para poder subir fotos de los platos del menú.</div>
+        <a href="https://imgbb.com" target="_blank" class="btn btn-secondary btn-sm">Crear cuenta ImgBB →</a>
+        <button class="btn btn-primary btn-sm" style="margin-left:8px;" onclick="saveSettings()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DISH MODAL ═══ -->
+<div class="modal-overlay" id="dish-modal">
+  <div class="modal">
+    <div class="modal-title" id="dish-modal-title">Agregar Plato</div>
+    <div class="field">
+      <label>Foto del Plato</label>
+      <div class="photo-upload">
+        <input type="file" id="dish-photo" accept="image/*" onchange="handleDishPhoto(this)" />
+        <div style="font-size:1.8rem;margin-bottom:4px;">📸</div>
+        <div style="font-size:.75rem;color:var(--muted);">Toca para subir foto</div>
+        <img class="photo-preview" id="dish-photo-preview" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Nombre *</label><input type="text" id="d-name" placeholder="Combo Pollo" /></div>
+      <div class="field"><label>Precio (USD) *</label><input type="number" id="d-price" placeholder="14.99" step="0.01" /></div>
+    </div>
+    <div class="field"><label>Descripción</label><textarea id="d-desc" placeholder="Pollo a la parrilla con arroz y ensalada..." style="height:60px;resize:none;"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Categoría</label><input type="text" id="d-cat" placeholder="Combos" list="d-cat-list" /><datalist id="d-cat-list"></datalist></div>
+      <div class="field"><label>Número en Menú</label><input type="number" id="d-num" placeholder="1" /></div>
+    </div>
+    <div class="field"><label>URL de foto (si ya tienes link)</label><input type="url" id="d-img" placeholder="https://..." oninput="if(this.value){document.getElementById('dish-photo-preview').src=this.value;document.getElementById('dish-photo-preview').style.display='block';}" /></div>
+    <div class="field">
+      <div class="toggle-wrap">
+        <div class="toggle on" id="d-toggle" onclick="this.classList.toggle('on')"></div>
+        <span style="font-size:.8rem;">Plato activo (visible en el menú)</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeDishModal()">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="dish-delete-btn" onclick="deleteDish()" style="display:none;">🗑 Eliminar</button>
+      <button class="btn btn-primary" onclick="saveDish()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ORDER MODAL ═══ -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <div class="modal-title">Pedido Manual</div>
+    <div class="field"><label>Nombre del Cliente</label><input type="text" id="o-name" placeholder="Juan Pérez" /></div>
+    <div class="field"><label>Teléfono</label><input type="text" id="o-phone" placeholder="+1 201 555 0123" /></div>
+    <div class="field"><label>Dirección de Entrega</label><input type="text" id="o-addr" placeholder="123 Main St, Newark NJ" /></div>
+    <div class="field"><label>Items del Pedido</label><textarea id="o-items" placeholder="2x Combo Pollo, 1x Soda" style="height:60px;resize:none;"></textarea></div>
+    <div class="field"><label>Total (USD)</label><input type="number" id="o-total" placeholder="29.50" step="0.01" /></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeOrderModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveManualOrder()">✅ Crear Pedido</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ─────────────────────────────────────────────
+let orders = JSON.parse(localStorage.getItem('pideya_orders_v2') || '[]');
+let dishes = JSON.parse(localStorage.getItem('pideya_dishes_v2') || '[]');
+let settings = JSON.parse(localStorage.getItem('pideya_settings_v2') || '{}');
+let stripeKey = localStorage.getItem('pideya_stripe') || '';
+let editDishId = null;
+let dishImgUrl = '';
+let orderCounter = parseInt(localStorage.getItem('pideya_oc') || '1000');
+
+const STATUS_FLOW = ['Pendiente','Preparando','Listo','Despachado','Entregado'];
+
+// ─── INIT ──────────────────────────────────────────────
+window.onload = () => {
+  loadSettings();
+  if (dishes.length === 0) loadSampleDishes();
+  if (orders.length === 0) loadSampleOrders();
+  renderAll();
+};
+
+function loadSettings() {
+  if (stripeKey) { document.getElementById('stripe-key').value = stripeKey; document.getElementById('stripe-status').textContent = '✓ Activo'; }
+  ['s-name','s-addr','s-wa','s-hours1','s-hours2','s-radius','s-stripe-sk','s-stripe-pk','s-sheet-id','s-sheets-key','s-imgbb'].forEach(id => {
+    if (settings[id]) document.getElementById(id).value = settings[id];
+  });
+}
+
+function saveSettings() {
+  ['s-name','s-addr','s-wa','s-hours1','s-hours2','s-radius','s-stripe-sk','s-stripe-pk','s-sheet-id','s-sheets-key','s-imgbb'].forEach(id => {
+    settings[id] = document.getElementById(id).value.trim();
+  });
+  localStorage.setItem('pideya_settings_v2', JSON.stringify(settings));
+  showToast('✅ Configuración guardada');
+}
+
+function saveStripe() {
+  stripeKey = document.getElementById('stripe-key').value.trim();
+  localStorage.setItem('pideya_stripe', stripeKey);
+  document.getElementById('stripe-status').textContent = stripeKey ? '✓ Guardado' : '';
+  showToast('🔑 Stripe guardado');
+}
+
+// ─── SAMPLE DATA ───────────────────────────────────────
+function loadSampleDishes() {
+  dishes = [
+    {id:'1',num:1,name:'Combo Pollo',price:14.99,desc:'Pollo a la parrilla con arroz y ensalada',category:'Combos',img:'',active:true},
+    {id:'2',num:2,name:'Combo Carne',price:16.99,desc:'Carne asada con papas fritas y soda',category:'Combos',img:'',active:true},
+    {id:'3',num:3,name:'Combo Mixto',price:18.99,desc:'Pollo y carne con arroz y ensalada',category:'Combos',img:'',active:true},
+    {id:'4',num:4,name:'Soda 16oz',price:2.50,desc:'Refresco de tu elección',category:'Bebidas',img:'',active:true},
+    {id:'5',num:5,name:'Agua Mineral',price:1.50,desc:'Agua fría',category:'Bebidas',img:'',active:true},
+  ];
+  saveDishes();
+}
+
+function loadSampleOrders() {
+  const now = new Date();
+  orders = [
+    {id:'PY-1001',name:'Carlos Méndez',phone:'+1 201 555 0182',items:'2x Combo Pollo + 1x Soda',total:32.48,status:'Pendiente',payment:'Unpaid',paymentLink:null,time:now.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}),address:'45 Main St, Newark NJ'},
+    {id:'PY-1002',name:'María González',phone:'+1 201 555 0341',items:'1x Combo Carne + 1x Agua',total:18.49,status:'Preparando',payment:'Paid',paymentLink:null,time:now.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}),address:'12 Park Ave, Secaucus NJ'},
+  ];
+  saveOrders();
+}
+
+function saveOrders() { localStorage.setItem('pideya_orders_v2', JSON.stringify(orders)); }
+function saveDishes() { localStorage.setItem('pideya_dishes_v2', JSON.stringify(dishes)); }
+
+// ─── NAVIGATION ────────────────────────────────────────
+const pageTitles = {dashboard:'📊 Resumen General',orders:'📋 Pedidos',menu:'🍽️ Menú y Catálogo',finance:'💰 Finanzas',qr:'📲 Código QR',settings:'⚙️ Configuración'};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if(n.getAttribute('onclick')?.includes("'"+name+"'")) n.classList.add('active'); });
+  document.getElementById('page-title').textContent = pageTitles[name] || '';
+  renderAll();
+}
+
+function switchRestaurant() {
+  const val = document.getElementById('rest-select').value;
+  if (val === 'add') { showPage('settings'); document.getElementById('rest-select').value = 'pideya'; }
+}
+
+// ─── RENDER ALL ────────────────────────────────────────
+function renderAll() {
+  renderDashboard();
+  renderOrders();
+  renderMenu();
+  renderFinance();
+  updateBadge();
+}
+
+function updateBadge() {
+  const p = orders.filter(o=>o.status==='Pendiente').length;
+  document.getElementById('pending-badge').textContent = p;
+  document.getElementById('pending-badge').style.display = p > 0 ? 'inline' : 'none';
+}
+
+// ─── DASHBOARD ─────────────────────────────────────────
+function renderDashboard() {
+  const paid = orders.filter(o=>o.payment==='Paid').reduce((s,o)=>s+o.total,0);
+  const unpaid = orders.filter(o=>o.payment!=='Paid').reduce((s,o)=>s+o.total,0);
+  document.getElementById('d-total').textContent = orders.length;
+  document.getElementById('d-pending').textContent = orders.filter(o=>o.status==='Pendiente').length;
+  document.getElementById('d-paid').textContent = '$'+paid.toFixed(2);
+  document.getElementById('d-unpaid').textContent = '$'+unpaid.toFixed(2);
+  document.getElementById('d-week').textContent = '$'+(paid*3.2).toFixed(2);
+
+  // Week chart
+  const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const vals = [45,62,38,71,55,89,paid];
+  const max = Math.max(...vals);
+  document.getElementById('week-chart').innerHTML = days.map((d,i)=>`
+    <div class="bar-row">
+      <div class="bar-label">${d}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${max?vals[i]/max*100:0}%"></div></div>
+      <div class="bar-val">$${vals[i].toFixed(0)}</div>
+    </div>`).join('');
+
+  // Recent orders
+  const recent = orders.slice(0,5);
+  document.getElementById('dash-orders').innerHTML = recent.length ? recent.map(o=>`
+    <tr>
+      <td class="mono">${o.id}</td>
+      <td><div style="font-weight:600">${o.name}</div><div style="font-size:.7rem;color:var(--muted)">${o.phone}</div></td>
+      <td style="font-size:.75rem;color:var(--muted)">${o.items}</td>
+      <td class="amount">$${o.total.toFixed(2)}</td>
+      <td><span class="badge badge-${o.status.toLowerCase().replace('é','e').replace('í','i')}">${o.status}</span></td>
+      <td><span class="badge ${o.payment==='Paid'?'badge-paid':'badge-unpaid'}">${o.payment==='Paid'?'Pagado':'Sin pago'}</span></td>
+    </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><p>Sin pedidos aún</p></div></td></tr>';
+
+  // Top dishes
+  document.getElementById('top-dishes').innerHTML = dishes.slice(0,4).map((d,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:.78rem;">${i+1}. ${d.name}</div>
+      <div style="font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--green);">$${d.price.toFixed(2)}</div>
+    </div>`).join('');
+}
+
+// ─── ORDERS ────────────────────────────────────────────
+function renderOrders() {
+  const paid = orders.filter(o=>o.payment==='Paid').reduce((s,o)=>s+o.total,0);
+  const unpaid = orders.filter(o=>o.payment!=='Paid').reduce((s,o)=>s+o.total,0);
+  document.getElementById('o-total').textContent = orders.length;
+  document.getElementById('o-pending').textContent = orders.filter(o=>o.status==='Pendiente').length;
+  document.getElementById('o-paid').textContent = '$'+paid.toFixed(2);
+  document.getElementById('o-unpaid').textContent = '$'+unpaid.toFixed(2);
+
+  const tbody = document.getElementById('orders-tbody');
+  tbody.innerHTML = orders.length ? orders.map(o => {
+    const nextStatus = STATUS_FLOW[STATUS_FLOW.indexOf(o.status)+1];
+    const badgeCls = {Pendiente:'badge-pending',Preparando:'badge-preparing',Listo:'badge-ready',Despachado:'badge-ready',Entregado:'badge-delivered'}[o.status]||'badge-pending';
+    return `<tr>
+      <td><div class="mono">${o.id}</div><div style="font-size:.65rem;color:var(--muted)">${o.time}</div></td>
+      <td><div style="font-weight:600">${o.name}</div><div class="mono" style="font-size:.68rem;color:var(--muted)">${o.phone}</div></td>
+      <td style="font-size:.75rem;max-width:180px">${o.items}</td>
+      <td class="amount">$${o.total.toFixed(2)}</td>
+      <td><span class="badge ${badgeCls}">${o.status}</span></td>
+      <td><span class="badge ${o.payment==='Paid'?'badge-paid':'badge-unpaid'}">${o.payment==='Paid'?'✓ Pagado':'⏳ Sin pago'}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${nextStatus?`<button class="btn btn-secondary btn-sm" onclick="advanceOrder('${o.id}')">→ ${nextStatus}</button>`:''}
+          ${o.payment!=='Paid'?`<button class="btn btn-sm" style="background:rgba(99,91,255,.15);color:#a5b4fc;border:1px solid rgba(99,91,255,.3);" onclick="generateStripeLink('${o.id}')">💳 Pago</button>`:''}
+          <button class="btn btn-secondary btn-sm" onclick="printTicket('${o.id}')">🖨️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7"><div class="empty"><div class="icon">📭</div><p>Sin pedidos</p></div></td></tr>';
+}
+
+function advanceOrder(id) {
+  const o = orders.find(x=>x.id===id);
+  if(!o) return;
+  const idx = STATUS_FLOW.indexOf(o.status);
+  if(idx < STATUS_FLOW.length-1) o.status = STATUS_FLOW[idx+1];
+  saveOrders(); renderAll(); showToast('✅ '+o.id+' → '+o.status);
+}
+
+async function generateStripeLink(orderId) {
+  const o = orders.find(x=>x.id===orderId);
+  if(!o) return;
+  const sk = stripeKey || settings['s-stripe-sk'];
+  if(!sk||!sk.startsWith('sk_')) { showToast('⚠️ Configura tu Stripe Secret Key primero',true); return; }
+  showToast('⏳ Generando link de pago...');
+  try {
+    const priceRes = await fetch('https://api.stripe.com/v1/prices',{method:'POST',headers:{'Authorization':'Bearer '+sk,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({'unit_amount':Math.round(o.total*100),'currency':'usd','product_data[name]':'Pedido PideYa '+o.id,'product_data[description]':o.items})});
+    const priceData = await priceRes.json();
+    if(!priceData.id) throw new Error(priceData.error?.message||'Error');
+    const linkRes = await fetch('https://api.stripe.com/v1/payment_links',{method:'POST',headers:{'Authorization':'Bearer '+sk,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({'line_items[0][price]':priceData.id,'line_items[0][quantity]':'1','metadata[order_id]':o.id})});
+    const linkData = await linkRes.json();
+    if(!linkData.url) throw new Error(linkData.error?.message||'Error');
+    o.paymentLink = linkData.url;
+    o.payment = 'Link Enviado';
+    navigator.clipboard.writeText(linkData.url).catch(()=>{});
+    saveOrders(); renderAll();
+    showToast('💳 Link generado y copiado al portapapeles');
+  } catch(e) { showToast('⚠️ Error Stripe: '+e.message,true); }
+}
+
+function addSampleOrder() {
+  orderCounter++;
+  const samples = [{name:'Luis Ramírez',phone:'+1 201 555 0097',items:'3x Combo Mixto',total:57.00},{name:'Ana Castro',phone:'+1 201 555 0228',items:'1x Combo Pollo + 2x Soda',total:19.99}];
+  const s = samples[orderCounter%samples.length];
+  orders.unshift({id:'PY-'+orderCounter,...s,status:'Pendiente',payment:'Unpaid',paymentLink:null,time:new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}),address:'Calle Principal 45, Newark NJ'});
+  localStorage.setItem('pideya_oc',orderCounter);
+  saveOrders(); renderAll(); showToast('📦 Nuevo pedido: PY-'+orderCounter);
+}
+
+function openOrderModal() { document.getElementById('order-modal').classList.add('open'); }
+function closeOrderModal() { document.getElementById('order-modal').classList.remove('open'); }
+
+function saveManualOrder() {
+  orderCounter++;
+  orders.unshift({
+    id:'PY-'+orderCounter,
+    name:document.getElementById('o-name').value||'Cliente',
+    phone:document.getElementById('o-phone').value||'',
+    items:document.getElementById('o-items').value||'',
+    total:parseFloat(document.getElementById('o-total').value)||0,
+    address:document.getElementById('o-addr').value||'',
+    status:'Pendiente',payment:'Unpaid',paymentLink:null,
+    time:new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'})
+  });
+  localStorage.setItem('pideya_oc',orderCounter);
+  saveOrders(); closeOrderModal(); renderAll();
+  showToast('✅ Pedido creado: PY-'+orderCounter);
+}
+
+function printTicket(id) {
+  const o = orders.find(x=>x.id===id);
+  if(!o) return;
+  const w = window.open('','_blank','width=380,height=560');
+  w.document.write(`<html><head><title>Ticket ${o.id}</title><style>body{font-family:monospace;padding:20px;max-width:300px}.line{border-top:1px dashed #000;margin:8px 0}.row{display:flex;justify-content:space-between;font-size:13px;margin:3px 0}.total{font-weight:bold;font-size:15px}.center{text-align:center;font-size:12px}</style></head><body><h2 style="text-align:center">🍴 PideYa</h2><div class="center">Ticket de Pedido</div><div class="line"></div><div class="row"><span>Pedido:</span><span>${o.id}</span></div><div class="row"><span>Hora:</span><span>${o.time}</span></div><div class="line"></div><div class="row"><span>Cliente:</span><span>${o.name}</span></div><div style="font-size:12px">${o.address}</div><div class="line"></div><div style="font-size:13px"><b>Items:</b><br>${o.items}</div><div class="line"></div><div class="row total"><span>TOTAL:</span><span>$${o.total.toFixed(2)}</span></div><div class="line"></div><div class="center">¡Gracias!</div></body></html>`);
+  w.document.close(); w.print();
+}
+
+// ─── MENU ──────────────────────────────────────────────
+function renderMenu() {
+  document.getElementById('m-total').textContent = dishes.length;
+  document.getElementById('m-active').textContent = dishes.filter(d=>d.active).length;
+  document.getElementById('m-inactive').textContent = dishes.filter(d=>!d.active).length;
+  document.getElementById('m-cats').textContent = [...new Set(dishes.map(d=>d.category).filter(Boolean))].length;
+
+  const cats = [...new Set(dishes.map(d=>d.category).filter(Boolean))];
+  document.getElementById('d-cat-list').innerHTML = cats.map(c=>`<option value="${c}">`).join('');
+
+  const sorted = [...dishes].sort((a,b)=>(a.num||999)-(b.num||999));
+  document.getElementById('menu-grid').innerHTML = sorted.map(d=>`
+    <div class="dish-card" style="${d.active?'':'opacity:.5'}">
+      <div class="dish-img">${d.img?`<img src="${d.img}" alt="${d.name}" onerror="this.style.display='none'">`:'🍽️'}</div>
+      <div class="dish-body">
+        ${d.category?`<span style="font-size:.65rem;color:var(--green);font-weight:600;">${d.category}</span>`:''}
+        <div class="dish-name">${d.num?d.num+'. ':''}${d.name}</div>
+        <div class="dish-price">$${parseFloat(d.price).toFixed(2)}</div>
+        <div class="dish-desc">${d.desc||''}</div>
+        <div class="dish-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openDishModal('${d.id}')">✏️ Editar</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleDish('${d.id}')">${d.active?'⏸':'▶'}</button>
+        </div>
+      </div>
+    </div>`).join('') + `<div class="add-dish-card" onclick="openDishModal()"><div style="font-size:2rem">+</div><div style="font-size:.8rem;color:var(--muted)">Agregar plato</div></div>`;
+}
+
+function openDishModal(id) {
+  editDishId = id||null; dishImgUrl='';
+  document.getElementById('dish-photo-preview').style.display='none';
+  if(id) {
+    const d = dishes.find(x=>x.id===id);
+    document.getElementById('dish-modal-title').textContent='Editar Plato';
+    document.getElementById('d-name').value=d.name;
+    document.getElementById('d-price').value=d.price;
+    document.getElementById('d-desc').value=d.desc||'';
+    document.getElementById('d-cat').value=d.category||'';
+    document.getElementById('d-num').value=d.num||'';
+    document.getElementById('d-img').value=d.img||'';
+    document.getElementById('d-toggle').className='toggle'+(d.active?' on':'');
+    document.getElementById('dish-delete-btn').style.display='inline-block';
+    dishImgUrl=d.img||'';
+    if(d.img){document.getElementById('dish-photo-preview').src=d.img;document.getElementById('dish-photo-preview').style.display='block';}
+  } else {
+    document.getElementById('dish-modal-title').textContent='Agregar Plato';
+    ['d-name','d-price','d-desc','d-cat','d-img'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('d-num').value=dishes.length+1;
+    document.getElementById('d-toggle').className='toggle on';
+    document.getElementById('dish-delete-btn').style.display='none';
+  }
+  document.getElementById('dish-modal').classList.add('open');
+}
+
+function closeDishModal() { document.getElementById('dish-modal').classList.remove('open'); }
+
+async function handleDishPhoto(input) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById('dish-photo-preview').src=e.target.result; document.getElementById('dish-photo-preview').style.display='block'; };
+  reader.readAsDataURL(file);
+  const imgbbKey = settings['s-imgbb'] || document.getElementById('s-imgbb')?.value;
+  if(!imgbbKey) { showToast('⚠️ Agrega tu ImgBB API key en Configuración para subir fotos',true); return; }
+  try {
+    const base64 = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result.split(',')[1]); r.onerror=rej; r.readAsDataURL(file); });
+    const form = new FormData(); form.append('image',base64); form.append('key',imgbbKey);
+    const res = await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:form});
+    const data = await res.json();
+    if(data.success) { dishImgUrl=data.data.url; document.getElementById('d-img').value=dishImgUrl; showToast('🖼 Foto subida correctamente'); }
+    else throw new Error(data.error?.message);
+  } catch(e) { showToast('⚠️ Error subiendo foto: '+e.message,true); }
+}
+
+function saveDish() {
+  const name = document.getElementById('d-name').value.trim();
+  const price = parseFloat(document.getElementById('d-price').value);
+  if(!name) { showToast('⚠️ El nombre es obligatorio',true); return; }
+  if(isNaN(price)||price<0) { showToast('⚠️ Precio inválido',true); return; }
+  const dish = {
+    id:editDishId||Date.now().toString(),
+    num:parseInt(document.getElementById('d-num').value)||dishes.length+1,
+    name, price,
+    desc:document.getElementById('d-desc').value.trim(),
+    category:document.getElementById('d-cat').value.trim(),
+    img:dishImgUrl||document.getElementById('d-img').value.trim(),
+    active:document.getElementById('d-toggle').classList.contains('on'),
+  };
+  if(editDishId) { const idx=dishes.findIndex(x=>x.id===editDishId); dishes[idx]=dish; }
+  else dishes.push(dish);
+  saveDishes(); closeDishModal(); renderMenu();
+  showToast(editDishId?'✅ Plato actualizado':'✅ Plato agregado');
+}
+
+function deleteDish() {
+  if(!editDishId||!confirm('¿Eliminar este plato?')) return;
+  dishes=dishes.filter(x=>x.id!==editDishId);
+  saveDishes(); closeDishModal(); renderMenu(); showToast('🗑 Plato eliminado');
+}
+
+function toggleDish(id) {
+  const d=dishes.find(x=>x.id===id); if(!d) return;
+  d.active=!d.active; saveDishes(); renderMenu();
+  showToast(d.active?'▶ Plato activado':'⏸ Plato desactivado');
+}
+
+// ─── FINANCE ───────────────────────────────────────────
+function renderFinance() {
+  const total = orders.reduce((s,o)=>s+o.total,0);
+  const paid = orders.filter(o=>o.payment==='Paid').reduce((s,o)=>s+o.total,0);
+  const tax = paid * 0.06625;
+  document.getElementById('f-today').textContent = '$'+paid.toFixed(2);
+  document.getElementById('f-week').textContent = '$'+(paid*4.2).toFixed(2);
+  document.getElementById('f-month').textContent = '$'+(paid*18).toFixed(2);
+  document.getElementById('f-tax').textContent = '$'+tax.toFixed(2);
+
+  document.getElementById('finance-summary').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.82rem;"><span style="color:var(--muted)">Subtotal cobrado</span><span class="mono" style="color:var(--text)">$${paid.toFixed(2)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.82rem;"><span style="color:var(--muted)">Impuesto NJ (6.625%)</span><span class="mono" style="color:var(--amber)">$${tax.toFixed(2)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.82rem;"><span style="color:var(--muted)">Total cobrado</span><span class="mono" style="color:var(--green);font-weight:700;">$${paid.toFixed(2)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:.82rem;"><span style="color:var(--muted)">Pendiente de cobro</span><span class="mono" style="color:var(--amber)">$${(total-paid).toFixed(2)}</span></div>
+    </div>`;
+
+  const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const vals = [45,62,38,71,55,89,paid||12];
+  const max = Math.max(...vals);
+  document.getElementById('finance-chart').innerHTML = days.map((d,i)=>`
+    <div class="bar-row">
+      <div class="bar-label">${d}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${max?vals[i]/max*100:0}%"></div></div>
+      <div class="bar-val">$${vals[i].toFixed(0)}</div>
+    </div>`).join('');
+
+  document.getElementById('finance-tbody').innerHTML = orders.map(o=>{
+    const tax = o.total * 0.06625 / 1.06625;
+    const sub = o.total - tax;
+    return `<tr>
+      <td class="mono">${o.id}</td>
+      <td style="font-size:.72rem;color:var(--muted)">${o.time}</td>
+      <td style="font-weight:600">${o.name}</td>
+      <td class="mono">$${sub.toFixed(2)}</td>
+      <td class="mono" style="color:var(--amber)">$${tax.toFixed(2)}</td>
+      <td class="amount">$${o.total.toFixed(2)}</td>
+      <td><span class="badge ${o.payment==='Paid'?'badge-paid':'badge-unpaid'}">${o.payment==='Paid'?'Pagado':'Sin pago'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function exportFinanceCSV() {
+  const headers = ['Pedido','Hora','Cliente','Subtotal','Tax NJ','Total','Pago'];
+  const rows = orders.map(o=>{
+    const tax=o.total*0.06625/1.06625;
+    return [o.id,o.time,o.name,(o.total-tax).toFixed(2),tax.toFixed(2),o.total.toFixed(2),o.payment];
+  });
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='pideya_finanzas.csv';
+  a.click();
+  showToast('⬇ Reporte exportado');
+}
+
+// ─── TOAST ─────────────────────────────────────────────
+function showToast(msg,isErr=false) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  t.style.color=isErr?'#f87171':'var(--green)';
+  t.style.borderColor=isErr?'#ef4444':'var(--green-dim)';
+  clearTimeout(window._t);
+  window._t=setTimeout(()=>{t.style.display='none';},3500);
+}
+
+// Close modals on overlay click
+['dish-modal','order-modal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+</script>
+</body>
+</html>

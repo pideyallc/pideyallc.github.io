@@ -167,7 +167,26 @@
   }
 </style>
 </head>
-<body>
+<body><script>
+(function(){
+  const PASS = 'pideya2024';
+  const KEY = 'pideya_auth_' + location.pathname.replace(/[^a-z]/gi,'');
+  if(sessionStorage.getItem(KEY) !== PASS){
+    const bg = document.createElement('div');
+    bg.style.cssText = 'position:fixed;inset:0;background:#0a0f0d;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Sora,sans-serif';
+    bg.innerHTML = `<div style="background:#111a16;border:1px solid #1e2e22;border-radius:16px;padding:40px;text-align:center;max-width:340px;width:100%">
+      <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#e8f5ec;margin-bottom:6px">PideYa — Acceso Restringido</div>
+      <div style="font-size:.78rem;color:#4d6b55;margin-bottom:20px">Ingresa la contraseña para continuar</div>
+      <input id="pw" type="password" placeholder="Contraseña..." style="width:100%;background:#0a0f0d;border:1px solid #1e2e22;color:#e8f5ec;padding:10px 14px;border-radius:8px;font-size:.85rem;outline:none;margin-bottom:10px;box-sizing:border-box" onkeydown="if(event.key==='Enter')document.getElementById('pwbtn').click()">
+      <button id="pwbtn" style="width:100%;background:#22c55e;color:#000;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer" onclick="(function(){if(document.getElementById('pw').value==='pideya2024'){sessionStorage.setItem('',document.getElementById('pw').value);location.reload();}else{document.getElementById('pwerr').style.display='block';}})()">Entrar</button>
+      <div id="pwerr" style="display:none;color:#ef4444;font-size:.72rem;margin-top:8px">Contraseña incorrecta</div>
+    </div>`;
+    document.body.appendChild(bg);
+    setTimeout(()=>document.getElementById('pw').focus(),100);
+  }
+})();
+</script>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">

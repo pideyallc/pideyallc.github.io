@@ -397,15 +397,58 @@
       <div class="stat-card"><div class="stat-label">Agentes</div><div class="stat-val blue" id="u-agents">0</div></div>
       <div class="stat-card"><div class="stat-label">Dueños de Rest.</div><div class="stat-val amber" id="u-owners">0</div></div>
     </div>
+
+    <!-- PERMISSIONS LEGEND -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;gap:24px;flex-wrap:wrap;">
+      <div style="font-size:.72rem;color:var(--muted);font-weight:600;margin-right:4px;">PERMISOS:</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;"><span class="badge badge-admin">Admin</span><span style="color:var(--muted);">Acceso total al sistema</span></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;"><span class="badge badge-owner">Dueño</span><span style="color:var(--muted);">Su restaurante únicamente</span></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:.72rem;"><span class="badge badge-agent">Agente</span><span style="color:var(--muted);">Ver pedidos, responder clientes</span></div>
+    </div>
+
     <div class="section-header">
-      <div class="section-title">Gestión de Usuarios y Agentes</div>
+      <div class="section-title">Usuarios y Agentes del Sistema</div>
       <button class="btn btn-primary" onclick="openUserModal()">+ Agregar Usuario</button>
     </div>
+
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Restaurante</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Contacto</th><th>Rol</th><th>Restaurante</th><th>Permisos</th><th>Estado</th><th>Acciones</th></tr></thead>
         <tbody id="users-tbody"></tbody>
       </table>
+    </div>
+
+    <!-- PERMISSIONS MATRIX -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-top:20px;">
+      <div style="font-size:.88rem;font-weight:600;margin-bottom:16px;">🔐 Matriz de Permisos</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;font-size:.75rem;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:8px 12px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);">Función</th>
+              <th style="padding:8px 16px;color:#c084fc;font-weight:600;border-bottom:1px solid var(--border);">Admin</th>
+              <th style="padding:8px 16px;color:var(--amber);font-weight:600;border-bottom:1px solid var(--border);">Dueño</th>
+              <th style="padding:8px 16px;color:var(--blue);font-weight:600;border-bottom:1px solid var(--border);">Agente</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[
+              ['Ver todos los restaurantes','✅','❌','❌'],
+              ['Ver pedidos de su restaurante','✅','✅','✅'],
+              ['Gestionar menú','✅','✅','❌'],
+              ['Ver finanzas y comisiones','✅','✅','❌'],
+              ['Agregar/eliminar usuarios','✅','❌','❌'],
+              ['Configurar comisiones','✅','❌','❌'],
+              ['Responder clientes WhatsApp','✅','✅','✅'],
+              ['Cambiar estado del restaurante','✅','✅','❌'],
+              ['Ver reportes globales','✅','❌','❌'],
+            ].map(([f,...cols])=>`<tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:8px 12px;color:var(--text);">${f}</td>
+              ${cols.map(c=>`<td style="padding:8px 16px;text-align:center;">${c}</td>`).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -480,7 +523,7 @@
 <!-- USER MODAL -->
 <div class="modal-overlay" id="user-modal">
   <div class="modal">
-    <div class="modal-title">Agregar Usuario / Agente</div>
+    <div class="modal-title" id="um-modal-title">Agregar Usuario / Agente</div>
     <div class="field-row">
       <div class="field"><label>Nombre Completo *</label><input type="text" id="um-name" placeholder="Andrea Favour" /></div>
       <div class="field"><label>Email *</label><input type="email" id="um-email" placeholder="email@ejemplo.com" /></div>
@@ -492,21 +535,22 @@
     <div class="field-row">
       <div class="field">
         <label>Rol *</label>
-        <select id="um-role">
+        <select id="um-role" onchange="toggleRestField()">
           <option value="agent">Agente</option>
           <option value="owner">Dueño de Restaurante</option>
           <option value="admin">Administrador</option>
         </select>
       </div>
-      <div class="field">
+      <div class="field" id="um-rest-field">
         <label>Restaurante Asignado</label>
         <select id="um-rest"><option value="">Sin asignar</option></select>
       </div>
     </div>
+    <div class="field"><label>PIN de acceso (4 dígitos)</label><input type="password" id="um-pin" placeholder="••••" maxlength="4" style="letter-spacing:4px;" /></div>
     <div class="field"><label>Notas</label><textarea id="um-notes" placeholder="Notas adicionales..." style="height:60px;resize:none;"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeUserModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveUser()">💾 Guardar</button>
+      <button class="btn btn-primary" id="um-save-btn" onclick="saveUser()">💾 Agregar Usuario</button>
     </div>
   </div>
 </div>
@@ -865,21 +909,71 @@ function renderUsers() {
 
   const roleClass = {admin:'badge-admin',agent:'badge-agent',owner:'badge-owner'};
   const roleLabel = {admin:'Admin',agent:'Agente',owner:'Dueño'};
+  const perms = {
+    admin: ['Acceso total','Todos los restaurantes','Finanzas globales','Gestión de usuarios'],
+    owner: ['Su restaurante','Pedidos','Menú','Finanzas propias'],
+    agent: ['Ver pedidos','Responder clientes','Cambiar estado pedido']
+  };
 
   document.getElementById('users-tbody').innerHTML = users.map(u=>`
     <tr>
-      <td><div style="font-weight:600">${u.name}</div><div class="mono" style="color:var(--muted);font-size:.65rem">${u.wa||u.phone||''}</div></td>
-      <td class="mono" style="font-size:.72rem">${u.email}</td>
+      <td>
+        <div style="font-weight:600">${u.name}</div>
+        <div class="mono" style="color:var(--muted);font-size:.65rem">${u.wa||u.phone||''}</div>
+      </td>
+      <td style="font-size:.72rem">
+        <div>${u.email}</div>
+        ${u.notes?`<div style="color:var(--muted);font-size:.65rem">${u.notes}</div>`:''}
+      </td>
       <td><span class="badge ${roleClass[u.role]||'badge-inactive'}">${roleLabel[u.role]||u.role}</span></td>
-      <td style="font-size:.75rem">${restaurants.find(r=>r.id===u.rest)?.name||'—'}</td>
-      <td><span class="badge ${u.active?'badge-active':'badge-inactive'}">${u.active?'Activo':'Inactivo'}</span></td>
+      <td style="font-size:.75rem">${u.role==='admin'?'<span style="color:var(--muted)">Todos</span>':restaurants.find(r=>r.id===u.rest)?.name||'—'}</td>
+      <td style="font-size:.68rem;max-width:180px;">
+        ${(perms[u.role]||[]).map(p=>`<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:1px;color:var(--muted)">${p}</span>`).join('')}
+      </td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <span class="badge ${u.active?'badge-active':'badge-inactive'}">${u.active?'Activo':'Inactivo'}</span>
+          <button class="btn btn-secondary btn-sm" style="font-size:.6rem;padding:2px 6px;" onclick="toggleUserActive('${u.id}')">${u.active?'Desactivar':'Activar'}</button>
+        </div>
+      </td>
       <td>
         <div style="display:flex;gap:5px;">
-          <button class="btn btn-secondary btn-sm" onclick="editUser('${u.id}')">✏️</button>
+          <button class="btn btn-secondary btn-sm" onclick="openUserEditModal('${u.id}')">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">🗑</button>
         </div>
       </td>
-    </tr>`).join('') || '<tr><td colspan="6"><div class="empty"><p>Sin usuarios</p></div></td></tr>';
+    </tr>`).join('') || '<tr><td colspan="7"><div class="empty"><p>Sin usuarios registrados</p></div></td></tr>';
+}
+
+function toggleUserActive(id) {
+  const u = users.find(x=>x.id===id);
+  if(!u) return;
+  u.active = !u.active;
+  saveAll(); renderUsers();
+  showToast(u.active ? '✅ Usuario activado' : '⏸ Usuario desactivado');
+}
+
+function toggleRestField() {
+  const role = document.getElementById('um-role').value;
+  document.getElementById('um-rest-field').style.display = role === 'admin' ? 'none' : '';
+}
+
+function openUserEditModal(id) {
+  const u = users.find(x=>x.id===id);
+  if(!u) return;
+  window._editUserId = id;
+  document.getElementById('um-modal-title').textContent = 'Editar Usuario';
+  document.getElementById('um-save-btn').textContent = '💾 Guardar Cambios';
+  document.getElementById('um-name').value = u.name;
+  document.getElementById('um-email').value = u.email||'';
+  document.getElementById('um-phone').value = u.phone||'';
+  document.getElementById('um-wa').value = u.wa||'';
+  document.getElementById('um-role').value = u.role;
+  document.getElementById('um-rest').value = u.rest||'';
+  document.getElementById('um-pin').value = u.pin||'';
+  document.getElementById('um-notes').value = u.notes||'';
+  toggleRestField();
+  document.getElementById('user-modal').classList.add('open');
 }
 
 // ─── RESTAURANT MODAL ──────────────────────────────────
@@ -941,27 +1035,46 @@ function deleteRestaurant() {
 }
 
 // ─── USER MODAL ────────────────────────────────────────
-function openUserModal() { document.getElementById('user-modal').classList.add('open'); }
-function closeUserModal() { document.getElementById('user-modal').classList.remove('open'); }
+function openUserModal() {
+  if(!window._editUserId) {
+    // Clear form for new user
+    ['um-name','um-email','um-phone','um-wa','um-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('um-role').value = 'agent';
+    document.getElementById('um-rest').value = '';
+    document.getElementById('um-modal-title').textContent = 'Agregar Usuario';
+    document.getElementById('um-save-btn').textContent = '💾 Agregar Usuario';
+  }
+  document.getElementById('user-modal').classList.add('open');
+}
+function closeUserModal() {
+  window._editUserId = null;
+  document.getElementById('user-modal').classList.remove('open');
+}
 
 function saveUser() {
   const name = document.getElementById('um-name').value.trim();
-  if(!name) { showToast('⚠️ El nombre es obligatorio',true); return; }
-  users.push({
-    id: Date.now().toString(), name,
+  if(!name) { showToast('⚠️ El nombre es obligatorio', true); return; }
+  const data = {
+    name,
     email: document.getElementById('um-email').value.trim(),
     phone: document.getElementById('um-phone').value.trim(),
     wa: document.getElementById('um-wa').value.trim(),
     role: document.getElementById('um-role').value,
     rest: document.getElementById('um-rest').value,
+    pin: document.getElementById('um-pin').value.trim(),
     notes: document.getElementById('um-notes').value.trim(),
-    active: true,
-  });
+  };
+  if(window._editUserId) {
+    const idx = users.findIndex(u=>u.id===window._editUserId);
+    if(idx > -1) users[idx] = {...users[idx], ...data};
+    showToast('✅ Usuario actualizado');
+  } else {
+    users.push({id: Date.now().toString(), active: true, ...data});
+    showToast('✅ Usuario agregado');
+  }
+  window._editUserId = null;
   saveAll(); closeUserModal(); renderAll();
-  showToast('✅ Usuario agregado');
 }
-
-function editUser(id) { showToast('ℹ️ Selecciona el usuario para editar',false); }
 function deleteUser(id) {
   if(!confirm('¿Eliminar este usuario?')) return;
   users = users.filter(u=>u.id!==id);

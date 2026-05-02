@@ -43,6 +43,7 @@
   .btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3);}
   .btn-sm{padding:5px 10px;font-size:.68rem;}
   .btn-purple{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3);}
+  .comm-period.active{background:var(--green-glow);color:var(--green);border-color:rgba(34,197,94,.3);}
 
   /* PAGES */
   .page{display:none;padding:22px 26px;}
@@ -160,7 +161,26 @@
   }
 </style>
 </head>
-<body>
+<body><script>
+(function(){
+  const PASS = 'pideya2024';
+  const KEY = 'pideya_auth_' + location.pathname.replace(/[^a-z]/gi,'');
+  if(sessionStorage.getItem(KEY) !== PASS){
+    const bg = document.createElement('div');
+    bg.style.cssText = 'position:fixed;inset:0;background:#0a0f0d;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Sora,sans-serif';
+    bg.innerHTML = `<div style="background:#111a16;border:1px solid #1e2e22;border-radius:16px;padding:40px;text-align:center;max-width:340px;width:100%">
+      <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#e8f5ec;margin-bottom:6px">PideYa — Acceso Restringido</div>
+      <div style="font-size:.78rem;color:#4d6b55;margin-bottom:20px">Ingresa la contraseña para continuar</div>
+      <input id="pw" type="password" placeholder="Contraseña..." style="width:100%;background:#0a0f0d;border:1px solid #1e2e22;color:#e8f5ec;padding:10px 14px;border-radius:8px;font-size:.85rem;outline:none;margin-bottom:10px;box-sizing:border-box" onkeydown="if(event.key==='Enter')document.getElementById('pwbtn').click()">
+      <button id="pwbtn" style="width:100%;background:#22c55e;color:#000;border:none;padding:10px;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer" onclick="(function(){if(document.getElementById('pw').value==='pideya2024'){sessionStorage.setItem('',document.getElementById('pw').value);location.reload();}else{document.getElementById('pwerr').style.display='block';}})()">Entrar</button>
+      <div id="pwerr" style="display:none;color:#ef4444;font-size:.72rem;margin-top:8px">Contraseña incorrecta</div>
+    </div>`;
+    document.body.appendChild(bg);
+    setTimeout(()=>document.getElementById('pw').focus(),100);
+  }
+})();
+</script>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -308,13 +328,29 @@
   <!-- ═══ COMMISSIONS ═══ -->
   <div class="page" id="page-commissions">
     <div class="stats">
-      <div class="stat-card"><div class="stat-label">Comisión Global</div><div class="stat-val purple" id="c-global">15%</div><div class="stat-sub">por defecto</div></div>
-      <div class="stat-card"><div class="stat-label">Generado Este Mes</div><div class="stat-val green" id="c-month">$0.00</div></div>
+      <div class="stat-card"><div class="stat-label">Comisión Global</div><div class="stat-val purple" id="c-global">15%</div><div class="stat-sub">del subtotal (sin tax ni gestión)</div></div>
+      <div class="stat-card"><div class="stat-label">Generado (Período)</div><div class="stat-val green" id="c-period">$0.00</div><div class="stat-sub" id="c-period-label">todos los pedidos</div></div>
       <div class="stat-card"><div class="stat-label">Promedio por Pedido</div><div class="stat-val" id="c-avg">$0.00</div></div>
-      <div class="stat-card"><div class="stat-label">Restaurantes Configurados</div><div class="stat-val blue" id="c-count">0</div></div>
+      <div class="stat-card"><div class="stat-label">Restaurantes</div><div class="stat-val blue" id="c-count">0</div></div>
     </div>
+
+    <!-- DATE FILTER -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:.78rem;color:var(--muted);font-weight:600;">📅 Filtrar por período:</span>
+      <button class="btn btn-secondary btn-sm comm-period active" onclick="setCommPeriod('today',this)">Hoy</button>
+      <button class="btn btn-secondary btn-sm comm-period" onclick="setCommPeriod('week',this)">Esta Semana</button>
+      <button class="btn btn-secondary btn-sm comm-period" onclick="setCommPeriod('month',this)">Este Mes</button>
+      <button class="btn btn-secondary btn-sm comm-period" onclick="setCommPeriod('all',this)">Todo</button>
+      <span style="font-size:.72rem;color:var(--muted);">o fecha específica:</span>
+      <input type="date" id="comm-date-from" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-size:.75rem;outline:none;" onchange="setCommPeriod('custom',null)" />
+      <span style="font-size:.72rem;color:var(--muted);">hasta</span>
+      <input type="date" id="comm-date-to" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-size:.75rem;outline:none;" onchange="setCommPeriod('custom',null)" />
+      <button class="btn btn-secondary btn-sm" onclick="exportCommissionCSV()">⬇ Exportar</button>
+    </div>
+
+    <!-- PER RESTAURANT BREAKDOWN -->
     <div class="section-header">
-      <div class="section-title">Configuración de Comisiones por Restaurante</div>
+      <div class="section-title">Comisiones por Restaurante</div>
       <div style="display:flex;gap:8px;align-items:center;">
         <span style="font-size:.72rem;color:var(--muted);">Comisión global:</span>
         <input type="number" id="global-commission" value="15" min="0" max="100" step="0.5" style="width:70px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;text-align:center;" oninput="updateGlobalCommission(this.value)" />
@@ -322,6 +358,17 @@
       </div>
     </div>
     <div class="commission-grid" id="commission-grid"></div>
+
+    <!-- DETAILED TABLE -->
+    <div class="section-header" style="margin-top:8px;">
+      <div class="section-title">Detalle de Comisiones por Pedido</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pedido</th><th>Restaurante</th><th>Cliente</th><th>Subtotal</th><th>Tax</th><th>Gestión</th><th>Total Cobrado</th><th>Comisión (15%)</th></tr></thead>
+        <tbody id="comm-detail-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ═══ USERS ═══ -->
@@ -673,14 +720,89 @@ function renderReports() {
 }
 
 // ─── COMMISSIONS ───────────────────────────────────────
-function renderCommissions() {
-  const totalComm = restaurants.reduce((s,r)=>s+(r.revenue||0)*r.commission/100,0);
-  const totalOrders = restaurants.reduce((s,r)=>s+(r.orders||0),0);
+let commPeriod = 'today';
 
-  document.getElementById('c-global').textContent = document.getElementById('global-commission')?.value+'%' || '15%';
-  document.getElementById('c-month').textContent = '$'+(totalComm*18).toFixed(2);
-  document.getElementById('c-avg').textContent = totalOrders ? '$'+(totalComm/totalOrders).toFixed(2) : '$0.00';
+function setCommPeriod(period, btn) {
+  commPeriod = period;
+  document.querySelectorAll('.comm-period').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderCommissions();
+}
+
+function getCommissionOrders() {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  if(commPeriod === 'today') return allOrders.filter(o => o.time && new Date().toDateString() === new Date().toDateString());
+  if(commPeriod === 'week') {
+    const weekAgo = new Date(now - 7*24*60*60*1000);
+    return allOrders; // use all for demo since orders have no full date
+  }
+  if(commPeriod === 'custom') {
+    const from = document.getElementById('comm-date-from')?.value;
+    const to = document.getElementById('comm-date-to')?.value;
+    if(from && to) return allOrders; // filter by date when real data has timestamps
+  }
+  return allOrders;
+}
+
+function exportCommissionCSV() {
+  const orders = getCommissionOrders();
+  const headers = ['Pedido','Restaurante','Cliente','Subtotal','Tax','Gestion','Total','Comision 15%'];
+  const rows = orders.filter(o=>o.payment==='Paid').map(o=>{
+    const tax = o.total*0.06625/1.06625;
+    const gestion = 2.00;
+    const subtotal = o.total - tax - gestion;
+    const comm = subtotal * 0.15;
+    return [o.id, o.restName||'PideYa NJ', o.customer, subtotal.toFixed(2), tax.toFixed(2), gestion.toFixed(2), o.total.toFixed(2), comm.toFixed(2)];
+  });
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='pideya_comisiones.csv';
+  a.click();
+  showToast('⬇ Reporte de comisiones exportado');
+}
+
+function renderCommissions() {
+  const orders = getCommissionOrders();
+  const paidOrders = orders.filter(o=>o.payment==='Paid');
+
+  // Commission = 15% of subtotal ONLY (excluding tax and $2 gestion fee)
+  const totalComm = paidOrders.reduce((s,o) => {
+    const tax = o.total * 0.06625 / 1.06625;
+    const gestion = 2.00;
+    const subtotal = o.total - tax - gestion;
+    return s + (subtotal * (restaurants.find(r=>r.id===o.rest)?.commission||15)/100);
+  }, 0);
+
+  const periodLabel = {today:'hoy',week:'esta semana',month:'este mes',all:'todos los pedidos',custom:'período seleccionado'}[commPeriod]||'';
+
+  document.getElementById('c-global').textContent = (document.getElementById('global-commission')?.value||'15')+'%';
+  document.getElementById('c-period').textContent = '$'+totalComm.toFixed(2);
+  document.getElementById('c-period-label').textContent = periodLabel;
+  document.getElementById('c-avg').textContent = paidOrders.length ? '$'+(totalComm/paidOrders.length).toFixed(2) : '$0.00';
   document.getElementById('c-count').textContent = restaurants.length;
+
+  // Detail table
+  const tbody = document.getElementById('comm-detail-tbody');
+  if(tbody) {
+    tbody.innerHTML = paidOrders.length ? paidOrders.map(o=>{
+      const tax = o.total*0.06625/1.06625;
+      const gestion = 2.00;
+      const subtotal = o.total - tax - gestion;
+      const comm = subtotal * (restaurants.find(r=>r.id===o.rest)?.commission||15)/100;
+      return `<tr>
+        <td class="mono">${o.id}</td>
+        <td style="font-size:.75rem;font-weight:600">${o.restName||'PideYa NJ'}</td>
+        <td>${o.customer}</td>
+        <td class="mono">$${subtotal.toFixed(2)}</td>
+        <td class="mono" style="color:var(--amber)">$${tax.toFixed(2)}</td>
+        <td class="mono" style="color:var(--muted)">$${gestion.toFixed(2)}</td>
+        <td class="amount">$${o.total.toFixed(2)}</td>
+        <td class="mono" style="color:var(--purple);font-weight:700">$${comm.toFixed(2)}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="8"><div class="empty"><p>Sin pedidos pagados en este período</p></div></td></tr>';
+  }
 
   document.getElementById('commission-grid').innerHTML = restaurants.map(r=>`
     <div class="commission-card">

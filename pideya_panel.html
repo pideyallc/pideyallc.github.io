@@ -204,6 +204,8 @@
 
   <div class="nav-section">Restaurante</div>
   <div class="nav-item" onclick="showPage('menu')"><span class="icon">🍽️</span><span>Menú</span></div>
+  <div class="nav-item" onclick="showPage('daily')"><span class="icon">⭐</span><span>Menú del Día</span></div>
+  <div class="nav-item" onclick="showPage('status')"><span class="icon">🔘</span><span>Estado</span></div>
   <div class="nav-item" onclick="showPage('finance')"><span class="icon">💰</span><span>Finanzas</span></div>
   <div class="nav-item" onclick="showPage('qr')"><span class="icon">📲</span><span>Código QR</span></div>
 
@@ -362,6 +364,72 @@
           <a href="https://pideyallc.github.io/pideya_qr.html" target="_blank" class="btn btn-secondary">👁 Ver página QR</a>
         </div>
         <p style="font-size:.7rem;color:var(--muted);margin-top:20px;">Imprime y coloca en mesas, ventanas y material de marketing del restaurante</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MENÚ DEL DÍA ═══════════ -->
+  <div class="page" id="page-daily">
+    <div class="section-header">
+      <div class="section-title">⭐ Menú del Día — Destacados</div>
+      <button class="btn btn-primary" onclick="saveDailyMenu()">💾 Guardar y Publicar</button>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">Selecciona los platos que quieres destacar hoy. Estos aparecerán primero en el menú del bot con una estrella ⭐</p>
+      <div id="daily-dish-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="font-size:.88rem;font-weight:600;margin-bottom:14px;">📢 Mensaje especial del día (opcional)</div>
+      <textarea id="daily-message" placeholder="Ej: ¡Hoy tenemos especial de arroz con pollo! Pregunta por nuestras promociones de viernes..." style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:'Sora',sans-serif;font-size:.8rem;resize:vertical;min-height:80px;outline:none;"></textarea>
+      <div style="font-size:.7rem;color:var(--muted);margin-top:6px;">Este mensaje se enviará al inicio de la conversación cuando el cliente escriba Hola</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ESTADO DEL RESTAURANTE ═══════════ -->
+  <div class="page" id="page-status">
+    <div style="max-width:500px;margin:0 auto;">
+
+      <!-- Open/Closed Toggle -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:2.5rem;margin-bottom:12px;" id="status-emoji">🟢</div>
+        <div style="font-size:1.2rem;font-weight:700;margin-bottom:6px;" id="status-label">Restaurante ABIERTO</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px;">El bot responde pedidos normalmente</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px;">
+          <span style="font-size:.85rem;color:var(--muted);">Cerrado</span>
+          <div id="status-toggle" onclick="toggleRestStatus()" style="width:64px;height:34px;background:var(--green);border-radius:17px;position:relative;cursor:pointer;transition:.2s;">
+            <div style="position:absolute;top:4px;left:34px;width:26px;height:26px;background:#fff;border-radius:50%;transition:.2s;" id="status-knob"></div>
+          </div>
+          <span style="font-size:.85rem;color:var(--green);">Abierto</span>
+        </div>
+      </div>
+
+      <!-- Hours -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;">
+        <div style="font-size:.88rem;font-weight:600;margin-bottom:14px;">⏰ Horarios de Atención</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.8rem;">
+            <span style="color:var(--muted);">Lunes – Sábado</span>
+            <span style="font-family:'JetBrains Mono',monospace;color:var(--green);">9:00 am – 9:40 pm</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:.8rem;">
+            <span style="color:var(--muted);">Domingo</span>
+            <span style="font-family:'JetBrains Mono',monospace;color:var(--green);">9:00 am – 9:00 pm</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="showPage('settings')">✏️ Editar horarios en Configuración</button>
+      </div>
+
+      <!-- Pausa temporal -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:.88rem;font-weight:600;margin-bottom:6px;">⏸ Pausa Temporal</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:12px;">Pausa el bot por un tiempo específico sin cambiar los horarios permanentes</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="pauseBot(30)">30 min</button>
+          <button class="btn btn-secondary btn-sm" onclick="pauseBot(60)">1 hora</button>
+          <button class="btn btn-secondary btn-sm" onclick="pauseBot(120)">2 horas</button>
+          <button class="btn btn-danger btn-sm" onclick="pauseBot(0)">Cancelar pausa</button>
+        </div>
+        <div id="pause-status" style="font-size:.72rem;color:var(--amber);margin-top:10px;display:none;"></div>
       </div>
     </div>
   </div>
@@ -529,7 +597,7 @@ function saveOrders() { localStorage.setItem('pideya_orders_v2', JSON.stringify(
 function saveDishes() { localStorage.setItem('pideya_dishes_v2', JSON.stringify(dishes)); }
 
 // ─── NAVIGATION ────────────────────────────────────────
-const pageTitles = {dashboard:'📊 Resumen General',orders:'📋 Pedidos',menu:'🍽️ Menú y Catálogo',finance:'💰 Finanzas',qr:'📲 Código QR',settings:'⚙️ Configuración'};
+const pageTitles = {dashboard:'📊 Resumen General',orders:'📋 Pedidos',menu:'🍽️ Menú y Catálogo',daily:'⭐ Menú del Día',status:'🔘 Estado del Restaurante',finance:'💰 Finanzas',qr:'📲 Código QR',settings:'⚙️ Configuración'};
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -867,6 +935,87 @@ function showToast(msg,isErr=false) {
   t.style.borderColor=isErr?'#ef4444':'var(--green-dim)';
   clearTimeout(window._t);
   window._t=setTimeout(()=>{t.style.display='none';},3500);
+}
+
+// ─── MENÚ DEL DÍA ─────────────────────────────────────────
+function renderDailyMenu() {
+  const saved = JSON.parse(localStorage.getItem('pideya_daily') || '[]');
+  const msg = localStorage.getItem('pideya_daily_msg') || '';
+  if(document.getElementById('daily-message')) document.getElementById('daily-message').value = msg;
+  const container = document.getElementById('daily-dish-list');
+  if(!container) return;
+  container.innerHTML = dishes.sort((a,b)=>(a.num||999)-(b.num||999)).map(d=>`
+    <label style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;cursor:pointer;border:1px solid ${saved.includes(d.id)?'var(--green-dim)':'var(--border)'};">
+      <input type="checkbox" ${saved.includes(d.id)?'checked':''} onchange="toggleDaily('${d.id}',this)" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">
+      <div style="flex:1;">
+        <div style="font-size:.82rem;font-weight:600;">${d.num?d.num+'. ':''}${d.name} ${saved.includes(d.id)?'⭐':''}</div>
+        <div style="font-size:.7rem;color:var(--muted);">$${parseFloat(d.price).toFixed(2)} — ${d.category||'Sin categoría'}</div>
+      </div>
+    </label>`).join('');
+}
+
+function toggleDaily(id, cb) {
+  let saved = JSON.parse(localStorage.getItem('pideya_daily') || '[]');
+  if(cb.checked) { if(!saved.includes(id)) saved.push(id); }
+  else { saved = saved.filter(x=>x!==id); }
+  localStorage.setItem('pideya_daily', JSON.stringify(saved));
+  renderDailyMenu();
+}
+
+function saveDailyMenu() {
+  const msg = document.getElementById('daily-message')?.value || '';
+  localStorage.setItem('pideya_daily_msg', msg);
+  showToast('⭐ Menú del día guardado y publicado');
+}
+
+// ─── ESTADO DEL RESTAURANTE ───────────────────────────────
+let restOpen = localStorage.getItem('pideya_status') !== 'closed';
+
+function renderStatus() {
+  restOpen = localStorage.getItem('pideya_status') !== 'closed';
+  const toggle = document.getElementById('status-toggle');
+  const knob = document.getElementById('status-knob');
+  const emoji = document.getElementById('status-emoji');
+  const label = document.getElementById('status-label');
+  if(!toggle) return;
+  toggle.style.background = restOpen ? 'var(--green)' : '#374151';
+  knob.style.left = restOpen ? '34px' : '4px';
+  emoji.textContent = restOpen ? '🟢' : '🔴';
+  label.textContent = restOpen ? 'Restaurante ABIERTO' : 'Restaurante CERRADO';
+  label.style.color = restOpen ? 'var(--green)' : 'var(--red)';
+}
+
+function toggleRestStatus() {
+  restOpen = !restOpen;
+  localStorage.setItem('pideya_status', restOpen ? 'open' : 'closed');
+  renderStatus();
+  showToast(restOpen ? '🟢 Restaurante marcado como ABIERTO' : '🔴 Restaurante marcado como CERRADO');
+}
+
+let pauseTimer = null;
+function pauseBot(minutes) {
+  clearTimeout(pauseTimer);
+  const el = document.getElementById('pause-status');
+  if(minutes === 0) {
+    el.style.display = 'none';
+    showToast('▶ Pausa cancelada — bot activo');
+    return;
+  }
+  el.style.display = 'block';
+  el.textContent = '⏸ Bot en pausa por ' + minutes + ' minutos';
+  showToast('⏸ Bot pausado por ' + minutes + ' minutos');
+  pauseTimer = setTimeout(()=>{
+    el.style.display='none';
+    showToast('▶ Pausa terminada — bot activo nuevamente');
+  }, minutes*60000);
+}
+
+// Override renderAll to include new pages
+const _origRenderAll = renderAll;
+function renderAll() {
+  _origRenderAll();
+  renderDailyMenu();
+  renderStatus();
 }
 
 // Close modals on overlay click

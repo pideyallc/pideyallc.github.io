@@ -228,6 +228,7 @@
   <div class="nav-item" onclick="showPage('qr')"><span class="icon">📲</span><span>Código QR</span></div>
 
   <div class="nav-section">Sistema</div>
+  <div class="nav-item" onclick="showPage('innovations')"><span class="icon">🚀</span><span>Innovaciones</span></div>
   <div class="nav-item" onclick="showPage('settings')"><span class="icon">⚙️</span><span>Configuración</span></div>
 
   <div class="sidebar-footer">
@@ -452,6 +453,147 @@
     </div>
   </div>
 
+  <!-- ═══════════ INNOVACIONES ═══════════ -->
+  <div class="page" id="page-innovations">
+
+    <!-- LOYALTY POINTS -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:1.6rem;">⭐</div>
+        <div>
+          <div style="font-size:.92rem;font-weight:700;">Puntos de Lealtad</div>
+          <div style="font-size:.72rem;color:var(--muted);">El bot rastrea pedidos por número de teléfono y premia a clientes frecuentes</div>
+        </div>
+        <div style="margin-left:auto;">
+          <div id="loyalty-toggle" onclick="toggleFeature('loyalty')" style="width:50px;height:28px;background:var(--green);border-radius:14px;position:relative;cursor:pointer;transition:.2s;">
+            <div id="loyalty-knob" style="position:absolute;top:3px;left:24px;width:22px;height:22px;background:#fff;border-radius:50%;transition:.2s;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div class="field"><label>Pedidos para premio</label><input type="number" id="loyalty-threshold" value="10" min="1" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:.8rem;outline:none;width:100%;"></div>
+        <div class="field"><label>Descuento premio (%)</label><input type="number" id="loyalty-discount" value="10" min="1" max="100" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:.8rem;outline:none;width:100%;"></div>
+        <div class="field"><label>Clientes con puntos</label><div style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--green);padding:7px 0;" id="loyalty-count">0</div></div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:.72rem;color:var(--muted);margin-top:6px;">
+        💬 Mensaje automático: <em>"🎉 ¡Felicitaciones! Completaste tu pedido #10. Tu próximo pedido tiene un 10% de descuento especial para ti."</em>
+      </div>
+    </div>
+
+    <!-- BROADCAST -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:1.6rem;">📢</div>
+        <div>
+          <div style="font-size:.92rem;font-weight:700;">Broadcast a Suscriptores</div>
+          <div style="font-size:.72rem;color:var(--muted);">Envía el menú del día o promociones a todos los clientes suscritos</div>
+        </div>
+        <div style="margin-left:auto;font-size:.75rem;color:var(--muted);" id="broadcast-count">0 suscriptores</div>
+      </div>
+      <textarea id="broadcast-msg" placeholder="Ej: 🍽️ ¡Hoy en El Conuco! Especial de arroz con pollo por solo $12.99. Escribe MENU para ordenar ahora 👇" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:'Sora',sans-serif;font-size:.8rem;resize:vertical;min-height:80px;outline:none;margin-bottom:10px;"></textarea>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-primary" onclick="sendBroadcast()">📤 Enviar a todos</button>
+        <button class="btn btn-secondary" onclick="previewBroadcast()">👁 Vista previa</button>
+        <span style="font-size:.7rem;color:var(--muted);">WasenderAPI — respeta el límite de 1 msg/seg</span>
+      </div>
+    </div>
+
+    <!-- UPSELL -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:1.6rem;">💡</div>
+        <div>
+          <div style="font-size:.92rem;font-weight:700;">Sugerencias Automáticas (Upsell)</div>
+          <div style="font-size:.72rem;color:var(--muted);">El bot sugiere extras cuando el cliente agrega un plato principal</div>
+        </div>
+        <div style="margin-left:auto;">
+          <div id="upsell-toggle" onclick="toggleFeature('upsell')" style="width:50px;height:28px;background:#374151;border-radius:14px;position:relative;cursor:pointer;transition:.2s;">
+            <div id="upsell-knob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:.2s;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:.72rem;color:var(--muted);">
+        💬 Ejemplo: Cliente agrega "Burrito Grande" → Bot pregunta: <em>"🥤 ¿Quieres agregar una Soda por $2.99 o una Agua Fresca por $3.50?"</em>
+      </div>
+    </div>
+
+    <!-- DISCOUNT CODES -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:1.6rem;">🎟️</div>
+        <div><div style="font-size:.92rem;font-weight:700;">Códigos de Descuento</div>
+        <div style="font-size:.72rem;color:var(--muted);">Genera códigos promo que los clientes escriben en WhatsApp para obtener descuento</div></div>
+        <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="generateCode()">+ Generar código</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div class="field"><label>Código</label><input type="text" id="dc-code" placeholder="PIDEYA10" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:.8rem;outline:none;width:100%;font-family:'JetBrains Mono',monospace;text-transform:uppercase;"></div>
+        <div class="field"><label>Descuento (%)</label><input type="number" id="dc-pct" value="10" min="1" max="100" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:.8rem;outline:none;width:100%;"></div>
+        <div class="field"><label>Usos máx.</label><input type="number" id="dc-uses" value="50" min="1" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:.8rem;outline:none;width:100%;"></div>
+      </div>
+      <div class="table-wrap" style="max-height:200px;overflow-y:auto;">
+        <table><thead><tr><th>Código</th><th>Descuento</th><th>Usos</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="codes-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ORDER TRACKING -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:1.6rem;">📍</div>
+        <div>
+          <div style="font-size:.92rem;font-weight:700;">Tracking de Pedido</div>
+          <div style="font-size:.72rem;color:var(--muted);">El cliente recibe un link para ver el estado de su pedido en tiempo real</div>
+        </div>
+        <div style="margin-left:auto;">
+          <div id="tracking-toggle" onclick="toggleFeature('tracking')" style="width:50px;height:28px;background:var(--green);border-radius:14px;position:relative;cursor:pointer;transition:.2s;">
+            <div id="tracking-knob" style="position:absolute;top:3px;left:24px;width:22px;height:22px;background:#fff;border-radius:50%;transition:.2s;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:12px;text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;">🍳</div>
+          <div style="font-size:.7rem;font-weight:600;margin-top:4px;">Preparando</div>
+        </div>
+        <div style="font-size:1.2rem;align-self:center;color:var(--muted);">→</div>
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:12px;text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;">✅</div>
+          <div style="font-size:.7rem;font-weight:600;margin-top:4px;">Listo</div>
+        </div>
+        <div style="font-size:1.2rem;align-self:center;color:var(--muted);">→</div>
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:12px;text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;">🛵</div>
+          <div style="font-size:.7rem;font-weight:600;margin-top:4px;">En camino</div>
+        </div>
+        <div style="font-size:1.2rem;align-self:center;color:var(--muted);">→</div>
+        <div style="flex:1;background:var(--surface2);border-radius:8px;padding:12px;text-align:center;min-width:100px;">
+          <div style="font-size:1.2rem;">🎉</div>
+          <div style="font-size:.7rem;font-weight:600;margin-top:4px;">Entregado</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOMER RATING -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="font-size:1.6rem;">⭐</div>
+        <div>
+          <div style="font-size:.92rem;font-weight:700;">Calificación del Cliente</div>
+          <div style="font-size:.72rem;color:var(--muted);">El bot envía encuesta automática 30 min después de la entrega</div>
+        </div>
+        <div style="margin-left:auto;">
+          <div id="rating-toggle" onclick="toggleFeature('rating')" style="width:50px;height:28px;background:#374151;border-radius:14px;position:relative;cursor:pointer;transition:.2s;">
+            <div id="rating-knob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:.2s;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:.72rem;color:var(--muted);">
+        💬 Mensaje automático: <em>"¿Cómo fue tu experiencia con tu pedido de hoy? Responde del 1 al 5 ⭐ — tu opinión nos ayuda a mejorar 🙏"</em>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ═══════════ SETTINGS ═══════════ -->
   <div class="page" id="page-settings">
     <div class="settings-grid">
@@ -615,7 +757,7 @@ function saveOrders() { localStorage.setItem('pideya_orders_v2', JSON.stringify(
 function saveDishes() { localStorage.setItem('pideya_dishes_v2', JSON.stringify(dishes)); }
 
 // ─── NAVIGATION ────────────────────────────────────────
-const pageTitles = {dashboard:'📊 Resumen General',orders:'📋 Pedidos',menu:'🍽️ Menú y Catálogo',daily:'⭐ Menú del Día',status:'🔘 Estado del Restaurante',finance:'💰 Finanzas',qr:'📲 Código QR',settings:'⚙️ Configuración'};
+const pageTitles = {dashboard:'📊 Resumen General',orders:'📋 Pedidos',menu:'🍽️ Menú y Catálogo',daily:'⭐ Menú del Día',status:'🔘 Estado del Restaurante',finance:'💰 Finanzas',qr:'📲 Código QR',innovations:'🚀 Funciones Innovadoras',settings:'⚙️ Configuración'};
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1028,12 +1170,110 @@ function pauseBot(minutes) {
   }, minutes*60000);
 }
 
-// Override renderAll to include new pages
+// ─── INNOVATIONS ──────────────────────────────────────────
+const featureStates = JSON.parse(localStorage.getItem('pideya_features') || '{"loyalty":true,"upsell":false,"tracking":true,"rating":false}');
+
+function saveFeatures(){ localStorage.setItem('pideya_features', JSON.stringify(featureStates)); }
+
+function toggleFeature(name) {
+  featureStates[name] = !featureStates[name];
+  saveFeatures();
+  const on = featureStates[name];
+  const toggle = document.getElementById(name+'-toggle');
+  const knob = document.getElementById(name+'-knob');
+  if(toggle) toggle.style.background = on ? 'var(--green)' : '#374151';
+  if(knob) knob.style.left = on ? '24px' : '3px';
+  showToast((on ? '✅ ' : '⏸ ') + name + (on ? ' activado' : ' desactivado'));
+}
+
+function renderInnovations() {
+  // Apply saved feature toggle states
+  Object.entries(featureStates).forEach(([name, on]) => {
+    const toggle = document.getElementById(name+'-toggle');
+    const knob = document.getElementById(name+'-knob');
+    if(toggle) toggle.style.background = on ? 'var(--green)' : '#374151';
+    if(knob) knob.style.left = on ? '24px' : '3px';
+  });
+  // Loyalty count from orders
+  const phones = [...new Set(orders.filter(o=>o.status==='Delivered').map(o=>o.phone).filter(Boolean))];
+  const el = document.getElementById('loyalty-count');
+  if(el) el.textContent = phones.length;
+  // Broadcast subscriber count
+  const bc = document.getElementById('broadcast-count');
+  if(bc) bc.textContent = (JSON.parse(localStorage.getItem('pideya_subscribers')||'[]').length) + ' suscriptores';
+  // Discount codes
+  renderCodes();
+}
+
+// Discount codes
+let discountCodes = JSON.parse(localStorage.getItem('pideya_codes') || '[]');
+function saveCodes(){ localStorage.setItem('pideya_codes', JSON.stringify(discountCodes)); }
+
+function generateCode() {
+  const code = (document.getElementById('dc-code')?.value || '').toUpperCase().trim() ||
+    'PIDEYA' + Math.random().toString(36).substring(2,6).toUpperCase();
+  const pct = parseInt(document.getElementById('dc-pct')?.value || 10);
+  const maxUses = parseInt(document.getElementById('dc-uses')?.value || 50);
+  if(discountCodes.find(c=>c.code===code)) { showToast('❌ Código ya existe'); return; }
+  discountCodes.push({ code, pct, maxUses, uses: 0, active: true, created: new Date().toISOString() });
+  saveCodes(); renderCodes();
+  if(document.getElementById('dc-code')) document.getElementById('dc-code').value = '';
+  showToast('🎟️ Código ' + code + ' creado — ' + pct + '% de descuento');
+}
+
+function renderCodes() {
+  const tbody = document.getElementById('codes-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = discountCodes.length ? discountCodes.map((c,i) => `
+    <tr>
+      <td class="mono" style="font-weight:700;letter-spacing:.05em;">${c.code}</td>
+      <td class="mono" style="color:var(--green);">${c.pct}%</td>
+      <td class="mono">${c.uses}/${c.maxUses}</td>
+      <td><span class="badge ${c.active&&c.uses<c.maxUses?'badge-active':'badge-inactive'}">${c.active&&c.uses<c.maxUses?'Activo':'Inactivo'}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteCode(${i})">🗑</button></td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-size:.75rem;padding:14px;">Sin códigos creados</td></tr>';
+}
+
+function deleteCode(i) {
+  discountCodes.splice(i,1); saveCodes(); renderCodes();
+  showToast('🗑 Código eliminado');
+}
+
+// Broadcast via WasenderAPI
+async function sendBroadcast() {
+  const msg = document.getElementById('broadcast-msg')?.value?.trim();
+  if(!msg) { showToast('❌ Escribe un mensaje primero'); return; }
+  const subs = JSON.parse(localStorage.getItem('pideya_subscribers') || '[]');
+  if(!subs.length) { showToast('⚠️ No hay suscriptores aún'); return; }
+  showToast('📤 Enviando a ' + subs.length + ' suscriptores...');
+  let sent = 0;
+  for(const phone of subs) {
+    try {
+      await fetch('https://www.wasenderapi.com/api/send-message', {
+        method:'POST',
+        headers:{'Authorization':'Bearer 49d70cf399c1982a325feb81a265eaaaf41f7605b5ae8ed9236b2976bbbb632c','Content-Type':'application/json'},
+        body: JSON.stringify({ to: phone, text: msg })
+      });
+      sent++;
+    } catch(e) {}
+    await new Promise(r => setTimeout(r, 1100)); // 1.1s delay to respect rate limit
+  }
+  showToast('✅ Broadcast enviado a ' + sent + ' suscriptores');
+}
+
+function previewBroadcast() {
+  const msg = document.getElementById('broadcast-msg')?.value?.trim();
+  if(!msg) return;
+  alert('Vista previa del mensaje:\n\n' + msg);
+}
+
+// Override renderAll to include innovations
 const _origRenderAll = renderAll;
 function renderAll() {
   _origRenderAll();
   renderDailyMenu();
   renderStatus();
+  renderInnovations();
 }
 
 // Close modals on overlay click

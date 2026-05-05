@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PideYa — Cocina 🍳</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--green:#1a3a1a;--orange:#e8760a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Outfit',sans-serif;background:#111;color:white;min-height:100vh;}
+  .header{background:var(--green);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.5);}
+  .header h1{font-size:1.1rem;font-weight:800;}.header h1 span{color:var(--orange);}
+  .dot{width:10px;height:10px;border-radius:50%;background:#25d366;display:inline-block;margin-right:6px;animation:pg 2s infinite;}
+  @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.6)}50%{box-shadow:0 0 0 6px rgba(37,211,102,0)}}
+  .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .badge{background:var(--orange);border-radius:50px;padding:4px 12px;font-size:.82rem;font-weight:700;}
+  .sbtn{background:rgba(255,255,255,.1);border:none;color:white;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem;}
+  .sbtn:hover{background:rgba(255,255,255,.2);}
+  #flash{display:none;position:fixed;inset:0;z-index:1000;background:rgba(232,118,10,.22);pointer-events:none;animation:fa .7s ease;}
+  @keyframes fa{0%{opacity:0}30%{opacity:1}70%{opacity:1}100%{opacity:0}}
+  #banner{display:none;background:var(--orange);color:white;text-align:center;padding:14px;font-size:1.05rem;font-weight:800;animation:sd .3s ease;}
+  @keyframes sd{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+  .stats{display:flex;gap:1px;background:#222;}
+  .stat{flex:1;text-align:center;padding:12px 8px;background:#1a1a1a;}
+  .stat .v{font-size:1.5rem;font-weight:800;}.stat .l{font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:1px;}
+  .ov{color:var(--orange);}.gv{color:#25d366;}
+
+  /* Config modal */
+  #cfg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;padding:20px;}
+  #cfg.show{display:flex;}
+  #cbox{background:#1e1e1e;border-radius:20px;padding:32px;width:100%;max-width:440px;}
+  #cbox h2{margin-bottom:8px;}#cbox p{color:#aaa;font-size:.85rem;margin-bottom:20px;line-height:1.5;}
+  .ci{width:100%;padding:11px 14px;background:#2a2a2a;border:1px solid #444;color:white;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;margin-bottom:10px;}
+  .cb2{width:100%;padding:13px;background:var(--orange);color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;font-size:1rem;}
+  .note{margin-top:10px;font-size:.75rem;color:#555;text-align:center;}
+
+  #orders{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+  .card{background:#1e1e1e;border-radius:16px;overflow:hidden;border:2px solid #333;transition:border-color .3s;}
+  .card.new-card{border-color:var(--orange);animation:glow 1s ease 3;}
+  @keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(232,118,10,.6)}}
+  .card.done-card{border-color:#25d366;opacity:.55;}
+  .ch{background:var(--green);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+  .oid{font-weight:800;font-size:1rem;}.otime{font-size:.75rem;color:rgba(255,255,255,.6);}
+  .kbadge{border-radius:50px;padding:3px 10px;font-size:.72rem;font-weight:700;background:var(--orange);}
+  .kbadge.done{background:#25d366;}
+  .cb{padding:14px 16px;}
+  .nm{font-weight:700;font-size:1rem;}.ph,.ad{font-size:.78rem;color:#ccc;margin-top:2px;}
+  .items{margin:10px 0;}
+  .irow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #2a2a2a;font-size:.88rem;}
+  .irow:last-child{border:none;}.qty{color:var(--orange);font-weight:700;margin-right:6px;}
+  .tots{margin-top:10px;padding-top:10px;border-top:1px solid #2a2a2a;}
+  .tr{display:flex;justify-content:space-between;font-size:.82rem;color:#aaa;margin-bottom:4px;}
+  .tr.grand{color:white;font-weight:800;font-size:1.05rem;}
+  .cact{padding:12px 16px;display:flex;gap:8px;}
+  .btn{flex:1;padding:10px;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;font-size:.88rem;transition:transform .1s;}
+  .btn:active{transform:scale(.97);}
+  .bp{background:#2d2d2d;color:white;}.bd{background:#25d366;color:white;}.bd.m{background:#1a3a1a;color:#25d366;}
+  #empty{display:none;text-align:center;padding:60px 20px;color:#555;}
+  #empty .big{font-size:3rem;margin-bottom:12px;}
+  #lc{font-size:.72rem;color:rgba(255,255,255,.45);}
+  @media print{
+    body{background:white;color:black;}
+    .header,.stats,.cact,#banner,#flash,#cfg{display:none!important;}
+    .card{border:1px solid #ccc;break-inside:avoid;margin-bottom:20px;}
+    .ch{background:#eee;color:black;}
+    #orders{display:block;padding:0;}.card.done-card{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div id="flash"></div>
+
+<!-- CONFIG MODAL -->
+<div id="cfg">
+  <div id="cbox">
+    <h2>⚙️ Configurar Panel Cocina</h2>
+    <p>Pega tu <b>Google Sheets API Key</b> para conectar en tiempo real. El Spreadsheet ID ya está pre-configurado.</p>
+    <input class="ci" id="cfg-key" placeholder="Google Sheets API Key" autocomplete="off">
+    <button class="cb2" onclick="saveConfig()">✅ Guardar y Conectar</button>
+    <p class="note">Los datos se guardan solo en este dispositivo.</p>
+  </div>
+</div>
+
+<header class="header">
+  <h1>🍳 PideYa <span>Cocina</span> — El Conuco</h1>
+  <div class="right">
+    <span><span class="dot"></span><span id="lc">Iniciando...</span></span>
+    <span class="badge" id="pb">0 pendientes</span>
+    <button class="sbtn" id="sndBtn" onclick="toggleSound()">🔔 Sonido ON</button>
+    <button class="sbtn" onclick="openCfg()">⚙️</button>
+  </div>
+</header>
+
+<div id="banner">🔔 ¡NUEVA ORDEN LLEGÓ! — Preparar ahora</div>
+
+<div class="stats">
+  <div class="stat"><div class="v ov" id="sp">0</div><div class="l">Pendientes</div></div>
+  <div class="stat"><div class="v gv" id="sd">0</div><div class="l">Completadas</div></div>
+  <div class="stat"><div class="v" id="st">$0</div><div class="l">Total Hoy</div></div>
+  <div class="stat"><div class="v" id="sc">0</div><div class="l">Pedidos</div></div>
+</div>
+
+<div id="orders"></div>
+<div id="empty"><div class="big">🍽️</div><p>Sin pedidos activos.<br>Actualiza cada 15 seg automáticamente.</p></div>
+
+<script>
+// Sheet1 columns (0-indexed):
+// 0=Order ID, 1=Timestamp, 2=Phone, 3=Name, 4=Address,
+// 5=Items, 6=Subtotal, 7=Tax, 8=Gestion, 9=Total, 10=Status, 11=StripeLink
+const SHEET_ID   = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const SHEET_NAME = 'Sheet1';
+
+let API_KEY  = localStorage.getItem('pideya_api_key') || '';
+let soundOn  = true;
+let firstLoad = true;
+let knownIds = new Set();
+let allOrders = [];
+let localDone = new Set();
+let audioCtx  = null;
+
+window.addEventListener('load', () => {
+  Notification.requestPermission();
+  if (!API_KEY) { document.getElementById('cfg').classList.add('show'); }
+  else { startPolling(); }
+});
+
+function saveConfig() {
+  const k = document.getElementById('cfg-key').value.trim();
+  if (!k) { alert('Por favor pega la API Key'); return; }
+  localStorage.setItem('pideya_api_key', k);
+  API_KEY = k;
+  document.getElementById('cfg').classList.remove('show');
+  startPolling();
+}
+function openCfg() {
+  document.getElementById('cfg-key').value = API_KEY;
+  document.getElementById('cfg').classList.add('show');
+}
+
+function startPolling() { poll(); setInterval(poll, 15000); }
+
+// ── AUDIO ──
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+function playAlert() {
+  if (!soundOn) return; initAudio();
+  [880,1100,880,1100].forEach((freq,i)=>{
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination); o.type='square';
+    const t=audioCtx.currentTime+i*.18;
+    o.frequency.setValueAtTime(freq,t); g.gain.setValueAtTime(.3,t);
+    g.gain.exponentialRampToValueAtTime(.001,t+.15); o.start(t); o.stop(t+.15);
+  });
+}
+function toggleSound() {
+  soundOn=!soundOn; initAudio();
+  document.getElementById('sndBtn').textContent = soundOn?'🔔 Sonido ON':'🔕 Sonido OFF';
+}
+
+// ── FLASH / BANNER ──
+function flashScreen() {
+  const e=document.getElementById('flash'); e.style.display='block';
+  setTimeout(()=>e.style.display='none',700);
+}
+function showBanner() {
+  const b=document.getElementById('banner'); b.style.display='block';
+  setTimeout(()=>b.style.display='none',6000);
+}
+
+// ── POLL ──
+async function poll() {
+  if (!API_KEY) return;
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}?key=${API_KEY}`;
+  try {
+    const res=await fetch(url);
+    if (!res.ok) { setStatus('⚠️ Error '+res.status); return; }
+    const data=await res.json();
+    if (!data.values||data.values.length<2) { renderOrders([]); return; }
+    const rows=data.values.slice(1);
+    const parsed=rows.map(r=>({
+      id:      r[0]||'',  ts:      r[1]||'',  phone:   r[2]||'',
+      name:    r[3]||'',  address: r[4]||'',  items:   r[5]||'',
+      subtotal:r[6]||'0', tax:     r[7]||'0', gestion: r[8]||'0',
+      total:   r[9]||'0', status: (r[10]||'confirmed').toLowerCase(),
+      stripe:  r[11]||'',
+    })).filter(o=>o.id).reverse();
+    detectNew(parsed);
+    allOrders=parsed;
+    renderOrders(parsed);
+    setStatus('Últ: '+new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+  } catch(e) { setStatus('⚠️ Sin conexión'); }
+}
+
+function setStatus(t){ document.getElementById('lc').textContent=t; }
+
+function detectNew(fresh) {
+  if (firstLoad) { fresh.forEach(o=>knownIds.add(o.id)); firstLoad=false; return; }
+  const news=fresh.filter(o=>!knownIds.has(o.id));
+  if (news.length) {
+    news.forEach(o=>knownIds.add(o.id));
+    playAlert(); flashScreen(); showBanner();
+    if (Notification.permission==='granted')
+      new Notification('🔔 Nueva orden PideYa!',{body:news[0].name+' · $'+parseFloat(news[0].total).toFixed(2)});
+  }
+}
+
+function renderOrders(orders) {
+  const cont=document.getElementById('orders'), em=document.getElementById('empty');
+  if (!orders) orders=allOrders;
+  const active=orders.filter(o=>o.id&&o.status!=='cancelado');
+  const pending=active.filter(o=>!localDone.has(o.id)&&o.status!=='completed'&&o.status!=='entregado');
+  const done=active.filter(o=>localDone.has(o.id)||o.status==='completed'||o.status==='entregado');
+  document.getElementById('sp').textContent=pending.length;
+  document.getElementById('sd').textContent=done.length;
+  document.getElementById('sc').textContent=active.length;
+  document.getElementById('pb').textContent=pending.length+' pendientes';
+  document.getElementById('st').textContent='$'+active.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
+  if (!active.length){ cont.innerHTML=''; em.style.display='block'; return; }
+  em.style.display='none';
+  cont.innerHTML=[...pending,...done].map(buildCard).join('');
+}
+
+function buildCard(o) {
+  const isDone=localDone.has(o.id)||o.status==='completed'||o.status==='entregado';
+  const ds=o.ts?new Date(o.ts).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}):'—';
+  return `<div class="card ${isDone?'done-card':'new-card'}" id="card-${o.id}">
+    <div class="ch">
+      <div><div class="oid">Orden ${o.id}</div><div class="otime">${ds}</div></div>
+      <span class="kbadge ${isDone?'done':''}">${isDone?'✅ Listo':'🔥 Nuevo'}</span>
+    </div>
+    <div class="cb">
+      <div><div class="nm">👤 ${o.name||'—'}</div><div class="ph">📱 +${o.phone||'—'}</div><div class="ad">📍 ${o.address||'—'}</div></div>
+      <div class="items">${fmtItems(o.items)}</div>
+      <div class="tots">
+        <div class="tr"><span>Subtotal</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
+        <div class="tr"><span>Tax NJ (6.625%)</span><span>$${parseFloat(o.tax).toFixed(2)}</span></div>
+        <div class="tr"><span>Gestión</span><span>$${parseFloat(o.gestion).toFixed(2)}</span></div>
+        <div class="tr grand"><span>TOTAL</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
+      </div>
+    </div>
+    <div class="cact">
+      <button class="btn bp" onclick="printT('${o.id}')">🖨️ Imprimir</button>
+      <button class="btn bd ${isDone?'m':''}" id="db-${o.id}" onclick="markDone('${o.id}',this)">${isDone?'✅ Completado':'Marcar listo'}</button>
+    </div>
+  </div>`;
+}
+
+function fmtItems(str) {
+  if (!str||str==='—') return '<div class="irow">Sin detalle</div>';
+  return str.split('|').map(item=>{
+    item=item.trim();
+    const m=item.match(/^(\d+)x?\s+(.+?)\s+-\s+(\$[\d.]+)$/i);
+    return m
+      ?`<div class="irow"><span><span class="qty">${m[1]}x</span>${m[2]}</span><span>${m[3]}</span></div>`
+      :`<div class="irow"><span>${item}</span></div>`;
+  }).join('');
+}
+
+function markDone(id,btn) {
+  localDone.add(id);
+  const card=document.getElementById('card-'+id);
+  if(card){card.classList.remove('new-card');card.classList.add('done-card');}
+  btn.textContent='✅ Completado'; btn.classList.add('m');
+  renderOrders();
+}
+
+function printT(id) {
+  const o=allOrders.find(x=>x.id===id); if(!o) return;
+  const ds=o.ts?new Date(o.ts).toLocaleString('es-DO'):'—';
+  const w=window.open('','_blank','width=400,height=680');
+  w.document.write(`<!DOCTYPE html><html><head><title>Ticket ${id}</title>
+  <style>body{font-family:monospace;font-size:13px;padding:20px;max-width:300px;margin:0 auto;}
+  h2,h3{text-align:center;}hr{border:none;border-top:1px dashed #000;margin:8px 0;}
+  .r{display:flex;justify-content:space-between;}.b{font-weight:bold;font-size:1.05rem;}</style></head>
+  <body><h2>🍳 EL CONUCO RESTAURANTE</h2><h3 style="font-weight:normal">PideYa LLC · 715 Summit Ave, Union City NJ</h3>
+  <hr><div class="r"><span><b>Orden:</b></span><span>${o.id}</span></div>
+  <div class="r"><span><b>Fecha:</b></span><span>${ds}</span></div>
+  <hr><b>Cliente:</b> ${o.name}<br><b>Tel:</b> +${o.phone}<br><b>Dir:</b> ${o.address}
+  <hr><b>PEDIDO:</b><br>${o.items.split('|').map(i=>'<div>'+i.trim()+'</div>').join('')}
+  <hr><div class="r"><span>Subtotal:</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
+  <div class="r"><span>Tax NJ:</span><span>$${parseFloat(o.tax).toFixed(2)}</span></div>
+  <div class="r"><span>Gestión:</span><span>$${parseFloat(o.gestion).toFixed(2)}</span></div>
+  <div class="r b"><span>TOTAL:</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
+  <hr><div style="text-align:center;font-size:.85rem">${o.stripe||''}</div>
+  <hr><div style="text-align:center">¡Gracias! 🙏</div>
+  <script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  w.document.close();
+}
+</script>
+</body>
+</html>

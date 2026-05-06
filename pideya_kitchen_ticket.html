@@ -3,170 +3,184 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PIDEYA - Ticket de Cocina</title>
+<title>PIDEYA — Ticket de Cocina</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Courier New', monospace; background: #f5f5f5; display: flex; justify-content: center; padding: 20px; }
-  .ticket { background: white; width: 320px; padding: 16px; border: 1px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-  .header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 12px; margin-bottom: 12px; }
-  .logo { font-size: 22px; font-weight: bold; letter-spacing: 2px; }
-  .restaurant { font-size: 13px; color: #555; margin-top: 4px; }
-  .order-id { font-size: 18px; font-weight: bold; margin: 8px 0 4px; }
-  .timestamp { font-size: 11px; color: #777; }
-  .section { margin: 12px 0; }
-  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #777; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-  .info-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; gap: 8px; }
-  .info-label { color: #555; flex-shrink: 0; }
-  .info-value { font-weight: bold; text-align: right; word-break: break-word; }
-  .item { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px dotted #eee; gap: 6px; }
-  .item-qty { font-weight: bold; white-space: nowrap; flex-shrink: 0; }
-  .item-name { flex: 1; }
-  .item-price { font-weight: bold; white-space: nowrap; }
-  .item-note { font-size: 11px; color: #888; font-style: italic; padding: 2px 0 4px 16px; }
-  .totals { border-top: 2px dashed #333; margin-top: 12px; padding-top: 10px; }
-  .total-row { display: flex; justify-content: space-between; font-size: 12px; margin: 5px 0; }
-  .total-row.grand { font-size: 16px; font-weight: bold; border-top: 1px solid #333; margin-top: 8px; padding-top: 8px; }
-  .qr-section { text-align: center; margin: 14px 0; padding: 12px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; }
-  .qr-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 8px; font-weight: bold; }
-  .qr-section img { width: 160px; height: 160px; display: block; margin: 0 auto; border: 1px solid #eee; }
-  .qr-addr { font-size: 10px; color: #888; margin-top: 6px; line-height: 1.4; }
-  .footer { text-align: center; margin-top: 14px; padding-top: 12px; border-top: 2px dashed #333; font-size: 11px; color: #777; }
-  .print-btn { display: block; width: 100%; padding: 10px; background: #25D366; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 16px; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Courier New', monospace; background:#f0f0f0; display:flex; justify-content:center; padding:20px; }
+
+  .ticket {
+    background:white; width:340px; padding:20px;
+    border:1px solid #ccc; border-radius:8px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.15);
+  }
+
+  .header { text-align:center; border-bottom:2px dashed #333; padding-bottom:14px; margin-bottom:14px; }
+  .logo { font-size:1.5rem; font-weight:bold; letter-spacing:2px; }
+  .restaurant { font-size:0.85rem; color:#555; margin-top:4px; }
+  .order-id { font-size:1.1rem; font-weight:bold; margin-top:8px; color:#e8760a; }
+  .order-time { font-size:0.75rem; color:#888; }
+
+  .section { margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed #ccc; }
+  .section:last-of-type { border:none; }
+  .section-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#888; margin-bottom:6px; }
+
+  .field { display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.82rem; }
+  .field .k { color:#555; }
+  .field .v { font-weight:bold; text-align:right; max-width:200px; word-break:break-word; }
+
+  .items-list { font-size:0.82rem; }
+  .item-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dotted #eee; }
+  .item-row:last-child { border:none; }
+  .item-qty { color:#e8760a; font-weight:bold; min-width:24px; }
+  .item-name { flex:1; padding:0 6px; }
+  .item-price { font-weight:bold; }
+  .item-note { font-size:0.72rem; color:#888; font-style:italic; padding-left:28px; }
+
+  .totals { margin-top:10px; }
+  .total-row { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px; }
+  .total-row.grand { font-size:1rem; font-weight:bold; border-top:2px solid #333; padding-top:6px; margin-top:6px; }
+
+  .qr-section { text-align:center; margin-top:14px; padding-top:14px; border-top:1px dashed #ccc; }
+  .qr-section img { width:100px; height:100px; }
+  .qr-section p { font-size:0.7rem; color:#888; margin-top:4px; }
+
+  .footer { text-align:center; margin-top:14px; padding-top:10px; border-top:2px dashed #333; font-size:0.72rem; color:#888; }
+
+  .print-btn {
+    display:block; width:100%; margin-top:20px; padding:12px;
+    background:#1a3a1a; color:white; border:none; border-radius:8px;
+    font-size:1rem; font-weight:bold; cursor:pointer;
+    font-family:inherit;
+  }
+  .print-btn:hover { background:#2d5a27; }
+
+  .no-order {
+    text-align:center; padding:40px 20px; color:#888;
+  }
+  .no-order .icon { font-size:3rem; margin-bottom:12px; }
+
   @media print {
-    body { background: white; padding: 0; }
-    .ticket { box-shadow: none; border: none; width: 100%; }
-    .print-btn { display: none; }
+    body { background:white; padding:0; }
+    .ticket { box-shadow:none; border:none; width:100%; }
+    .print-btn { display:none; }
   }
 </style>
 </head>
 <body>
-<div class="ticket">
-  <div class="header">
-    <div class="logo">PIDEYA</div>
-    <div class="restaurant">El Conuco Restaurante</div>
-    <div class="order-id" id="order-id">#---</div>
-    <div class="timestamp" id="timestamp">---</div>
+<div class="ticket" id="ticket">
+  <div id="ticket-content">
+    <div class="no-order">
+      <div class="icon">⏳</div>
+      <p>Cargando ticket...</p>
+    </div>
   </div>
-  <div class="section">
-    <div class="section-title">Cliente</div>
-    <div class="info-row"><span class="info-label">Nombre:</span><span class="info-value" id="customer-name">---</span></div>
-    <div class="info-row"><span class="info-label">Telefono:</span><span class="info-value" id="customer-phone">---</span></div>
-    <div class="info-row"><span class="info-label">Direccion:</span><span class="info-value" id="customer-address">---</span></div>
-  </div>
-  <div class="section">
-    <div class="section-title">Pedido</div>
-    <div id="items-list"></div>
-  </div>
-  <div class="totals">
-    <div class="total-row"><span>Subtotal:</span><span id="val-subtotal">---</span></div>
-    <div class="total-row"><span>Tax NJ (6.625%):</span><span id="val-tax">---</span></div>
-    <div class="total-row"><span>Gestion:</span><span id="val-gestion">---</span></div>
-    <div class="total-row grand"><span>TOTAL A PAGAR:</span><span id="val-total">---</span></div>
-  </div>
-  <div class="qr-section">
-    <div class="qr-label">📍 QR Repartidor — Navegar al destino</div>
-    <img id="qr-image" src="" alt="QR de navegacion">
-    <div class="qr-addr" id="qr-addr"></div>
-  </div>
-  <div class="footer">
-    <div>715 Summit Ave, Union City, NJ 07087</div>
-    <div style="margin-top:4px;">PIDEYA LLC | pideyallc.github.io</div>
-  </div>
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir Ticket</button>
+  <button class="print-btn" onclick="window.print()" id="print-btn" style="display:none">🖨️ Imprimir Ticket</button>
 </div>
+
 <script>
-  // Simple URL param reader — URLSearchParams handles decoding automatically
-  function getParam(name) {
-    return new URLSearchParams(window.location.search).get(name) || '';
-  }
-  function toNum(val) {
-    var n = parseFloat(String(val).replace(/[^0-9.\-]/g, ''));
-    return isNaN(n) ? 0 : n;
-  }
-  function fmtMoney(n) { return '$' + n.toFixed(2); }
-  function fmtPhone(p) {
-    p = p.replace('whatsapp:', '').trim();
-    var m = p.match(/^(\+\d{1,3})(\d{3})(\d{3})(\d{4})$/);
-    return m ? m[1]+' ('+m[2]+') '+m[3]+'-'+m[4] : p;
-  }
-  function cleanAddr(a) {
-    return a.replace(/[\r\n]+/g, ', ').replace(/\s{2,}/g,' ').trim();
-  }
-
-  window.onload = function() {
-    var order   = getParam('order');
-    var name    = getParam('name');
-    var phone   = getParam('phone');
-    var address = cleanAddr(getParam('address'));
-    var items   = getParam('items');
-
-    // Financial params
-    var subtotal = toNum(getParam('subtotal'));
-    var tax      = toNum(getParam('tax'));
-    var gestion  = toNum(getParam('gestion'));
-
-    // Header
-    document.getElementById('order-id').textContent  = order ? '#'+order : '#---';
-    document.getElementById('timestamp').textContent = new Date().toLocaleString('es-US',{timeZone:'America/New_York',dateStyle:'short',timeStyle:'short'});
-
-    // Customer
-    document.getElementById('customer-name').textContent    = name    || '---';
-    document.getElementById('customer-phone').textContent   = phone   ? fmtPhone(phone) : '---';
-    document.getElementById('customer-address').textContent = address || '---';
-
-    // QR — always build from address (short URL, never gets cut off)
-    if (address) {
-      var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+
-                  encodeURIComponent('https://maps.google.com/?q='+address);
-      document.getElementById('qr-image').src = qrUrl;
-      document.getElementById('qr-addr').textContent = address;
-    }
-
-    // Parse items and compute subtotal as fallback
-    var computedSubtotal = 0;
-    var itemsList = document.getElementById('items-list');
-    if (items) {
-      items.split('|').forEach(function(item) {
-        var t = item.trim(); if (!t) return;
-        // Extract note
-        var noteMatch = t.match(/\(([^)]+)\)/);
-        var note = noteMatch ? noteMatch[1] : '';
-        var clean = t.replace(/\([^)]+\)/,'').trim();
-        // Find last " - " to split name from price
-        var lastDash = clean.lastIndexOf(' - ');
-        var nameQty  = lastDash>=0 ? clean.substring(0, lastDash).trim() : clean;
-        var priceStr = lastDash>=0 ? clean.substring(lastDash+3).replace(/\$/g,'').trim() : '0';
-        var priceNum = parseFloat(priceStr) || 0;
-        computedSubtotal += priceNum;
-        // Split qty from name
-        var qm = nameQty.match(/^(\d+)x\s+(.+)$/i);
-        var qty      = qm ? qm[1] : '1';
-        var itemName = qm ? qm[2].trim() : nameQty;
-        var div = document.createElement('div');
-        div.innerHTML =
-          '<div class="item">'+
-            '<span class="item-qty">'+qty+'x</span>'+
-            '<span class="item-name">'+itemName+'</span>'+
-            '<span class="item-price">'+(priceNum>0?fmtMoney(priceNum):'')+'</span>'+
-          '</div>'+
-          (note?'<div class="item-note">Nota: '+note+'</div>':'');
-        itemsList.appendChild(div);
-      });
-    }
-
-    // Use URL params if available, otherwise compute from items
-    if (subtotal===0 && computedSubtotal>0) subtotal = computedSubtotal;
-    if (tax===0 && subtotal>0) tax = parseFloat((subtotal*0.06625).toFixed(2));
-    if (gestion===0) gestion = 2.00;
-    var total = parseFloat((subtotal+tax+gestion).toFixed(2));
-
-    document.getElementById('val-subtotal').textContent = fmtMoney(subtotal);
-    document.getElementById('val-tax').textContent      = fmtMoney(tax);
-    document.getElementById('val-gestion').textContent  = fmtMoney(gestion);
-    document.getElementById('val-total').textContent    = fmtMoney(total);
-
-    document.title = 'Ticket '+(order||'')+' - PIDEYA';
+function getParams() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    order:    p.get('order')    || '',
+    name:     p.get('name')     || '',
+    phone:    p.get('phone')    || '',
+    address:  p.get('address')  || '',
+    items:    p.get('items')    || '',
+    subtotal: p.get('subtotal') || '0',
+    tax:      p.get('tax')      || '0',
+    gestion:  p.get('gestion')  || '0',
+    total:    p.get('total')    || '0',
   };
+}
+
+function formatItems(itemsStr) {
+  if (!itemsStr) return '<div class="item-row"><span>Sin detalle</span></div>';
+  // Items are pipe-separated: "2x Mofongo de Camarones (sin sal) - $48.00"
+  return itemsStr.split('|').map(raw => {
+    raw = raw.trim();
+    // Match: QTYx Name (note) - $price  OR  QTYx Name - $price
+    const m = raw.match(/^(\d+)x\s+(.+?)\s+(?:\((.+?)\)\s+)?-\s+(\$[\d.]+)$/i);
+    if (m) {
+      const noteHtml = m[3] ? `<div class="item-note">📝 ${m[3]}</div>` : '';
+      return `<div class="item-row"><span class="item-qty">${m[1]}x</span><span class="item-name">${m[2]}</span><span class="item-price">${m[4]}</span></div>${noteHtml}`;
+    }
+    return `<div class="item-row"><span>${raw}</span></div>`;
+  }).join('');
+}
+
+function buildQR(address) {
+  const q = encodeURIComponent(address);
+  return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('https://www.google.com/maps/search/?api=1&query='+q)}&format=png`;
+}
+
+function render() {
+  const p = getParams();
+
+  if (!p.order) {
+    document.getElementById('ticket-content').innerHTML = `
+      <div class="no-order">
+        <div class="icon">🎫</div>
+        <p>No se encontró información del pedido.<br>Este link se genera automáticamente al confirmar una orden.</p>
+      </div>`;
+    return;
+  }
+
+  const now = new Date();
+  const timeStr = now.toLocaleString('es-DO', {
+    weekday:'short', month:'short', day:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+
+  document.getElementById('ticket-content').innerHTML = `
+    <div class="header">
+      <div class="logo">🍳 PIDEYA</div>
+      <div class="restaurant">El Conuco Restaurante</div>
+      <div class="order-id">#${p.order}</div>
+      <div class="order-time">${timeStr}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">👤 Cliente</div>
+      <div class="field"><span class="k">Nombre</span><span class="v">${decodeURIComponent(p.name)}</span></div>
+      <div class="field"><span class="k">Teléfono</span><span class="v">+${p.phone}</span></div>
+      <div class="field"><span class="k">Dirección</span><span class="v">${decodeURIComponent(p.address)}</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">🍽️ Pedido</div>
+      <div class="items-list">${formatItems(decodeURIComponent(p.items))}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">💰 Totales</div>
+      <div class="totals">
+        <div class="total-row"><span>Subtotal</span><span>$${parseFloat(p.subtotal).toFixed(2)}</span></div>
+        <div class="total-row"><span>Tax NJ (6.625%)</span><span>$${parseFloat(p.tax).toFixed(2)}</span></div>
+        <div class="total-row"><span>Gestión</span><span>$${parseFloat(p.gestion).toFixed(2)}</span></div>
+        <div class="total-row grand"><span>TOTAL A PAGAR</span><span>$${parseFloat(p.total).toFixed(2)}</span></div>
+      </div>
+    </div>
+
+    <div class="qr-section">
+      <div class="section-label">📍 QR Repartidor — Navegar al destino</div>
+      <img src="${buildQR(decodeURIComponent(p.address))}" alt="QR Maps" onerror="this.style.display='none'">
+      <p>${decodeURIComponent(p.address)}</p>
+    </div>
+
+    <div class="footer">
+      715 Summit Ave, Union City, NJ 07087<br>
+      PIDEYA LLC | pideyallc.github.io
+    </div>`;
+
+  document.getElementById('print-btn').style.display = 'block';
+
+  // Auto-print if ?print=1 in URL
+  if (new URLSearchParams(window.location.search).get('print') === '1') {
+    setTimeout(() => window.print(), 800);
+  }
+}
+
+render();
 </script>
 </body>
 </html>

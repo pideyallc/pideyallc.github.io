@@ -90,6 +90,7 @@
 const SHEET_ID   = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
 const SHEET_NAME = 'Sheet1';
 const API_KEY    = 'AIzaSyA3jySRpDrqYVV3JjBONOfRvCbNxoibCgM';
+const ACCESS_PIN = 'pideya2024'; // ← change this password anytime
 
 let soundOn   = true;
 let firstLoad = true;
@@ -98,7 +99,46 @@ let allOrders = [];
 let localDone = new Set();
 let audioCtx  = null;
 
+// ── PASSWORD GATE ──
+function checkAuth() {
+  const saved = sessionStorage.getItem('pideya_auth');
+  if (saved === ACCESS_PIN) return true;
+  return false;
+}
+function showLoginScreen() {
+  document.body.innerHTML = `
+    <div style="min-height:100vh;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;">
+      <div style="background:#1e1e1e;border-radius:20px;padding:40px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+        <div style="font-size:2.5rem;margin-bottom:12px;">🍳</div>
+        <h2 style="color:white;font-size:1.3rem;font-weight:800;margin-bottom:4px;">PideYa <span style="color:#e8760a">Cocina</span></h2>
+        <p style="color:#888;font-size:.85rem;margin-bottom:28px;">El Conuco Restaurante — Panel Interno</p>
+        <input id="pin-input" type="password" placeholder="Contraseña"
+          style="width:100%;padding:13px 16px;background:#2a2a2a;border:2px solid #444;color:white;border-radius:12px;font-size:1rem;font-family:'Outfit',sans-serif;outline:none;margin-bottom:12px;box-sizing:border-box;"
+          onkeydown="if(event.key==='Enter')doLogin()">
+        <button onclick="doLogin()"
+          style="width:100%;padding:14px;background:#e8760a;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">
+          🔓 Entrar
+        </button>
+        <p id="login-err" style="color:#e74c3c;font-size:.82rem;margin-top:12px;display:none;">Contraseña incorrecta. Intenta de nuevo.</p>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+function doLogin() {
+  const val = document.getElementById('pin-input').value.trim();
+  if (val === ACCESS_PIN) {
+    sessionStorage.setItem('pideya_auth', ACCESS_PIN);
+    location.reload();
+  } else {
+    const err = document.getElementById('login-err');
+    err.style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+
 window.addEventListener('load', () => {
+  if (!checkAuth()) { showLoginScreen(); return; }
   Notification.requestPermission();
   startPolling();
 });

@@ -21,7 +21,7 @@
   @keyframes fa{0%{opacity:0}30%{opacity:1}70%{opacity:1}100%{opacity:0}}
   #banner{display:none;background:var(--orange);color:white;text-align:center;padding:14px;font-size:1.05rem;font-weight:800;animation:sd .3s ease;}
   @keyframes sd{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-  #errbanner{display:none;background:#c0392b;color:white;text-align:center;padding:12px 20px;font-size:.88rem;font-weight:600;line-height:1.5;}
+  #errbanner{display:none;background:#c0392b;color:white;text-align:center;padding:12px 20px;font-size:.88rem;font-weight:600;line-height:1.6;}
   .stats{display:flex;gap:1px;background:#222;}
   .stat{flex:1;text-align:center;padding:12px 8px;background:#1a1a1a;}
   .stat .v{font-size:1.5rem;font-weight:800;}.stat .l{font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:1px;}
@@ -50,9 +50,23 @@
   #empty{display:none;text-align:center;padding:60px 20px;color:#555;}
   #empty .big{font-size:3rem;margin-bottom:12px;}
   #lc{font-size:.72rem;color:rgba(255,255,255,.45);}
+
+  /* Login */
+  #login-screen{position:fixed;inset:0;background:#111;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
+  #login-box{background:#1e1e1e;border-radius:20px;padding:40px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+  #login-box .icon{font-size:2.5rem;margin-bottom:12px;}
+  #login-box h2{color:white;font-size:1.3rem;font-weight:800;margin-bottom:4px;}
+  #login-box h2 span{color:#e8760a;}
+  #login-box p{color:#888;font-size:.85rem;margin-bottom:28px;}
+  #pin-input{width:100%;padding:13px 16px;background:#2a2a2a;border:2px solid #444;color:white;border-radius:12px;font-size:1rem;font-family:'Outfit',sans-serif;outline:none;margin-bottom:12px;box-sizing:border-box;}
+  #pin-input:focus{border-color:#e8760a;}
+  #login-btn{width:100%;padding:14px;background:#e8760a;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+  #login-btn:hover{background:#cf6a09;}
+  #login-err{color:#e74c3c;font-size:.82rem;margin-top:12px;display:none;}
+
   @media print{
     body{background:white;color:black;}
-    .header,.stats,.cact,#banner,#flash,#errbanner{display:none!important;}
+    .header,.stats,.cact,#banner,#flash,#errbanner,#login-screen{display:none!important;}
     .card{border:1px solid #ccc;break-inside:avoid;margin-bottom:20px;}
     .ch{background:#eee;color:black;}
     #orders{display:block;padding:0;}.card.done-card{display:none;}
@@ -62,6 +76,18 @@
 <body>
 
 <div id="flash"></div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div id="login-box">
+    <div class="icon">🍳</div>
+    <h2>PideYa <span>Cocina</span></h2>
+    <p>El Conuco Restaurante — Panel Interno</p>
+    <input id="pin-input" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button id="login-btn" onclick="doLogin()">🔓 Entrar</button>
+    <p id="login-err">Contraseña incorrecta. Intenta de nuevo.</p>
+  </div>
+</div>
 
 <header class="header">
   <h1>🍳 PideYa <span>Cocina</span> — El Conuco</h1>
@@ -86,11 +112,13 @@
 <div id="empty"><div class="big">🍽️</div><p>Sin pedidos activos.<br>Actualiza cada 15 seg automáticamente.</p></div>
 
 <script>
-// ── CONFIG — hardcoded, no setup needed ──
-const SHEET_ID   = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
-const SHEET_NAME = 'Sheet1';
-const API_KEY    = 'AIzaSyA3jySRpDrqYVV3JjBONOfRvCbNxoibCgM';
-const ACCESS_PIN = 'pideya2024'; // ← change this password anytime
+// ── CONFIG ──
+// Uses public CSV export — NO API key needed, NO Google Cloud Console needed
+// Sheet just needs to be "Anyone with the link can view"
+const SHEET_ID  = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const GID       = '0'; // Sheet1 tab GID
+const CSV_URL   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const PASSWORD  = 'pideya2024';
 
 let soundOn   = true;
 let firstLoad = true;
@@ -99,52 +127,36 @@ let allOrders = [];
 let localDone = new Set();
 let audioCtx  = null;
 
-// ── PASSWORD GATE ──
+// ── AUTH ──
 function checkAuth() {
-  const saved = sessionStorage.getItem('pideya_auth');
-  if (saved === ACCESS_PIN) return true;
-  return false;
-}
-function showLoginScreen() {
-  document.body.innerHTML = `
-    <div style="min-height:100vh;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;">
-      <div style="background:#1e1e1e;border-radius:20px;padding:40px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);">
-        <div style="font-size:2.5rem;margin-bottom:12px;">🍳</div>
-        <h2 style="color:white;font-size:1.3rem;font-weight:800;margin-bottom:4px;">PideYa <span style="color:#e8760a">Cocina</span></h2>
-        <p style="color:#888;font-size:.85rem;margin-bottom:28px;">El Conuco Restaurante — Panel Interno</p>
-        <input id="pin-input" type="password" placeholder="Contraseña"
-          style="width:100%;padding:13px 16px;background:#2a2a2a;border:2px solid #444;color:white;border-radius:12px;font-size:1rem;font-family:'Outfit',sans-serif;outline:none;margin-bottom:12px;box-sizing:border-box;"
-          onkeydown="if(event.key==='Enter')doLogin()">
-        <button onclick="doLogin()"
-          style="width:100%;padding:14px;background:#e8760a;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;">
-          🔓 Entrar
-        </button>
-        <p id="login-err" style="color:#e74c3c;font-size:.82rem;margin-top:12px;display:none;">Contraseña incorrecta. Intenta de nuevo.</p>
-      </div>
-    </div>`;
-  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+  return sessionStorage.getItem('pideya_auth') === PASSWORD;
 }
 function doLogin() {
   const val = document.getElementById('pin-input').value.trim();
-  if (val === ACCESS_PIN) {
-    sessionStorage.setItem('pideya_auth', ACCESS_PIN);
-    location.reload();
+  if (val === PASSWORD) {
+    sessionStorage.setItem('pideya_auth', PASSWORD);
+    document.getElementById('login-screen').style.display = 'none';
+    startPolling();
   } else {
-    const err = document.getElementById('login-err');
-    err.style.display = 'block';
+    document.getElementById('login-err').style.display = 'block';
     document.getElementById('pin-input').value = '';
     document.getElementById('pin-input').focus();
   }
 }
 
 window.addEventListener('load', () => {
-  if (!checkAuth()) { showLoginScreen(); return; }
   Notification.requestPermission();
-  startPolling();
+  if (checkAuth()) {
+    document.getElementById('login-screen').style.display = 'none';
+    startPolling();
+  } else {
+    setTimeout(() => document.getElementById('pin-input').focus(), 100);
+  }
 });
 
 function startPolling() { poll(); setInterval(poll, 15000); }
 
+// ── AUDIO ──
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function playAlert() {
   if (!soundOn) return; initAudio();
@@ -172,48 +184,82 @@ function showErr(msg) {
   const e=document.getElementById('errbanner'); e.style.display='block'; e.innerHTML=msg;
 }
 function hideErr() { document.getElementById('errbanner').style.display='none'; }
-
-async function poll() {
-  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}?key=${API_KEY}`;
-  try {
-    const res=await fetch(url);
-    if (!res.ok) {
-      let msg='⚠️ Error '+res.status;
-      if(res.status===403) msg='⚠️ Error 403 — El Google Sheet no es público.<br>Ve a <b>Compartir → Acceso general → Cualquier persona con el enlace → Lector</b> y haz clic en Listo.';
-      if(res.status===401) msg='⚠️ Error 401 — API Key inválida.';
-      if(res.status===400) msg='⚠️ Error 400 — Google Sheets API no habilitada. Ve a console.cloud.google.com → APIs y servicios → Biblioteca → Google Sheets API → Habilitar.';
-      setStatus('Error '+res.status); showErr(msg); return;
-    }
-    hideErr();
-    const data=await res.json();
-    if (!data.values||data.values.length<2){ renderOrders([]); setStatus('✅ Conectado — Sin pedidos aún'); return; }
-    const rows=data.values.slice(1);
-    const parsed=rows.map(r=>({
-      id:r[0]||'', ts:r[1]||'', phone:r[2]||'', name:r[3]||'', address:r[4]||'',
-      items:r[5]||'', subtotal:r[6]||'0', tax:r[7]||'0', gestion:r[8]||'0',
-      total:r[9]||'0', status:(r[10]||'confirmed').toLowerCase(), stripe:r[11]||'',
-    })).filter(o=>o.id).reverse();
-    detectNew(parsed); allOrders=parsed; renderOrders(parsed);
-    setStatus('✅ Últ: '+new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-  } catch(e){ setStatus('⚠️ Sin conexión'); showErr('⚠️ Error de conexión a internet.'); }
-}
-
 function setStatus(t){ document.getElementById('lc').textContent=t; }
 
+// ── CSV PARSER ──
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  // skip header row
+  return lines.slice(1).map(line => {
+    // Handle quoted fields with commas inside
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    return {
+      id:       cols[0]||'',
+      ts:       cols[1]||'',
+      phone:    cols[2]||'',
+      name:     cols[3]||'',
+      address:  cols[4]||'',
+      items:    cols[5]||'',
+      subtotal: cols[6]||'0',
+      tax:      cols[7]||'0',
+      gestion:  cols[8]||'0',
+      total:    cols[9]||'0',
+      status:   (cols[10]||'confirmed').toLowerCase(),
+      stripe:   cols[11]||'',
+    };
+  }).filter(o=>o.id);
+}
+
+// ── POLL ──
+async function poll() {
+  try {
+    // Add cache-busting timestamp
+    const res = await fetch(CSV_URL + '&t=' + Date.now());
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        showErr('⚠️ El Google Sheet no es público.<br>Ve a <b>Compartir → Acceso general → Cualquier persona con el enlace → Lector</b> y haz clic en Listo.');
+      } else {
+        showErr('⚠️ Error ' + res.status + ' al conectar con Google Sheets.');
+      }
+      setStatus('Error ' + res.status);
+      return;
+    }
+    hideErr();
+    const text = await res.text();
+    const parsed = parseCSV(text).reverse();
+    detectNew(parsed);
+    allOrders = parsed;
+    renderOrders(parsed);
+    setStatus('✅ Últ: ' + new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+  } catch(e) {
+    setStatus('⚠️ Sin conexión');
+    showErr('⚠️ Error de red. Verifica tu conexión a internet.');
+  }
+}
+
 function detectNew(fresh) {
-  if(firstLoad){ fresh.forEach(o=>knownIds.add(o.id)); firstLoad=false; return; }
-  const news=fresh.filter(o=>!knownIds.has(o.id));
-  if(news.length){
+  if (firstLoad) { fresh.forEach(o=>knownIds.add(o.id)); firstLoad=false; return; }
+  const news = fresh.filter(o=>!knownIds.has(o.id));
+  if (news.length) {
     news.forEach(o=>knownIds.add(o.id));
     playAlert(); flashScreen(); showBanner();
-    if(Notification.permission==='granted')
+    if (Notification.permission==='granted')
       new Notification('🔔 Nueva orden PideYa!',{body:news[0].name+' · $'+parseFloat(news[0].total).toFixed(2)});
   }
 }
 
 function renderOrders(orders) {
   const cont=document.getElementById('orders'), em=document.getElementById('empty');
-  if(!orders) orders=allOrders;
+  if (!orders) orders=allOrders;
   const active=orders.filter(o=>o.id&&o.status!=='cancelado');
   const pending=active.filter(o=>!localDone.has(o.id)&&o.status!=='completed'&&o.status!=='entregado');
   const done=active.filter(o=>localDone.has(o.id)||o.status==='completed'||o.status==='entregado');
@@ -222,7 +268,7 @@ function renderOrders(orders) {
   document.getElementById('sc').textContent=active.length;
   document.getElementById('pb').textContent=pending.length+' pendientes';
   document.getElementById('st').textContent='$'+active.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
-  if(!active.length){ cont.innerHTML=''; em.style.display='block'; return; }
+  if (!active.length){ cont.innerHTML=''; em.style.display='block'; return; }
   em.style.display='none';
   cont.innerHTML=[...pending,...done].map(buildCard).join('');
 }
@@ -255,7 +301,7 @@ function buildCard(o) {
 }
 
 function fmtItems(str) {
-  if(!str||str==='—') return '<div class="irow">Sin detalle</div>';
+  if (!str||str==='—') return '<div class="irow">Sin detalle</div>';
   return str.split('|').map(item=>{
     item=item.trim();
     const m=item.match(/^(\d+)x?\s+(.+?)\s+-\s+(\$[\d.]+)$/i);

@@ -9,7 +9,6 @@
   :root{--green:#1a3a1a;--green-mid:#2d5a27;--orange:#e8760a;--cream:#f5edd8;--cream-dark:#ede0c4;--text:#1a1a1a;--muted:#5a4a35;}
   *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
   body{font-family:'Outfit',sans-serif;color:var(--text);background:#fff;}
-  /* NAV */
   nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(26,58,26,.96);backdrop-filter:blur(8px);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;}
   .logo{font-family:'Playfair Display',serif;color:white;font-size:1.2rem;text-decoration:none;display:flex;align-items:center;gap:8px;}
   .logo span{color:var(--orange);}
@@ -19,7 +18,6 @@
   .ncta{background:var(--orange);color:white;padding:8px 18px;border-radius:50px;text-decoration:none;font-weight:700;font-size:.85rem;transition:transform .15s,box-shadow .15s;}
   .ncta:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,118,10,.5);}
   @media(max-width:640px){.navl{display:none;}}
-  /* HERO */
   .hero{min-height:100vh;background:linear-gradient(145deg,var(--green) 0%,#243d24 60%,#1a3a1a 100%);display:flex;flex-direction:column;justify-content:center;padding:100px 24px 60px;position:relative;overflow:hidden;}
   .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 40%,rgba(232,118,10,.12) 0%,transparent 65%);}
   .hbadge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50px;padding:6px 16px;margin-bottom:24px;width:fit-content;}
@@ -37,7 +35,6 @@
   .hstats{display:flex;gap:32px;flex-wrap:wrap;margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,.1);}
   .hst .val{font-family:'Playfair Display',serif;font-size:2rem;color:var(--orange);font-weight:900;}
   .hst .lbl{font-size:.78rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;}
-  /* MOCK CHAT */
   .hvisual{position:absolute;right:5%;top:50%;transform:translateY(-50%);width:260px;background:#1a1a1a;border-radius:20px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;}
   @media(min-width:900px){.hvisual{display:block;}}
   .chead{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #2a2a2a;}
@@ -48,25 +45,21 @@
   .bbl .tm{font-size:.62rem;color:rgba(255,255,255,.4);margin-top:3px;text-align:right;}
   .onotif{background:var(--orange);border-radius:10px;padding:10px 12px;margin-top:10px;}
   .onotif .nt{font-size:.72rem;color:rgba(255,255,255,.8);}.onotif .no{color:white;font-weight:700;font-size:.85rem;}
-  /* SECTIONS */
   section{padding:72px 24px;}
   .sl{font-size:.78rem;text-transform:uppercase;letter-spacing:2px;color:var(--orange);font-weight:600;margin-bottom:10px;}
   .st{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.5vw,2.2rem);line-height:1.2;margin-bottom:16px;max-width:600px;}
   .ss{color:var(--muted);line-height:1.65;max-width:560px;}
   .mw{max-width:1100px;margin:0 auto;}
-  /* PROBLEM */
   .prob{background:var(--cream);}
   .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:40px;}
   .pc{background:white;border-radius:16px;padding:24px;border-left:4px solid var(--orange);}
   .pc .ico{font-size:1.8rem;margin-bottom:12px;}.pc h4{font-weight:700;margin-bottom:8px;}.pc p{font-size:.88rem;color:var(--muted);line-height:1.5;}
-  /* SOLUTION */
   .sol{background:var(--green);}
   .sol .st,.sol .sl{color:white;}.sol .sl{color:var(--orange);}.sol .ss{color:rgba(255,255,255,.65);}
   .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:40px;}
   .fc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:22px;transition:background .2s;}
   .fc:hover{background:rgba(255,255,255,.1);}
   .fc .ico{font-size:1.6rem;margin-bottom:10px;}.fc h4{color:white;font-weight:700;margin-bottom:8px;}.fc p{font-size:.83rem;color:rgba(255,255,255,.6);line-height:1.5;}
-  /* BENEFITS */
   .ben{background:var(--cream);}
   .bin{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;}
   @media(max-width:720px){.bin{grid-template-columns:1fr;}}
@@ -76,7 +69,6 @@
   .sbox{background:var(--green);border-radius:20px;padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .si .v{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--orange);font-weight:900;}
   .si .l{font-size:.75rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;}
-  /* PROCESS */
   .proc{background:white;}
   .steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0;margin-top:40px;}
   .step{padding:24px 20px;position:relative;}
@@ -84,7 +76,6 @@
   @media(min-width:800px){.step:not(:last-child)::after{display:block;}}
   .snum{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--cream-dark);font-weight:900;line-height:1;margin-bottom:10px;}
   .step h4{font-weight:700;margin-bottom:6px;}.step p{font-size:.83rem;color:var(--muted);line-height:1.5;}
-  /* ACCESS */
   .acc{background:var(--cream);}
   .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:32px;}
   .ac{background:white;border-radius:16px;padding:20px;text-decoration:none;color:var(--text);border:2px solid transparent;transition:border-color .2s,transform .15s,box-shadow .15s;display:block;}
@@ -93,11 +84,9 @@
   .ac .ai{font-size:1.8rem;margin-bottom:10px;}.ac h4{font-weight:700;font-size:.95rem;margin-bottom:5px;}.ac p{font-size:.78rem;color:var(--muted);line-height:1.4;}
   .ac .arr{font-size:.78rem;color:var(--orange);margin-top:10px;font-weight:600;}
   .nb{display:inline-block;background:var(--orange);color:white;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:50px;margin-left:6px;vertical-align:middle;}
-  /* CTA */
   .cta{background:linear-gradient(135deg,var(--green),#243d24);text-align:center;padding:80px 24px;}
   .cta h2{font-family:'Playfair Display',serif;color:white;font-size:clamp(1.6rem,3.5vw,2.2rem);max-width:600px;margin:0 auto 16px;line-height:1.2;}
   .cta p{color:rgba(255,255,255,.65);margin-bottom:32px;}
-  /* FOOTER */
   footer{background:var(--green);color:rgba(255,255,255,.65);padding:28px 24px;text-align:center;font-size:.82rem;}
   footer a{color:rgba(255,255,255,.65);text-decoration:none;}
   .fl{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
@@ -116,7 +105,6 @@
   <a href="https://wa.me/12017727540" class="ncta">📱 Demo gratis</a>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <div style="position:relative;z-index:1;">
     <div class="hbadge"><span class="hdot"></span><span>Sistema activo · WhatsApp Business API · El Conuco en vivo</span></div>
@@ -147,7 +135,6 @@
   </div>
 </section>
 
-<!-- PROBLEM -->
 <section class="prob" id="problema">
   <div class="mw">
     <div class="sl">El problema</div>
@@ -161,7 +148,6 @@
   </div>
 </section>
 
-<!-- SOLUTION -->
 <section class="sol" id="solucion">
   <div class="mw">
     <div class="sl">La solución</div>
@@ -169,19 +155,18 @@
     <p class="ss">Un sistema inteligente que atiende múltiples clientes simultáneamente, gestiona el menú, toma pedidos y confirma automáticamente — sin intervención humana.</p>
     <div class="fgrid">
       <div class="fc"><div class="ico">🤖</div><h4>Menú interactivo</h4><p>El cliente navega, selecciona y controla cantidades — todo dentro del chat de WhatsApp.</p></div>
-      <div class="fc"><div class="ico">🔍</div><h4>Búsqueda por nombre</h4><p>El cliente escribe el nombre del plato directamente y el sistema lo lleva al instante, sin scrollear.</p></div>
+      <div class="fc"><div class="ico">🔍</div><h4>Búsqueda por nombre</h4><p>El cliente escribe el nombre del plato directamente y el sistema lo lleva al instante.</p></div>
       <div class="fc"><div class="ico">🧮</div><h4>Cálculo automático</h4><p>Calcula el total con impuesto NJ (6.625%) y gestión automáticamente.</p></div>
       <div class="fc"><div class="ico">✅</div><h4>Confirmación instantánea</h4><p>Cada pedido se confirma con número único y llega al restaurante en tiempo real.</p></div>
       <div class="fc"><div class="ico">💳</div><h4>Pagos integrados</h4><p>Stripe genera links de pago automáticamente. El cliente paga sin salir de WhatsApp.</p></div>
       <div class="fc"><div class="ico">🔔</div><h4>Alerta sonora en cocina</h4><p>El panel de cocina emite un sonido y muestra el ticket automáticamente al llegar cada orden.</p></div>
-      <div class="fc"><div class="ico">🖨️</div><h4>Ticket automático</h4><p>Cada pedido se imprime en cocina con todos los detalles — nadie tiene que intervenir.</p></div>
+      <div class="fc"><div class="ico">📣</div><h4>Panel de Promociones</h4><p>Envía promos con imagen a todos los suscriptores por WhatsApp con un solo clic.</p></div>
       <div class="fc"><div class="ico">⏰</div><h4>Horarios automáticos</h4><p>El bot gestiona disponibilidad según horarios configurados por restaurante.</p></div>
       <div class="fc"><div class="ico">📈</div><h4>Reportes y comisiones</h4><p>Reportes globales de ventas y gestión de comisiones por restaurante en tiempo real.</p></div>
     </div>
   </div>
 </section>
 
-<!-- BENEFITS -->
 <section class="ben" id="beneficios">
   <div class="mw">
     <div class="bin">
@@ -196,7 +181,7 @@
           <li>Manejo simultáneo de múltiples clientes</li>
           <li>Sin apps ni instalaciones complicadas</li>
           <li>El ticket llega solo a cocina con alerta sonora</li>
-          <li>Comisión del 15% solo por pedidos confirmados</li>
+          <li>Envía promociones a suscriptores con un clic</li>
         </ul>
       </div>
       <div class="sbox">
@@ -209,7 +194,6 @@
   </div>
 </section>
 
-<!-- PROCESS -->
 <section class="proc" id="proceso">
   <div class="mw">
     <div class="sl">Proceso simple</div>
@@ -220,12 +204,11 @@
       <div class="step"><div class="snum">02</div><h4>Bot responde</h4><p>El sistema envía el menú con búsqueda por nombre de plato.</p></div>
       <div class="step"><div class="snum">03</div><h4>Cliente ordena</h4><p>Selecciona platos, cantidad e ingresa dirección de entrega.</p></div>
       <div class="step"><div class="snum">04</div><h4>Pago procesado</h4><p>El bot genera el link de Stripe y confirma el pedido al instante.</p></div>
-      <div class="step"><div class="snum">05</div><h4>Cocina alerta 🔔</h4><p>El panel emite sonido, muestra el ticket e imprime — automáticamente, nadie interviene.</p></div>
+      <div class="step"><div class="snum">05</div><h4>Cocina alerta 🔔</h4><p>El panel emite sonido, muestra el ticket e imprime — automáticamente.</p></div>
     </div>
   </div>
 </section>
 
-<!-- QUICK ACCESS -->
 <section class="acc" id="acceso">
   <div class="mw">
     <div class="sl">Acceso rápido</div>
@@ -234,57 +217,73 @@
     <div class="agrid">
       <a href="pideya_cocina.html" class="ac hi">
         <div class="ai">🍳</div>
-        <h4>Panel Cocina <span class="nb">NUEVO</span></h4>
+        <h4>Panel Cocina <span class="nb">LIVE</span></h4>
         <p>Alertas sonoras, tickets automáticos e impresión al recibir cada orden nueva</p>
         <div class="arr">Abrir cocina →</div>
       </a>
+      <a href="pideya_promo.html" class="ac hi">
+        <div class="ai">📣</div>
+        <h4>Panel Promociones <span class="nb">NUEVO</span></h4>
+        <p>Envía imágenes y promos a todos tus suscriptores por WhatsApp con un clic</p>
+        <div class="arr">Abrir promos →</div>
+      </a>
+      <a href="pideya_promo.html" class="ac">
+        <div class="ai">🎬</div>
+        <h4>Demo Interactivo</h4>
+        <p>Mira cómo funciona el sistema en vivo</p>
+        <div class="arr">Ver demo →</div>
+      </a>
+      <a href="pideya_menu.html" class="ac">
+        <div class="ai">🍴</div>
+        <h4>Menú Digital</h4>
+        <p>Ver todos los platos con búsqueda, fotos y precios actualizados</p>
+        <div class="arr">Ver menú →</div>
+      </a>
+      <a href="pideya_kitchen_ticket.html" class="ac">
+        <div class="ai">🖨️</div>
+        <h4>Ticket de Cocina</h4>
+        <p>Vista previa e impresión del ticket de pedido con QR de navegación</p>
+        <div class="arr">Ver ticket →</div>
+      </a>
       <a href="pideya_panel.html" class="ac">
-        <div class="ai">📊</div><h4>Panel Principal</h4>
+        <div class="ai">📊</div>
+        <h4>Panel Principal</h4>
         <p>Pedidos, menú, finanzas y configuración del restaurante</p>
         <div class="arr">Abrir panel →</div>
       </a>
-      <a href="pideya_menu.html" class="ac">
-        <div class="ai">🍴</div><h4>Menú Digital</h4>
-        <p>Ver todos los platos con búsqueda, fotos y precios</p>
-        <div class="arr">Ver menú →</div>
-      </a>
       <a href="pideya_admin.html" class="ac">
-        <div class="ai">🏢</div><h4>Admin General</h4>
+        <div class="ai">🏢</div>
+        <h4>Admin General</h4>
         <p>Todos los restaurantes, reportes globales y comisiones</p>
         <div class="arr">Admin →</div>
       </a>
       <a href="pideya_reports.html" class="ac">
-        <div class="ai">🧾</div><h4>Reportes Contables</h4>
+        <div class="ai">🧾</div>
+        <h4>Reportes Contables</h4>
         <p>Ventas, impuestos NJ y gestión por período</p>
         <div class="arr">Ver reportes →</div>
       </a>
-      <a href="pideya_kitchen_ticket.html" class="ac">
-        <div class="ai">🖨️</div><h4>Ticket de Cocina</h4>
-        <p>Vista previa e impresión del ticket de pedido</p>
-        <div class="arr">Ver ticket →</div>
-      </a>
       <a href="pideya_qr.html" class="ac">
-        <div class="ai">📲</div><h4>Código QR</h4>
-        <p>QR para imprimir y que clientes ordenen directo</p>
+        <div class="ai">📲</div>
+        <h4>Código QR</h4>
+        <p>QR para imprimir y que clientes ordenen directo por WhatsApp</p>
         <div class="arr">Ver QR →</div>
       </a>
-      <a href="pideya_menu_admin.html" class="ac">
-        <div class="ai">✏️</div><h4>Admin Menú</h4>
-        <p>Agregar, editar y eliminar platos del catálogo</p>
-        <div class="arr">Editar menú →</div>
-      </a>
       <a href="pideya_dashboard.html" class="ac">
-        <div class="ai">📊</div><h4>Dashboard</h4>
+        <div class="ai">📊</div>
+        <h4>Dashboard</h4>
         <p>Vista rápida de pedidos y pagos Stripe</p>
         <div class="arr">Abrir →</div>
       </a>
-      <a href="pideya_promo.html" class="ac">
-        <div class="ai">🎬</div><h4>Demo Interactivo</h4>
-        <p>Mira cómo funciona el sistema en vivo</p>
-        <div class="arr">Ver demo →</div>
+      <a href="pideya_menu_admin.html" class="ac">
+        <div class="ai">✏️</div>
+        <h4>Admin Menú</h4>
+        <p>Agregar, editar y eliminar platos del catálogo</p>
+        <div class="arr">Editar menú →</div>
       </a>
       <a href="https://wa.me/12017727540" class="ac">
-        <div class="ai">📱</div><h4>Ordenar por WhatsApp</h4>
+        <div class="ai">📱</div>
+        <h4>Ordenar por WhatsApp</h4>
         <p>Habla con el bot de PIDEYA ahora mismo</p>
         <div class="arr">Abrir WhatsApp →</div>
       </a>
@@ -292,7 +291,6 @@
   </div>
 </section>
 
-<!-- CTA -->
 <section class="cta" id="cta">
   <h2>Solicita una demo y convierte tu restaurante en una máquina de ventas automática</h2>
   <p>Sin compromiso, sin costo inicial. Te mostramos el sistema funcionando en vivo en menos de 30 minutos.</p>
@@ -303,7 +301,7 @@
   <div class="fl">
     <a href="mailto:pideya.nj@gmail.com">pideya.nj@gmail.com</a>
     <a href="tel:+12017727540">(201) 772-7540</a>
-    <span>70 County Ave, Apt. 2, Secaucus, NJ 07094</span>
+    <span>715 Summit Ave, Union City, NJ 07087</span>
   </div>
   <div>© 2025 PIDEYA LLC. Todos los derechos reservados.</div>
 </footer>

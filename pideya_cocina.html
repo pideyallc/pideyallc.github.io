@@ -95,6 +95,14 @@
     <span><span class="dot"></span><span id="lc">Conectando...</span></span>
     <span class="badge" id="pb">0 pendientes</span>
     <button class="sbtn" id="sndBtn" onclick="toggleSound()">🔔 Sonido ON</button>
+    <select id="snd-duration" onchange="setSoundDuration(this.value)" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;border-radius:8px;padding:5px 10px;font-family:Outfit,sans-serif;font-size:.82rem;cursor:pointer;outline:none;">
+      <option value="10">🔔 10 seg</option>
+      <option value="20" selected>🔔 20 seg</option>
+      <option value="30">🔔 30 seg</option>
+      <option value="60">🔔 1 min</option>
+      <option value="120">🔔 2 min</option>
+      <option value="300">🔔 5 min</option>
+    </select>
   </div>
 </header>
 
@@ -149,6 +157,13 @@ function doLogin() {
 
 window.addEventListener('load', () => {
   Notification.requestPermission();
+  // Restore saved sound duration
+  const saved = localStorage.getItem('pideya_snd_duration');
+  if (saved) {
+    soundDuration = parseInt(saved);
+    const sel = document.getElementById('snd-duration');
+    if (sel) sel.value = saved;
+  }
   if (checkAuth()) {
     document.getElementById('login-screen').style.display = 'none';
     startPolling();
@@ -187,20 +202,25 @@ async function pollClients() {
 }
 
 // ── AUDIO ──
+let soundDuration = parseInt(localStorage.getItem('pideya_snd_duration') || '20');
+
+function setSoundDuration(val) {
+  soundDuration = parseInt(val);
+  try { localStorage.setItem('pideya_snd_duration', val); } catch(e) {}
+}
+
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function playAlert() {
   if (!soundOn) return; initAudio();
-  // 20 seconds of alert — beep pattern repeats every ~1.5s
   const pattern = [880,1100,880,1100];
   const beepDuration = 0.15;
   const beepGap = 0.18;
   const cycleLength = 1.5;
-  const totalDuration = 20;
-  const cycles = Math.ceil(totalDuration / cycleLength);
+  const cycles = Math.ceil(soundDuration / cycleLength);
   for (let c = 0; c < cycles; c++) {
     pattern.forEach((freq, i) => {
       const t = audioCtx.currentTime + c * cycleLength + i * beepGap;
-      if (t > audioCtx.currentTime + totalDuration) return;
+      if (t > audioCtx.currentTime + soundDuration) return;
       const o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.connect(g); g.connect(audioCtx.destination); o.type = 'square';
       o.frequency.setValueAtTime(freq, t);

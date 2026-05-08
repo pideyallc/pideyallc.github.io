@@ -303,17 +303,25 @@ function renderOrders(orders) {
   const cont=document.getElementById('orders'), em=document.getElementById('empty');
   if (!orders) orders=allOrders;
   // ── FEATURE 3: Only show orders where payment is confirmed (status = paid) ──
-  const paid=orders.filter(o=>o.id&&(o.status==='paid'||o.status==='pagado'));
+  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+  const todayOrders = orders.filter(o => {
+    if (!o.id) return false;
+    // Check if order is from today
+    if (o.ts) {
+      try { const d = new Date(o.ts); return d.toLocaleDateString('en-CA') === todayStr; } catch(e) {}
+    }
+    return true; // include if no timestamp
+  });
+  const paid=todayOrders.filter(o=>o.status==='paid'||o.status==='pagado');
   const pending=paid.filter(o=>!localDone.has(o.id)&&o.status!=='completed'&&o.status!=='entregado');
   const done=paid.filter(o=>localDone.has(o.id)||o.status==='completed'||o.status==='entregado');
-  // Also count awaiting payment separately for info
-  const awaitingPayment=orders.filter(o=>o.id&&(o.status==='confirmed'||o.status==='confirmado')&&!localDone.has(o.id));
+  const awaitingPayment=todayOrders.filter(o=>(o.status==='confirmed'||o.status==='confirmado')&&!localDone.has(o.id));
   document.getElementById('sp').textContent=pending.length;
   document.getElementById('sd').textContent=done.length;
   document.getElementById('sc').textContent=paid.length;
   document.getElementById('pb').textContent=pending.length+' pendientes';
   document.getElementById('st').textContent='$'+paid.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
-  if (!paid.length && !awaitingPayment.length){ cont.innerHTML=''; em.style.display='block'; return; }
+  if (!todayOrders.length){ cont.innerHTML=''; em.style.display='block'; return; }
   em.style.display='none';
   let html = '';
   // ── AWAITING PAYMENT BANNER ──

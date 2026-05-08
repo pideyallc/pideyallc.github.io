@@ -433,19 +433,21 @@ function printT(id) {
   const o=allOrders.find(x=>x.id===id); if(!o) return;
   const ds=o.ts?new Date(o.ts).toLocaleString('es-DO'):'—';
   const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.address);
-  const qrUrl='https://chart.googleapis.com/chart?cht=qr&chs=160x160&chld=M|1&chl='+encodeURIComponent(mapsUrl);
-  const w=window.open('','_blank','width=400,height=750');
+  const qrUrl='https://chart.googleapis.com/chart?cht=qr&chs=180x180&chld=M|1&chl='+encodeURIComponent(mapsUrl);
+  const w=window.open('','_blank','width=420,height=800');
   w.document.write(`<!DOCTYPE html><html><head><title>Ticket ${id}</title>
   <style>
-    body{font-family:monospace;font-size:13px;padding:20px;max-width:300px;margin:0 auto;}
+    body{font-family:monospace;font-size:13px;padding:20px;max-width:320px;margin:0 auto;}
     h2,h3{text-align:center;}
     hr{border:none;border-top:1px dashed #000;margin:8px 0;}
     .r{display:flex;justify-content:space-between;}
     .b{font-weight:bold;font-size:1.05rem;}
-    .qr-wrap{text-align:center;margin:12px 0;}
-    .qr-wrap img{width:160px;height:160px;display:block;margin:0 auto;}
-    .qr-wrap a{display:block;margin-top:6px;font-size:11px;color:#e8760a;text-decoration:none;font-weight:bold;}
-    .qr-wrap p{font-size:10px;color:#888;margin-top:4px;}
+    .qr-wrap{text-align:center;margin:14px 0;}
+    .qr-wrap b{font-size:11px;display:block;margin-bottom:8px;}
+    .qr-wrap img{width:180px;height:180px;display:block;margin:0 auto;border:1px solid #eee;}
+    .qr-wrap a{display:block;margin-top:8px;font-size:11px;color:#333;text-decoration:none;font-weight:bold;}
+    .qr-wrap p{font-size:10px;color:#666;margin-top:4px;}
+    #loading{text-align:center;font-size:11px;color:#888;margin:10px 0;}
   </style></head>
   <body>
   <h2>🍳 EL CONUCO RESTAURANTE</h2>
@@ -466,14 +468,29 @@ function printT(id) {
   <div class="r b"><span>TOTAL:</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
   <hr>
   <div class="qr-wrap">
-    <b style="font-size:11px;">📍 QR REPARTIDOR — NAVEGAR AL DESTINO</b><br>
-    <img src="${qrUrl}" alt="QR Maps" onload="this.style.display='block'" onerror="this.style.display='none'">
+    <b>📍 QR REPARTIDOR — NAVEGAR AL DESTINO</b>
+    <div id="loading">⏳ Cargando QR...</div>
+    <img id="qr-img" src="${qrUrl}" alt="QR Maps"
+      onload="document.getElementById('loading').style.display='none';this.style.display='block';"
+      onerror="document.getElementById('loading').innerHTML='<a href=&quot;${mapsUrl}&quot;>🗺️ Abrir Maps</a>';"
+      style="display:none;">
     <a href="${mapsUrl}" target="_blank">🗺️ Abrir en Google Maps</a>
     <p>${o.address}</p>
   </div>
   <hr>
   <div style="text-align:center">¡Gracias! 🙏</div>
-  <script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>
+  <script>
+    // Wait for QR image to load, then print — max wait 4 seconds
+    var printed = false;
+    function doPrint() {
+      if (!printed) { printed = true; window.print(); }
+    }
+    var qr = document.getElementById('qr-img');
+    qr.addEventListener('load', function() { setTimeout(doPrint, 300); });
+    qr.addEventListener('error', function() { setTimeout(doPrint, 300); });
+    // Fallback: print after 4 seconds regardless
+    setTimeout(doPrint, 4000);
+  <\/script>
   </body></html>`);
   w.document.close();
 }

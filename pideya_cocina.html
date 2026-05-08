@@ -404,23 +404,49 @@ function markDone(id,btn) {
 function printT(id) {
   const o=allOrders.find(x=>x.id===id); if(!o) return;
   const ds=o.ts?new Date(o.ts).toLocaleString('es-DO'):'—';
-  const w=window.open('','_blank','width=400,height=680');
+  const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.address);
+  const qrUrl='https://chart.googleapis.com/chart?cht=qr&chs=160x160&chld=M|1&chl='+encodeURIComponent(mapsUrl);
+  const w=window.open('','_blank','width=400,height=750');
   w.document.write(`<!DOCTYPE html><html><head><title>Ticket ${id}</title>
-  <style>body{font-family:monospace;font-size:13px;padding:20px;max-width:300px;margin:0 auto;}
-  h2,h3{text-align:center;}hr{border:none;border-top:1px dashed #000;margin:8px 0;}
-  .r{display:flex;justify-content:space-between;}.b{font-weight:bold;font-size:1.05rem;}</style></head>
-  <body><h2>🍳 EL CONUCO RESTAURANTE</h2><h3 style="font-weight:normal">PideYa LLC · 715 Summit Ave, Union City NJ</h3>
-  <hr><div class="r"><span><b>Orden:</b></span><span>${o.id}</span></div>
+  <style>
+    body{font-family:monospace;font-size:13px;padding:20px;max-width:300px;margin:0 auto;}
+    h2,h3{text-align:center;}
+    hr{border:none;border-top:1px dashed #000;margin:8px 0;}
+    .r{display:flex;justify-content:space-between;}
+    .b{font-weight:bold;font-size:1.05rem;}
+    .qr-wrap{text-align:center;margin:12px 0;}
+    .qr-wrap img{width:160px;height:160px;display:block;margin:0 auto;}
+    .qr-wrap a{display:block;margin-top:6px;font-size:11px;color:#e8760a;text-decoration:none;font-weight:bold;}
+    .qr-wrap p{font-size:10px;color:#888;margin-top:4px;}
+  </style></head>
+  <body>
+  <h2>🍳 EL CONUCO RESTAURANTE</h2>
+  <h3 style="font-weight:normal">PideYa LLC · 715 Summit Ave, Union City NJ</h3>
+  <hr>
+  <div class="r"><span><b>Orden:</b></span><span>${o.id}</span></div>
   <div class="r"><span><b>Fecha:</b></span><span>${ds}</span></div>
-  <hr><b>Cliente:</b> ${o.name}<br><b>Tel:</b> +${o.phone}<br><b>Dir:</b> ${o.address}
-  <hr><b>PEDIDO:</b><br>${o.items.split('|').map(i=>'<div>'+i.trim()+'</div>').join('')}
-  <hr><div class="r"><span>Subtotal:</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
+  <hr>
+  <b>Cliente:</b> ${o.name}<br>
+  <b>Tel:</b> +${o.phone}<br>
+  <b>Dir:</b> ${o.address}
+  <hr>
+  <b>PEDIDO:</b><br>${o.items.split('|').map(i=>'<div>'+i.trim()+'</div>').join('')}
+  <hr>
+  <div class="r"><span>Subtotal:</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
   <div class="r"><span>Tax NJ:</span><span>$${parseFloat(o.tax).toFixed(2)}</span></div>
   <div class="r"><span>Gestión:</span><span>$${parseFloat(o.gestion).toFixed(2)}</span></div>
   <div class="r b"><span>TOTAL:</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
-  <hr><div style="text-align:center;font-size:.85rem">${o.stripe||''}</div>
-  <hr><div style="text-align:center">¡Gracias! 🙏</div>
-  <script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>`);
+  <hr>
+  <div class="qr-wrap">
+    <b style="font-size:11px;">📍 QR REPARTIDOR — NAVEGAR AL DESTINO</b><br>
+    <img src="${qrUrl}" alt="QR Maps" onload="this.style.display='block'" onerror="this.style.display='none'">
+    <a href="${mapsUrl}" target="_blank">🗺️ Abrir en Google Maps</a>
+    <p>${o.address}</p>
+  </div>
+  <hr>
+  <div style="text-align:center">¡Gracias! 🙏</div>
+  <script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>
+  </body></html>`);
   w.document.close();
 }
 </script>

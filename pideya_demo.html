@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Demo Interactivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--green:#1a3a1a;--green-mid:#2d5a27;--orange:#e8760a;--cream:#f5edd8;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Outfit',sans-serif;background:var(--green);min-height:100vh;display:flex;flex-direction:column;}
+
+  /* HEADER */
+  .header{background:rgba(0,0,0,.3);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .logo{font-family:'Playfair Display',serif;color:white;font-size:1.2rem;}
+  .logo span{color:var(--orange);}
+  .back-btn{color:rgba(255,255,255,.7);text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:6px;}
+  .back-btn:hover{color:white;}
+
+  /* HERO */
+  .hero{text-align:center;padding:48px 24px 32px;}
+  .hero h1{font-family:'Playfair Display',serif;color:white;font-size:clamp(1.6rem,4vw,2.4rem);margin-bottom:12px;}
+  .hero h1 span{color:var(--orange);}
+  .hero p{color:rgba(255,255,255,.65);font-size:.95rem;max-width:500px;margin:0 auto 32px;}
+
+  /* MAIN LAYOUT */
+  .main{display:flex;gap:32px;max-width:1000px;margin:0 auto;padding:0 24px 60px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+
+  /* PHONE MOCKUP */
+  .phone-wrap{flex-shrink:0;}
+  .phone{width:300px;background:#0a1628;border-radius:36px;padding:16px;box-shadow:0 24px 80px rgba(0,0,0,.5);border:3px solid #1a2a40;position:relative;}
+  .phone-notch{width:80px;height:20px;background:#0a1628;border-radius:0 0 14px 14px;margin:0 auto 12px;}
+
+  /* WA HEADER */
+  .wa-header{background:#1f2c34;border-radius:12px 12px 0 0;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:-2px -2px 0;}
+  .wa-av{width:36px;height:36px;border-radius:50%;background:var(--green-mid);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+  .wa-info .name{color:white;font-size:.85rem;font-weight:700;}
+  .wa-info .online{color:#25d366;font-size:.7rem;}
+
+  /* CHAT */
+  .chat{background:#0b141a;min-height:420px;max-height:420px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth;}
+  .chat::-webkit-scrollbar{width:4px;}
+  .chat::-webkit-scrollbar-thumb{background:#1f2c34;border-radius:2px;}
+
+  .msg{max-width:85%;padding:8px 12px;border-radius:12px;font-size:.78rem;line-height:1.45;animation:msgIn .3s ease;}
+  @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .msg.bot{background:#1f2c34;color:#e9edef;border-top-left-radius:2px;align-self:flex-start;}
+  .msg.usr{background:#005c4b;color:white;border-top-right-radius:2px;align-self:flex-end;}
+  .msg .time{font-size:.62rem;color:rgba(255,255,255,.4);margin-top:4px;text-align:right;}
+  .msg .time.bot-time{text-align:left;}
+  .typing{background:#1f2c34;border-radius:12px;border-top-left-radius:2px;padding:10px 14px;align-self:flex-start;display:none;}
+  .typing span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#8696a0;animation:bounce 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+  /* INPUT BAR */
+  .wa-input{background:#1f2c34;border-radius:0 0 12px 12px;padding:8px 12px;display:flex;align-items:center;gap:8px;}
+  .wa-input input{flex:1;background:#2a3942;border:none;color:white;border-radius:20px;padding:8px 14px;font-family:'Outfit',sans-serif;font-size:.8rem;outline:none;}
+  .wa-input input::placeholder{color:#8696a0;}
+  .send-btn{background:#25d366;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;transition:background .2s;}
+  .send-btn:hover{background:#1da851;}
+
+  /* CONTROLS */
+  .controls{flex:1;min-width:280px;max-width:380px;}
+  .ctrl-title{color:white;font-size:1rem;font-weight:800;margin-bottom:16px;}
+  .ctrl-title span{color:var(--orange);}
+
+  .step-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+  .step-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;}
+  .step-card:hover{background:rgba(255,255,255,.12);border-color:var(--orange);}
+  .step-card.active{background:rgba(232,118,10,.15);border-color:var(--orange);}
+  .step-card .si{font-size:1.4rem;flex-shrink:0;}
+  .step-card .st{flex:1;}
+  .step-card .st .sn{color:rgba(255,255,255,.5);font-size:.7rem;text-transform:uppercase;letter-spacing:1px;}
+  .step-card .st .sl{color:white;font-size:.88rem;font-weight:600;margin-top:2px;}
+  .step-card .sarr{color:var(--orange);font-size:.8rem;}
+
+  .auto-btn{width:100%;padding:14px;background:var(--orange);color:white;border:none;border-radius:14px;font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;transition:background .2s;margin-bottom:10px;}
+  .auto-btn:hover{background:#cf6a09;}
+  .auto-btn:disabled{background:#444;cursor:not-allowed;}
+  .reset-btn{width:100%;padding:10px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);border-radius:14px;font-family:'Outfit',sans-serif;font-size:.85rem;cursor:pointer;transition:background .2s;}
+  .reset-btn:hover{background:rgba(255,255,255,.14);}
+
+  .info-box{background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);border-radius:12px;padding:14px;margin-top:16px;}
+  .info-box p{color:rgba(255,255,255,.75);font-size:.78rem;line-height:1.5;}
+  .info-box .ib{color:#25d366;font-weight:700;}
+
+  /* NOTIFICATION POPUP */
+  .notif{position:fixed;top:20px;right:20px;background:#1f2c34;border:1px solid var(--orange);border-radius:16px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;max-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.5);transform:translateX(120%);transition:transform .4s;z-index:100;}
+  .notif.show{transform:translateX(0);}
+  .notif .ni{font-size:1.4rem;}
+  .notif .nt{font-size:.78rem;color:rgba(255,255,255,.7);}
+  .notif .nv{color:white;font-weight:700;font-size:.88rem;margin-top:2px;}
+
+  @media(max-width:680px){.phone{width:260px;}.main{padding:0 16px 40px;}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">🍽️ PIDE<span>YA</span></div>
+  <a href="index.html" class="back-btn">← Volver al inicio</a>
+</header>
+
+<div class="hero">
+  <h1>Demo <span>Interactivo</span></h1>
+  <p>Mira cómo funciona el sistema PIDEYA en tiempo real — desde el primer mensaje hasta la confirmación de pago.</p>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <div class="ni">🔔</div>
+  <div>
+    <div class="nt">Nueva orden — El Conuco Restaurante</div>
+    <div class="nv" id="notif-text">Orden #PY1A2B3C · $24.00</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PHONE -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="wa-header">
+        <div class="wa-av">🍽️</div>
+        <div class="wa-info">
+          <div class="name">El Conuco Restaurante</div>
+          <div class="online">● en línea</div>
+        </div>
+      </div>
+      <div class="chat" id="chat">
+        <div class="typing" id="typing">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="wa-input">
+        <input type="text" id="user-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendUserMsg()">
+        <button class="send-btn" onclick="sendUserMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="ctrl-title">Flujo del <span>pedido</span></div>
+
+    <div class="step-cards">
+      <div class="step-card" id="step-0" onclick="runStep(0)">
+        <div class="si">👋</div>
+        <div class="st"><div class="sn">Paso 1</div><div class="sl">Cliente saluda al bot</div></div>
+        <div class="sarr">→</div>
+      </div>
+      <div class="step-card" id="step-1" onclick="runStep(1)">
+        <div class="si">🍽️</div>
+        <div class="st"><div class="sn">Paso 2</div><div class="sl">Selecciona categoría y plato</div></div>
+        <div class="sarr">→</div>
+      </div>
+      <div class="step-card" id="step-2" onclick="runStep(2)">
+        <div class="si">🛒</div>
+        <div class="st"><div class="sn">Paso 3</div><div class="sl">Confirma carrito y dirección</div></div>
+        <div class="sarr">→</div>
+      </div>
+      <div class="step-card" id="step-3" onclick="runStep(3)">
+        <div class="si">💳</div>
+        <div class="st"><div class="sn">Paso 4</div><div class="sl">Pago con Stripe</div></div>
+        <div class="sarr">→</div>
+      </div>
+      <div class="step-card" id="step-4" onclick="runStep(4)">
+        <div class="si">🔔</div>
+        <div class="st"><div class="sn">Paso 5</div><div class="sl">Notificación al restaurante</div></div>
+        <div class="sarr">→</div>
+      </div>
+    </div>
+
+    <button class="auto-btn" id="auto-btn" onclick="runFullDemo()">▶ Ver demo completo automático</button>
+    <button class="reset-btn" onclick="resetDemo()">↺ Reiniciar</button>
+
+    <div class="info-box">
+      <p><span class="ib">📱 Pruébalo en vivo:</span><br>
+      Escribe <strong>Hola</strong> al bot real:<br>
+      <a href="https://wa.me/12017727540" style="color:#25d366;font-weight:700;">wa.me/12017727540</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    user: 'Hola',
+    bot: ['Bienvenido a PIDEYA! 🍽️\n\n*El Conuco Restaurante*\n\n*1* — Ver menú y hacer pedido\n*3* — Hablar con un agente\n\n📩 Escribe *SUSCRIBIR* para el menú diario'],
+  },
+  {
+    user: '1',
+    bot: [
+      '🍽️ *Elige una categoría:*\n\n*C1* — 🌟 Combos PideYa (6 platos)\n*C2* — 🌅 Desayunos (6 platos)\n*C3* — 🥩 Steak Pork (10 platos)\n*C4* — 🦐 Mariscos (16 platos)\n*C5* — 🧄 Mofongos (10 platos)\n*C6* — 🍗 Pollo (7 platos)\n\n📌 Escribe *C1, C2...* para ver la categoría\n🔍 O escribe el nombre de un plato',
+    ],
+    user2: 'C5',
+    bot2: ['🧄 *Mofongos*\n\n*22*. Mofongo Mar y Tierra - $37.95\n*23*. Mofongo de Carne Frita - $16.00\n*24*. Mofongo de Queso Chicharron - $23.00\n*25*. Mofongo de Camarones - $24.00\n*26*. Mofongo de Pollo - $16.00\n\n📌 Escribe el *número* del plato para agregar\n⬅️ Escribe *CATEGORIAS* para volver'],
+    user3: '25',
+    bot3: ['*Mofongo de Camarones*\n💰 $24.00 c/u\n\n¿Cuántas unidades?'],
+    user4: '1',
+    bot4: ['✅ *1x Mofongo de Camarones* seleccionado\n\n📝 ¿Desea agregar alguna indicación especial a este producto?\n\nO escriba *NO*:'],
+    user5: 'NO',
+    bot5: ['✅ *1x Mofongo de Camarones* agregado!\n\n🛒 *Tu pedido actual:*\n1x Mofongo de Camarones - $24.00\n💰 Total: $27.59\n\n✅ Escribe *LISTO* para finalizar o agrega más platos.'],
+  },
+  {
+    user: 'LISTO',
+    bot: ['🛒 *Resumen:*\n\n1x Mofongo de Camarones - $24.00\n─────────────────\n🧾 Subtotal: $24.00\n🏛️ Tax (6.625%): $1.59\n💼 Gestión: $2.00\n─────────────────\n💰 *Total: $27.59*\n\nEscribe tu *nombre completo*:'],
+    user2: 'Carlos Martínez',
+    bot2: ['Gracias *Carlos Martínez*! 😊\n\nEscribe tu *dirección completa* con código postal.\n\nEjemplo: *70 County Ave, Secaucus, NJ 07094*'],
+    user3: '70 County Ave, Secaucus, NJ 07094',
+    bot3: ['📋 *Resumen final:*\n\nNombre: Carlos Martínez\nDirección: 70 County Ave, Secaucus, NJ 07094\n\n1x Mofongo de Camarones - $24.00\n💰 *Total: $27.59*\n\n¿Confirmas tu pedido?\nEscribe *CONFIRMAR* para pagar\nEscribe *CANCELAR* para cancelar'],
+    user4: 'CONFIRMAR',
+    bot4: ['⏳ Procesando tu pedido... Un momento por favor.'],
+  },
+  {
+    bot: ['✅ *Pedido confirmado! #PYMOFONGO*\n\nNombre: Carlos Martínez\nDirección: 70 County Ave, Secaucus, NJ 07094\n\nSubtotal: $24.00\nTax NJ: $1.59\nGestión: $2.00\n💰 *Total: $27.59*\n\nTiempo estimado: 20-30 min 🚀\n\n💳 *Paga aquí:*\nhttps://tinyurl.com/pideya-pay\n\n¡Gracias por usar PIDEYA! 🍽️'],
+  },
+  {
+    notification: true,
+    bot: ['🔔 *¡Tu pago fue recibido!* 🎉\n\n🧾 Orden: *#PYMOFONGO*\n💰 Total pagado: *$27.59*\n\nTu pedido está siendo preparado en cocina ahora mismo.\n\n⏱️ Tiempo estimado: 20-30 minutos\n\n¡Gracias por usar PIDEYA! 🍽️\n*El Conuco Restaurante*'],
+  }
+];
+
+let currentStep = -1;
+let isRunning = false;
+let subStep = 0;
+
+function getTime() {
+  return new Date().toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'});
+}
+
+function addMsg(text, type, delay=0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const chat = document.getElementById('chat');
+      const typing = document.getElementById('typing');
+      if (type === 'bot') {
+        typing.style.display = 'flex';
+        chat.scrollTop = chat.scrollHeight;
+        setTimeout(() => {
+          typing.style.display = 'none';
+          const div = document.createElement('div');
+          div.className = `msg ${type}`;
+          div.innerHTML = text.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>') + `<div class="time bot-time">${getTime()}</div>`;
+          chat.insertBefore(div, typing);
+          chat.scrollTop = chat.scrollHeight;
+          resolve();
+        }, 800);
+      } else {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerHTML = text.replace(/\n/g,'<br>') + `<div class="time">${getTime()} ✓✓</div>`;
+        chat.insertBefore(div, typing);
+        chat.scrollTop = chat.scrollHeight;
+        resolve();
+      }
+    }, delay);
+  });
+}
+
+function showNotif(text) {
+  document.getElementById('notif-text').textContent = text;
+  const n = document.getElementById('notif');
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 5000);
+}
+
+async function runStep(idx) {
+  if (isRunning) return;
+  if (idx !== currentStep + 1 && idx !== currentStep) return;
+  isRunning = true;
+  document.getElementById('auto-btn').disabled = true;
+
+  document.querySelectorAll('.step-card').forEach((c,i) => {
+    c.classList.toggle('active', i === idx);
+  });
+
+  const s = steps[idx];
+
+  if (s.notification) {
+    showNotif('Orden #PYMOFONGO · $27.59');
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  if (s.user) await addMsg(s.user, 'usr');
+  if (s.bot) for (const m of s.bot) await addMsg(m, 'bot', 200);
+  if (s.user2) { await new Promise(r=>setTimeout(r,600)); await addMsg(s.user2,'usr'); }
+  if (s.bot2) { await new Promise(r=>setTimeout(r,200)); for(const m of s.bot2) await addMsg(m,'bot',200); }
+  if (s.user3) { await new Promise(r=>setTimeout(r,600)); await addMsg(s.user3,'usr'); }
+  if (s.bot3) { await new Promise(r=>setTimeout(r,200)); for(const m of s.bot3) await addMsg(m,'bot',200); }
+  if (s.user4) { await new Promise(r=>setTimeout(r,600)); await addMsg(s.user4,'usr'); }
+  if (s.bot4) { await new Promise(r=>setTimeout(r,200)); for(const m of s.bot4) await addMsg(m,'bot',200); }
+  if (s.user5) { await new Promise(r=>setTimeout(r,600)); await addMsg(s.user5,'usr'); }
+  if (s.bot5) { await new Promise(r=>setTimeout(r,200)); for(const m of s.bot5) await addMsg(m,'bot',200); }
+
+  currentStep = idx;
+  isRunning = false;
+  document.getElementById('auto-btn').disabled = false;
+}
+
+async function runFullDemo() {
+  resetDemo();
+  await new Promise(r=>setTimeout(r,300));
+  for (let i = 0; i < steps.length; i++) {
+    await runStep(i);
+    await new Promise(r=>setTimeout(r,1000));
+  }
+}
+
+function sendUserMsg() {
+  const input = document.getElementById('user-input');
+  const val = input.value.trim();
+  if (!val) return;
+  addMsg(val, 'usr');
+  input.value = '';
+  // Auto-advance demo
+  setTimeout(() => {
+    if (currentStep < steps.length - 1) runStep(currentStep + 1);
+  }, 500);
+}
+
+function resetDemo() {
+  currentStep = -1;
+  isRunning = false;
+  const chat = document.getElementById('chat');
+  const typing = document.getElementById('typing');
+  // Remove all messages except typing indicator
+  Array.from(chat.children).forEach(c => { if (c !== typing) c.remove(); });
+  document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('auto-btn').disabled = false;
+}
+</script>
+</body>
+</html>

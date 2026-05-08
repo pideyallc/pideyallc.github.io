@@ -160,13 +160,25 @@ function startPolling() { poll(); setInterval(poll, 15000); }
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function playAlert() {
   if (!soundOn) return; initAudio();
-  [880,1100,880,1100].forEach((freq,i)=>{
-    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination); o.type='square';
-    const t=audioCtx.currentTime+i*.18;
-    o.frequency.setValueAtTime(freq,t); g.gain.setValueAtTime(.3,t);
-    g.gain.exponentialRampToValueAtTime(.001,t+.15); o.start(t); o.stop(t+.15);
-  });
+  // 20 seconds of alert — beep pattern repeats every ~1.5s
+  const pattern = [880,1100,880,1100];
+  const beepDuration = 0.15;
+  const beepGap = 0.18;
+  const cycleLength = 1.5;
+  const totalDuration = 20;
+  const cycles = Math.ceil(totalDuration / cycleLength);
+  for (let c = 0; c < cycles; c++) {
+    pattern.forEach((freq, i) => {
+      const t = audioCtx.currentTime + c * cycleLength + i * beepGap;
+      if (t > audioCtx.currentTime + totalDuration) return;
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination); o.type = 'square';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.3, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + beepDuration);
+      o.start(t); o.stop(t + beepDuration);
+    });
+  }
 }
 function toggleSound() {
   soundOn=!soundOn; initAudio();
@@ -270,7 +282,25 @@ function renderOrders(orders) {
   document.getElementById('st').textContent='$'+active.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
   if (!active.length){ cont.innerHTML=''; em.style.display='block'; return; }
   em.style.display='none';
-  cont.innerHTML=[...pending,...done].map(buildCard).join('');
+  let html = '';
+  // ── PENDING SECTION ──
+  if(pending.length){
+    html += `<div style="grid-column:1/-1;padding:4px 0 8px;border-bottom:2px solid #e8760a;margin-bottom:4px;">
+      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:#e8760a;font-weight:800;">🔥 Pendientes (${pending.length})</span>
+    </div>`;
+    html += pending.map(buildCard).join('');
+  } else {
+    html += `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#555;font-size:.88rem;">✅ Sin órdenes pendientes</div>`;
+  }
+  // ── COMPLETED SECTION ──
+  if(done.length){
+    html += `<div style="grid-column:1/-1;padding:16px 0 8px;border-bottom:2px solid #25d366;margin-top:8px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:#25d366;font-weight:800;">✅ Preparadas (${done.length})</span>
+      <button onclick="toggleDone()" id="toggle-done-btn" style="background:rgba(37,211,102,.15);border:1px solid #25d366;color:#25d366;border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif;">Ocultar</button>
+    </div>`;
+    html += `<div id="done-section" style="display:contents;">` + done.map(buildCard).join('') + `</div>`;
+  }
+  cont.innerHTML = html;
 }
 
 function buildCard(o) {
@@ -309,6 +339,15 @@ function fmtItems(str) {
       ?`<div class="irow"><span><span class="qty">${m[1]}x</span>${m[2]}</span><span>${m[3]}</span></div>`
       :`<div class="irow"><span>${item}</span></div>`;
   }).join('');
+}
+
+function toggleDone() {
+  const sec = document.getElementById('done-section');
+  const btn = document.getElementById('toggle-done-btn');
+  if (!sec || !btn) return;
+  const hidden = sec.style.display === 'none';
+  sec.style.display = hidden ? 'contents' : 'none';
+  btn.textContent = hidden ? 'Ocultar' : 'Mostrar';
 }
 
 function markDone(id,btn) {

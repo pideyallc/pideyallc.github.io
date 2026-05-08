@@ -109,8 +109,13 @@ function formatItems(itemsStr) {
 }
 
 function buildQR(address) {
-  const q = encodeURIComponent(address);
-  return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('https://www.google.com/maps/search/?api=1&query='+q)}&format=png`;
+  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
+  // Use Google Charts QR API — more reliable than qrserver
+  return `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chld=M|1&chl=${encodeURIComponent(mapsUrl)}`;
+}
+
+function buildMapsUrl(address) {
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
 }
 
 function render() {
@@ -163,8 +168,11 @@ function render() {
 
     <div class="qr-section">
       <div class="section-label">📍 QR Repartidor — Navegar al destino</div>
-      <img src="${buildQR(decodeURIComponent(p.address))}" alt="QR Maps" onerror="this.style.display='none'">
+      <a href="${buildMapsUrl(decodeURIComponent(p.address))}" target="_blank">
+        <img src="${buildQR(decodeURIComponent(p.address))}" alt="QR Maps" width="150" height="150" onerror="this.outerHTML='<p style=color:#e8760a;font-weight:bold>📍 Toca para navegar</p>'">
+      </a>
       <p>${decodeURIComponent(p.address)}</p>
+      <a href="${buildMapsUrl(decodeURIComponent(p.address))}" target="_blank" style="font-size:0.72rem;color:#e8760a;font-weight:bold;text-decoration:none;">🗺️ Abrir en Google Maps</a>
     </div>
 
     <div class="footer">

@@ -106,6 +106,7 @@
   <div class="stat"><div class="v gv" id="sd">0</div><div class="l">Completadas</div></div>
   <div class="stat"><div class="v" id="st">$0</div><div class="l">Total Hoy</div></div>
   <div class="stat"><div class="v" id="sc">0</div><div class="l">Pedidos</div></div>
+  <div class="stat"><div class="v" style="color:#25d366;animation:pg 2s infinite;" id="stat-clients">0</div><div class="l">🟢 En vivo</div></div>
 </div>
 
 <div id="orders"></div>
@@ -117,7 +118,9 @@
 // Sheet just needs to be "Anyone with the link can view"
 const SHEET_ID  = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
 const GID       = '0'; // Sheet1 tab GID
+const GID2      = '638346367'; // Sheet2 (sessions)
 const CSV_URL   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const CSV_URL2  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID2}`;
 const PASSWORD  = 'pideya2024';
 
 let soundOn   = true;
@@ -154,7 +157,34 @@ window.addEventListener('load', () => {
   }
 });
 
-function startPolling() { poll(); setInterval(poll, 15000); }
+function startPolling() { poll(); setInterval(poll, 15000); pollClients(); setInterval(pollClients, 30000); }
+
+// ── LIVE CLIENTS ──
+async function pollClients() {
+  try {
+    const res = await fetch(CSV_URL2 + '&t=' + Date.now());
+    if (!res.ok) return;
+    const text = await res.text();
+    const lines = text.trim().split('\n').slice(1).filter(l => l.trim());
+    // Active = session step is NOT 'start' and updated in last 10 minutes
+    const now = Date.now();
+    let active = 0;
+    lines.forEach(line => {
+      const cols = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else { cur += c; }
+      }
+      cols.push(cur.trim());
+      const step = (cols[1] || '').toLowerCase();
+      if (step && step !== 'start' && step !== '') active++;
+    });
+    document.getElementById('stat-clients').textContent = active;
+  } catch(e) {}
+}
 
 // ── AUDIO ──
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
@@ -272,24 +302,37 @@ function detectNew(fresh) {
 function renderOrders(orders) {
   const cont=document.getElementById('orders'), em=document.getElementById('empty');
   if (!orders) orders=allOrders;
-  const active=orders.filter(o=>o.id&&o.status!=='cancelado');
-  const pending=active.filter(o=>!localDone.has(o.id)&&o.status!=='completed'&&o.status!=='entregado');
-  const done=active.filter(o=>localDone.has(o.id)||o.status==='completed'||o.status==='entregado');
+  // ── FEATURE 3: Only show orders where payment is confirmed (status = paid) ──
+  const paid=orders.filter(o=>o.id&&(o.status==='paid'||o.status==='pagado'));
+  const pending=paid.filter(o=>!localDone.has(o.id)&&o.status!=='completed'&&o.status!=='entregado');
+  const done=paid.filter(o=>localDone.has(o.id)||o.status==='completed'||o.status==='entregado');
+  // Also count awaiting payment separately for info
+  const awaitingPayment=orders.filter(o=>o.id&&(o.status==='confirmed'||o.status==='confirmado')&&!localDone.has(o.id));
   document.getElementById('sp').textContent=pending.length;
   document.getElementById('sd').textContent=done.length;
-  document.getElementById('sc').textContent=active.length;
+  document.getElementById('sc').textContent=paid.length;
   document.getElementById('pb').textContent=pending.length+' pendientes';
-  document.getElementById('st').textContent='$'+active.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
-  if (!active.length){ cont.innerHTML=''; em.style.display='block'; return; }
+  document.getElementById('st').textContent='$'+paid.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
+  if (!paid.length && !awaitingPayment.length){ cont.innerHTML=''; em.style.display='block'; return; }
   em.style.display='none';
   let html = '';
+  // ── AWAITING PAYMENT BANNER ──
+  if(awaitingPayment.length){
+    html += `<div style="grid-column:1/-1;background:#2a1a00;border:1px solid #e8760a;border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:1.2rem;">⏳</span>
+      <div>
+        <div style="font-size:.82rem;font-weight:700;color:#e8760a;">${awaitingPayment.length} orden${awaitingPayment.length>1?'es':''} esperando confirmación de pago</div>
+        <div style="font-size:.72rem;color:#888;margin-top:2px;">Se mostrarán aquí automáticamente cuando el pago sea confirmado por Stripe</div>
+      </div>
+    </div>`;
+  }
   // ── PENDING SECTION ──
   if(pending.length){
     html += `<div style="grid-column:1/-1;padding:4px 0 8px;border-bottom:2px solid #e8760a;margin-bottom:4px;">
-      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:#e8760a;font-weight:800;">🔥 Pendientes (${pending.length})</span>
+      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:#e8760a;font-weight:800;">🔥 Pendientes — Pago Confirmado (${pending.length})</span>
     </div>`;
     html += pending.map(buildCard).join('');
-  } else {
+  } else if(!awaitingPayment.length) {
     html += `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#555;font-size:.88rem;">✅ Sin órdenes pendientes</div>`;
   }
   // ── COMPLETED SECTION ──

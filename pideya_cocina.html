@@ -433,9 +433,9 @@ function printT(id) {
   const o=allOrders.find(x=>x.id===id); if(!o) return;
   const ds=o.ts?new Date(o.ts).toLocaleString('es-DO'):'—';
   const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.address);
-  const qrUrl='https://chart.googleapis.com/chart?cht=qr&chs=180x180&chld=M|1&chl='+encodeURIComponent(mapsUrl);
-  const w=window.open('','_blank','width=420,height=800');
+  const w=window.open('','_blank','width=420,height=820');
   w.document.write(`<!DOCTYPE html><html><head><title>Ticket ${id}</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
     body{font-family:monospace;font-size:13px;padding:20px;max-width:320px;margin:0 auto;}
     h2,h3{text-align:center;}
@@ -444,10 +444,11 @@ function printT(id) {
     .b{font-weight:bold;font-size:1.05rem;}
     .qr-wrap{text-align:center;margin:14px 0;}
     .qr-wrap b{font-size:11px;display:block;margin-bottom:8px;}
-    .qr-wrap img{width:180px;height:180px;display:block;margin:0 auto;border:1px solid #eee;}
+    #qrcode{display:inline-block;margin:0 auto;}
+    #qrcode canvas,#qrcode img{display:block!important;margin:0 auto;}
     .qr-wrap a{display:block;margin-top:8px;font-size:11px;color:#333;text-decoration:none;font-weight:bold;}
     .qr-wrap p{font-size:10px;color:#666;margin-top:4px;}
-    #loading{text-align:center;font-size:11px;color:#888;margin:10px 0;}
+    @media print{button{display:none}}
   </style></head>
   <body>
   <h2>🍳 EL CONUCO RESTAURANTE</h2>
@@ -469,27 +470,26 @@ function printT(id) {
   <hr>
   <div class="qr-wrap">
     <b>📍 QR REPARTIDOR — NAVEGAR AL DESTINO</b>
-    <div id="loading">⏳ Cargando QR...</div>
-    <img id="qr-img" src="${qrUrl}" alt="QR Maps"
-      onload="document.getElementById('loading').style.display='none';this.style.display='block';"
-      onerror="document.getElementById('loading').innerHTML='<a href=&quot;${mapsUrl}&quot;>🗺️ Abrir Maps</a>';"
-      style="display:none;">
+    <div id="qrcode"></div>
     <a href="${mapsUrl}" target="_blank">🗺️ Abrir en Google Maps</a>
     <p>${o.address}</p>
   </div>
   <hr>
   <div style="text-align:center">¡Gracias! 🙏</div>
   <script>
-    // Wait for QR image to load, then print — max wait 4 seconds
-    var printed = false;
-    function doPrint() {
-      if (!printed) { printed = true; window.print(); }
-    }
-    var qr = document.getElementById('qr-img');
-    qr.addEventListener('load', function() { setTimeout(doPrint, 300); });
-    qr.addEventListener('error', function() { setTimeout(doPrint, 300); });
-    // Fallback: print after 4 seconds regardless
-    setTimeout(doPrint, 4000);
+    window.onload = function() {
+      try {
+        new QRCode(document.getElementById('qrcode'), {
+          text: '${mapsUrl.replace(/'/g,"\\'")}',
+          width: 180,
+          height: 180,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) {
+        document.getElementById('qrcode').innerHTML = '<a href="${mapsUrl}">🗺️ Abrir Google Maps</a>';
+      }
+      setTimeout(function(){ window.print(); }, 1200);
+    };
   <\/script>
   </body></html>`);
   w.document.close();

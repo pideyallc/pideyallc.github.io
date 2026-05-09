@@ -434,25 +434,37 @@ function printT(id) {
   const ds=o.ts?new Date(o.ts).toLocaleString('es-DO'):'—';
   const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.address);
   const w=window.open('','_blank','width=420,height=820');
+
+  // Minimal QR encoder — generates QR as SVG inline, no external deps
+  function makeQR(text) {
+    // Use a data URI approach with Google Charts as base64 embedded
+    // Fall back to showing the URL as text if blocked
+    const encoded = encodeURIComponent(text);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encoded}&format=svg`;
+  }
+
+  // Build SVG QR using goqr.me (reliable, returns SVG inline)
+  const qrSvgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mapsUrl)}&format=svg&ecc=M`;
+  const qrPngUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mapsUrl)}&format=png&ecc=M`;
+
   w.document.write(`<!DOCTYPE html><html><head><title>Ticket ${id}</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
   <style>
-    body{font-family:monospace;font-size:13px;padding:20px;max-width:320px;margin:0 auto;}
-    h2,h3{text-align:center;}
+    *{box-sizing:border-box;}
+    body{font-family:'Courier New',monospace;font-size:13px;padding:20px;max-width:320px;margin:0 auto;background:white;}
+    h2,h3{text-align:center;margin:4px 0;}
     hr{border:none;border-top:1px dashed #000;margin:8px 0;}
-    .r{display:flex;justify-content:space-between;}
+    .r{display:flex;justify-content:space-between;margin:2px 0;}
     .b{font-weight:bold;font-size:1.05rem;}
-    .qr-wrap{text-align:center;margin:14px 0;}
-    .qr-wrap b{font-size:11px;display:block;margin-bottom:8px;}
-    #qrcode{display:inline-block;margin:0 auto;}
-    #qrcode canvas,#qrcode img{display:block!important;margin:0 auto;}
-    .qr-wrap a{display:block;margin-top:8px;font-size:11px;color:#333;text-decoration:none;font-weight:bold;}
-    .qr-wrap p{font-size:10px;color:#666;margin-top:4px;}
-    @media print{button{display:none}}
+    .qr-section{text-align:center;margin:12px 0;padding:10px;border:1px dashed #ccc;border-radius:4px;}
+    .qr-section .title{font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+    .qr-section img{width:180px;height:180px;display:block;margin:0 auto;}
+    .qr-section .addr{font-size:9px;color:#666;margin-top:6px;word-break:break-all;}
+    .qr-section .link{display:block;font-size:10px;color:#000;font-weight:bold;margin-top:4px;text-decoration:none;}
+    @media print{body{padding:10px;}}
   </style></head>
   <body>
-  <h2>🍳 EL CONUCO RESTAURANTE</h2>
-  <h3 style="font-weight:normal">PideYa LLC · 715 Summit Ave, Union City NJ</h3>
+  <h2>EL CONUCO RESTAURANTE</h2>
+  <h3 style="font-weight:normal;font-size:11px;">PideYa LLC · 715 Summit Ave, Union City NJ</h3>
   <hr>
   <div class="r"><span><b>Orden:</b></span><span>${o.id}</span></div>
   <div class="r"><span><b>Fecha:</b></span><span>${ds}</span></div>
@@ -461,35 +473,39 @@ function printT(id) {
   <b>Tel:</b> +${o.phone}<br>
   <b>Dir:</b> ${o.address}
   <hr>
-  <b>PEDIDO:</b><br>${o.items.split('|').map(i=>'<div>'+i.trim()+'</div>').join('')}
+  <b>PEDIDO:</b><br>${o.items.split('|').map(i=>'<div style="margin:2px 0">'+i.trim()+'</div>').join('')}
   <hr>
   <div class="r"><span>Subtotal:</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
   <div class="r"><span>Tax NJ:</span><span>$${parseFloat(o.tax).toFixed(2)}</span></div>
   <div class="r"><span>Gestión:</span><span>$${parseFloat(o.gestion).toFixed(2)}</span></div>
   <div class="r b"><span>TOTAL:</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
   <hr>
-  <div class="qr-wrap">
-    <b>📍 QR REPARTIDOR — NAVEGAR AL DESTINO</b>
-    <div id="qrcode"></div>
-    <a href="${mapsUrl}" target="_blank">🗺️ Abrir en Google Maps</a>
-    <p>${o.address}</p>
+  <div class="qr-section">
+    <div class="title">📍 QR Repartidor — Navegar al destino</div>
+    <img id="qr1" src="${qrPngUrl}" alt="QR"
+      onload="this.style.display='block';document.getElementById('qr-status').style.display='none';"
+      onerror="this.style.display='none';document.getElementById('qr-fallback').style.display='block';">
+    <div id="qr-status" style="font-size:10px;color:#888;padding:10px;">Cargando QR...</div>
+    <div id="qr-fallback" style="display:none;padding:10px;">
+      <div style="font-size:10px;color:#c00;margin-bottom:6px;">⚠️ QR no disponible</div>
+    </div>
+    <a class="link" href="${mapsUrl}" target="_blank">🗺️ Abrir en Google Maps</a>
+    <div class="addr">${o.address}</div>
   </div>
   <hr>
-  <div style="text-align:center">¡Gracias! 🙏</div>
+  <div style="text-align:center;font-size:12px;">¡Gracias! 🙏</div>
   <script>
-    window.onload = function() {
-      try {
-        new QRCode(document.getElementById('qrcode'), {
-          text: '${mapsUrl.replace(/'/g,"\\'")}',
-          width: 180,
-          height: 180,
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } catch(e) {
-        document.getElementById('qrcode').innerHTML = '<a href="${mapsUrl}">🗺️ Abrir Google Maps</a>';
-      }
-      setTimeout(function(){ window.print(); }, 1200);
-    };
+    var done = false;
+    function go() { if(!done){done=true;window.print();} }
+    var img = document.getElementById('qr1');
+    // If image already loaded (cached)
+    if(img.complete && img.naturalWidth > 0) { setTimeout(go, 500); }
+    else {
+      img.addEventListener('load', function(){ setTimeout(go, 500); });
+      img.addEventListener('error', function(){ setTimeout(go, 500); });
+      // Max wait 5 seconds
+      setTimeout(go, 5000);
+    }
   <\/script>
   </body></html>`);
   w.document.close();

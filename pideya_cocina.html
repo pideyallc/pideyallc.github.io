@@ -485,7 +485,6 @@ function toDateStr(ts){
 // ── STATE ─────────────────────────────────────────────────────────────────
 let allOrders = [];
 let orderMap = {}; // id → order object for safe ticket opening
-let orderMap = {}; // lookup by Order ID to avoid JSON in onclick
 let audioCtx = null;
 let knownIds = new Set();
 let firstLoad = true;

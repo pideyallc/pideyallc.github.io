@@ -609,13 +609,13 @@ async function loadAll(){
 
 function updateAll(conn){
   const today=new Date().toISOString().slice(0,10);
+  const confToday=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today);
   const conf=allOrders.filter(o=>o.Status==='Confirmed').reverse();
   const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
   const todayRev=confToday.reduce((s,o)=>s+parseFloat(o.Total||0),0);
   const todayFees=confToday.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
 
   // KPIs
-  const confToday=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today);
   document.getElementById('kpiConf').textContent=confToday.length;
   document.getElementById('kpiZelle').textContent=zel.length;
   document.getElementById('kpiConn').textContent=conn;

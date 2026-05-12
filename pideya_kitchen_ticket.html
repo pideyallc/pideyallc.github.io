@@ -7,27 +7,18 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: 'Courier New', monospace; background:#f0f0f0; display:flex; justify-content:center; padding:20px; }
-
-  .ticket {
-    background:white; width:340px; padding:20px;
-    border:1px solid #ccc; border-radius:8px;
-    box-shadow:0 4px 20px rgba(0,0,0,0.15);
-  }
-
+  .ticket { background:white; width:340px; padding:20px; border:1px solid #ccc; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); }
   .header { text-align:center; border-bottom:2px dashed #333; padding-bottom:14px; margin-bottom:14px; }
   .logo { font-size:1.5rem; font-weight:bold; letter-spacing:2px; }
   .restaurant { font-size:0.85rem; color:#555; margin-top:4px; }
   .order-id { font-size:1.1rem; font-weight:bold; margin-top:8px; color:#e8760a; }
   .order-time { font-size:0.75rem; color:#888; }
-
   .section { margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed #ccc; }
   .section:last-of-type { border:none; }
   .section-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#888; margin-bottom:6px; }
-
   .field { display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.82rem; }
   .field .k { color:#555; }
   .field .v { font-weight:bold; text-align:right; max-width:200px; word-break:break-word; }
-
   .items-list { font-size:0.82rem; }
   .item-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dotted #eee; }
   .item-row:last-child { border:none; }
@@ -35,156 +26,130 @@
   .item-name { flex:1; padding:0 6px; }
   .item-price { font-weight:bold; }
   .item-note { font-size:0.72rem; color:#888; font-style:italic; padding-left:28px; }
-
   .totals { margin-top:10px; }
   .total-row { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px; }
+  .total-row.stripe-fee { color:#888; font-size:0.78rem; }
   .total-row.grand { font-size:1rem; font-weight:bold; border-top:2px solid #333; padding-top:6px; margin-top:6px; }
-
   .qr-section { text-align:center; margin-top:14px; padding-top:14px; border-top:1px dashed #ccc; }
-  .qr-section img { width:100px; height:100px; }
-  .qr-section p { font-size:0.7rem; color:#888; margin-top:4px; }
-
+  .qr-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#888; margin-bottom:8px; }
+  #qr-canvas { display:inline-block; }
+  #qr-canvas canvas, #qr-canvas img { width:150px !important; height:150px !important; }
+  .qr-addr { font-size:0.7rem; color:#888; margin-top:6px; }
+  .maps-link { display:inline-block; margin-top:6px; font-size:0.72rem; color:#e8760a; font-weight:bold; text-decoration:none; }
   .footer { text-align:center; margin-top:14px; padding-top:10px; border-top:2px dashed #333; font-size:0.72rem; color:#888; }
-
-  .print-btn {
-    display:block; width:100%; margin-top:20px; padding:12px;
-    background:#1a3a1a; color:white; border:none; border-radius:8px;
-    font-size:1rem; font-weight:bold; cursor:pointer;
-    font-family:inherit;
-  }
+  .print-btn { display:block; width:100%; margin-top:20px; padding:12px; background:#1a3a1a; color:white; border:none; border-radius:8px; font-size:1rem; font-weight:bold; cursor:pointer; font-family:inherit; }
   .print-btn:hover { background:#2d5a27; }
-
-  .no-order {
-    text-align:center; padding:40px 20px; color:#888;
-  }
+  .no-order { text-align:center; padding:40px 20px; color:#888; }
   .no-order .icon { font-size:3rem; margin-bottom:12px; }
-
   @media print {
     body { background:white; padding:0; }
     .ticket { box-shadow:none; border:none; width:100%; }
-    .print-btn { display:none; }
+    .print-btn { display:none !important; }
   }
 </style>
 </head>
 <body>
-<div class="ticket" id="ticket">
+<div class="ticket">
   <div id="ticket-content">
-    <div class="no-order">
-      <div class="icon">⏳</div>
-      <p>Cargando ticket...</p>
-    </div>
+    <div class="no-order"><div class="icon">⏳</div><p>Cargando ticket...</p></div>
   </div>
   <button class="print-btn" onclick="window.print()" id="print-btn" style="display:none">🖨️ Imprimir Ticket</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-function getParams() {
-  const p = new URLSearchParams(window.location.search);
-  return {
-    order:    p.get('order')    || '',
-    name:     p.get('name')     || '',
-    phone:    p.get('phone')    || '',
-    address:  p.get('address')  || '',
-    items:    p.get('items')    || '',
-    subtotal: p.get('subtotal') || '0',
-    tax:      p.get('tax')      || '0',
-    gestion:  p.get('gestion')  || '0',
-    total:    p.get('total')    || '0',
+function getParams(){
+  const p=new URLSearchParams(window.location.search);
+  return{
+    order:p.get('order')||'',name:p.get('name')||'',phone:p.get('phone')||'',
+    address:p.get('address')||'',items:p.get('items')||'',
+    subtotal:p.get('subtotal')||'0',tax:p.get('tax')||'0',
+    gestion:p.get('gestion')||'0',stripefee:p.get('stripefee')||'0',
+    total:p.get('total')||'0'
   };
 }
 
-function formatItems(itemsStr) {
-  if (!itemsStr) return '<div class="item-row"><span>Sin detalle</span></div>';
-  // Items are pipe-separated: "2x Mofongo de Camarones (sin sal) - $48.00"
-  return itemsStr.split('|').map(raw => {
-    raw = raw.trim();
-    // Match: QTYx Name (note) - $price  OR  QTYx Name - $price
-    const m = raw.match(/^(\d+)x\s+(.+?)\s+(?:\((.+?)\)\s+)?-\s+(\$[\d.]+)$/i);
-    if (m) {
-      const noteHtml = m[3] ? `<div class="item-note">📝 ${m[3]}</div>` : '';
-      return `<div class="item-row"><span class="item-qty">${m[1]}x</span><span class="item-name">${m[2]}</span><span class="item-price">${m[4]}</span></div>${noteHtml}`;
+function formatItems(str){
+  if(!str)return '<div class="item-row"><span>Sin detalle</span></div>';
+  return str.split('|').map(raw=>{
+    raw=raw.trim();
+    const m=raw.match(/^(\d+)x\s+(.+?)\s+(?:\((.+?)\)\s+)?-\s+\$?([\d.]+)$/i);
+    if(m){
+      const note=m[3]?`<div class="item-note">📝 ${m[3]}</div>`:'';
+      return `<div class="item-row"><span class="item-qty">${m[1]}x</span><span class="item-name">${m[2]}</span><span class="item-price">$${parseFloat(m[4]).toFixed(2)}</span></div>${note}`;
     }
     return `<div class="item-row"><span>${raw}</span></div>`;
   }).join('');
 }
 
-function buildQR(address) {
-  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
-  // Use Google Charts QR API — more reliable than qrserver
-  return `https://chart.googleapis.com/chart?cht=qr&chs=150x150&chld=M|1&chl=${encodeURIComponent(mapsUrl)}`;
-}
+function mapsUrl(addr){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);}
 
-function buildMapsUrl(address) {
-  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address);
-}
-
-function render() {
-  const p = getParams();
-
-  if (!p.order) {
-    document.getElementById('ticket-content').innerHTML = `
-      <div class="no-order">
-        <div class="icon">🎫</div>
-        <p>No se encontró información del pedido.<br>Este link se genera automáticamente al confirmar una orden.</p>
-      </div>`;
+function render(){
+  const p=getParams();
+  if(!p.order){
+    document.getElementById('ticket-content').innerHTML='<div class="no-order"><div class="icon">🎫</div><p>No se encontró información del pedido.<br>Este link se genera automáticamente al confirmar una orden.</p></div>';
     return;
   }
+  const addr=decodeURIComponent(p.address);
+  const name=decodeURIComponent(p.name);
+  const items=decodeURIComponent(p.items);
+  const fee=parseFloat(p.stripefee);
+  const now=new Date();
+  const timeStr=now.toLocaleString('es-DO',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const stripeFeeRow=fee>0?`<div class="total-row stripe-fee"><span>Cargo Stripe (3.5%)</span><span>$${fee.toFixed(2)}</span></div>`:'';
 
-  const now = new Date();
-  const timeStr = now.toLocaleString('es-DO', {
-    weekday:'short', month:'short', day:'numeric',
-    hour:'2-digit', minute:'2-digit'
-  });
-
-  document.getElementById('ticket-content').innerHTML = `
+  document.getElementById('ticket-content').innerHTML=`
     <div class="header">
       <div class="logo">🍳 PIDEYA</div>
       <div class="restaurant">El Conuco Restaurante</div>
       <div class="order-id">#${p.order}</div>
       <div class="order-time">${timeStr}</div>
     </div>
-
     <div class="section">
       <div class="section-label">👤 Cliente</div>
-      <div class="field"><span class="k">Nombre</span><span class="v">${decodeURIComponent(p.name)}</span></div>
+      <div class="field"><span class="k">Nombre</span><span class="v">${name}</span></div>
       <div class="field"><span class="k">Teléfono</span><span class="v">+${p.phone}</span></div>
-      <div class="field"><span class="k">Dirección</span><span class="v">${decodeURIComponent(p.address)}</span></div>
+      <div class="field"><span class="k">Dirección</span><span class="v">${addr}</span></div>
     </div>
-
     <div class="section">
       <div class="section-label">🍽️ Pedido</div>
-      <div class="items-list">${formatItems(decodeURIComponent(p.items))}</div>
+      <div class="items-list">${formatItems(items)}</div>
     </div>
-
     <div class="section">
       <div class="section-label">💰 Totales</div>
       <div class="totals">
         <div class="total-row"><span>Subtotal</span><span>$${parseFloat(p.subtotal).toFixed(2)}</span></div>
         <div class="total-row"><span>Tax NJ (6.625%)</span><span>$${parseFloat(p.tax).toFixed(2)}</span></div>
         <div class="total-row"><span>Gestión</span><span>$${parseFloat(p.gestion).toFixed(2)}</span></div>
-        <div class="total-row grand"><span>TOTAL A PAGAR</span><span>$${parseFloat(p.total).toFixed(2)}</span></div>
+        ${stripeFeeRow}
+        <div class="total-row grand"><span>TOTAL</span><span>$${parseFloat(p.total).toFixed(2)}</span></div>
       </div>
     </div>
-
-    <div class="qr-section">
-      <div class="section-label">📍 QR Repartidor — Navegar al destino</div>
-      <a href="${buildMapsUrl(decodeURIComponent(p.address))}" target="_blank">
-        <img src="${buildQR(decodeURIComponent(p.address))}" alt="QR Maps" width="150" height="150" onerror="this.outerHTML='<p style=color:#e8760a;font-weight:bold>📍 Toca para navegar</p>'">
-      </a>
-      <p>${decodeURIComponent(p.address)}</p>
-      <a href="${buildMapsUrl(decodeURIComponent(p.address))}" target="_blank" style="font-size:0.72rem;color:#e8760a;font-weight:bold;text-decoration:none;">🗺️ Abrir en Google Maps</a>
+    <div class="section qr-section">
+      <div class="qr-label">📍 QR Repartidor — Navegar al destino</div>
+      <a href="${mapsUrl(addr)}" target="_blank"><div id="qr-canvas"></div></a>
+      <div class="qr-addr">${addr}</div>
+      <a href="${mapsUrl(addr)}" target="_blank" class="maps-link">🗺️ Abrir en Google Maps</a>
     </div>
-
     <div class="footer">
       715 Summit Ave, Union City, NJ 07087<br>
-      PIDEYA LLC | pideyallc.github.io
+      PIDEYA LLC · pideyanj-ai.github.io
     </div>`;
 
-  document.getElementById('print-btn').style.display = 'block';
+  // QR with QRCode.js — no external API, always works
+  try{
+    new QRCode(document.getElementById('qr-canvas'),{
+      text:mapsUrl(addr),width:150,height:150,
+      colorDark:'#000000',colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.M
+    });
+  }catch(e){
+    document.getElementById('qr-canvas').innerHTML='<p style="color:#e8760a;font-weight:bold;padding:20px 0">📍 Usa el link de abajo</p>';
+  }
 
-  // Auto-print if ?print=1 in URL
-  if (new URLSearchParams(window.location.search).get('print') === '1') {
-    setTimeout(() => window.print(), 800);
+  document.getElementById('print-btn').style.display='block';
+  if(new URLSearchParams(window.location.search).get('print')==='1'){
+    setTimeout(()=>window.print(),1000);
   }
 }
 

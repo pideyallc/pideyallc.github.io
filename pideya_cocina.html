@@ -3,516 +3,764 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PIDEYA — Panel de Cocina</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>PIDEYA — Panel de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
-  --bg:#0d1a0d;--panel:#152015;--card:#1a2e1a;--border:#253525;
-  --green:#25d366;--orange:#e8760a;--red:#e84545;--yellow:#f0c040;--blue:#4a9eff;
-  --text:#e9edef;--muted:rgba(255,255,255,.45);
+  --bg:#0a1409;--sidebar:#0f1e0f;--panel:#152015;--card:#1a2e1a;--card2:#1e3320;--border:#263826;
+  --green:#25d366;--orange:#e8760a;--red:#e84545;--yellow:#f0c040;--blue:#4a9eff;--purple:#9b59b6;
+  --text:#e9edef;--muted:rgba(255,255,255,.42);--muted2:rgba(255,255,255,.22);
+  --sidebar-w:220px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
 
-/* ── LOGIN ── */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-.login-box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:360px;text-align:center;}
-.login-logo{font-size:2rem;font-weight:800;color:white;margin-bottom:6px;}
+/* ─── LOGIN ─────────────────────────────────────────────────────────── */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.login-card{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:44px 40px;width:100%;max-width:380px;text-align:center;}
+.login-logo{font-size:2.2rem;font-weight:900;color:white;letter-spacing:-1px;}
 .login-logo span{color:var(--orange);}
-.login-sub{color:var(--muted);font-size:.85rem;margin-bottom:28px;line-height:1.5;}
-.login-box input{width:100%;background:var(--bg);border:1px solid var(--border);color:white;border-radius:10px;padding:12px 16px;font-family:'Outfit',sans-serif;font-size:1rem;outline:none;margin-bottom:12px;letter-spacing:2px;}
-.login-box input:focus{border-color:var(--green);}
-.login-box button{width:100%;background:var(--green);color:#0d1a0d;border:none;border-radius:10px;padding:13px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;}
+.login-tagline{color:var(--muted);font-size:.88rem;margin:6px 0 32px;line-height:1.5;}
+.login-card input{width:100%;background:#0a1409;border:1px solid var(--border);color:white;border-radius:12px;padding:13px 16px;font-family:'Outfit',sans-serif;font-size:1rem;outline:none;margin-bottom:14px;letter-spacing:3px;text-align:center;}
+.login-card input:focus{border-color:var(--green);}
+.login-card button{width:100%;background:var(--green);color:#0a1409;border:none;border-radius:12px;padding:14px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:background .2s;}
+.login-card button:hover{background:#1da851;}
 .login-err{color:var(--red);font-size:.8rem;margin-top:10px;display:none;}
+.login-version{color:var(--muted2);font-size:.72rem;margin-top:20px;}
 
-/* ── DASHBOARD ── */
-.dashboard{display:none;flex-direction:column;min-height:100vh;}
+/* ─── SIDEBAR ────────────────────────────────────────────────────────── */
+#sidebar{width:var(--sidebar-w);background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;transition:transform .3s;}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+.sb-logo-text{font-size:1.1rem;font-weight:900;color:white;letter-spacing:-0.5px;}
+.sb-logo-text span{color:var(--orange);}
+.sb-sub{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.sb-nav{flex:1;padding:12px 8px;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:.85rem;font-weight:600;transition:all .15s;margin-bottom:2px;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
+.nav-item.active{background:rgba(37,211,102,.12);color:var(--green);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--green);border-radius:0 3px 3px 0;}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--orange);color:#0a1409;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:20px;min-width:18px;text-align:center;}
+.sb-bottom{padding:14px 8px;border-top:1px solid var(--border);}
+.sb-connected{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(37,211,102,.08);border-radius:10px;font-size:.78rem;color:var(--green);}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-.top-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;gap:10px;flex-wrap:wrap;}
-.top-logo{font-size:.95rem;font-weight:800;white-space:nowrap;}
-.top-logo span{color:var(--orange);}
-.top-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.connected-badge{display:flex;align-items:center;gap:5px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:20px;padding:4px 10px;font-size:.75rem;font-weight:700;color:var(--green);}
-.connected-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.refresh-time{color:var(--muted);font-size:.7rem;white-space:nowrap;}
-.icon-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.85rem;cursor:pointer;color:var(--text);transition:background .2s;font-family:'Outfit',sans-serif;}
-.icon-btn:hover{background:rgba(255,255,255,.12);}
-.btn-ref{background:rgba(37,211,102,.12);color:var(--green);border:1px solid rgba(37,211,102,.25);border-radius:8px;padding:6px 12px;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;}
-.btn-ref:hover{background:rgba(37,211,102,.22);}
-.btn-ref:disabled{opacity:.4;cursor:not-allowed;}
+/* ─── MAIN CONTENT ───────────────────────────────────────────────────── */
+#app{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.top-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;gap:12px;}
+.page-title{font-size:1rem;font-weight:800;color:white;}
+.top-actions{display:flex;align-items:center;gap:8px;}
+.refresh-time{color:var(--muted);font-size:.72rem;}
+.btn-icon{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:6px 11px;font-size:.82rem;cursor:pointer;color:var(--text);transition:background .15s;}
+.btn-icon:hover{background:rgba(255,255,255,.11);}
+.btn-green{background:rgba(37,211,102,.12);color:var(--green);border:1px solid rgba(37,211,102,.25);}
+.btn-green:hover{background:rgba(37,211,102,.2);}
+.btn-green:disabled{opacity:.35;cursor:not-allowed;}
 
-.stats-row{display:flex;gap:10px;padding:12px 18px;flex-wrap:wrap;}
-.stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:9px 14px;display:flex;align-items:center;gap:9px;min-width:120px;}
-.stat-val{font-size:1.25rem;font-weight:800;line-height:1;}
-.stat-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+/* ─── PAGES ──────────────────────────────────────────────────────────── */
+.page{display:none;flex:1;padding:20px 24px;overflow-y:auto;}
+.page.active{display:block;}
 
-.grid{display:grid;grid-template-columns:1fr 1fr;flex:1;}
-@media(max-width:680px){.grid{grid-template-columns:1fr;}}
-.col{padding:14px 18px;border-right:1px solid var(--border);}
-.col:last-child{border-right:none;}
-.col-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-.col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+/* ─── STATS GRID ─────────────────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.g::before{background:var(--green);}
+.kpi.y::before{background:var(--yellow);}
+.kpi.o::before{background:var(--orange);}
+.kpi.b::before{background:var(--blue);}
+.kpi.p::before{background:var(--purple);}
+.kpi-icon{font-size:1.4rem;margin-bottom:8px;}
+.kpi-val{font-size:1.6rem;font-weight:900;line-height:1;color:white;}
+.kpi-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:4px;}
+
+/* ─── SECTION HEADERS ────────────────────────────────────────────────── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:800;}
+.sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .dot-g{background:var(--green);}
 .dot-y{background:var(--yellow);}
-.col-head h3{font-size:.85rem;font-weight:800;}
-.col-cnt{background:rgba(255,255,255,.07);color:var(--muted);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;}
+.dot-o{background:var(--orange);}
+.dot-b{background:var(--blue);}
+.sec-cnt{background:rgba(255,255,255,.07);color:var(--muted);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;}
 
-/* ── ORDER CARDS ── */
-.order-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px;}
+/* ─── TWO-COLUMN LAYOUT ──────────────────────────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:800px){.two-col{grid-template-columns:1fr;}}
+
+/* ─── ORDER CARDS ────────────────────────────────────────────────────── */
+.order-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;transition:border-color .15s;}
+.order-card:hover{border-color:rgba(255,255,255,.15);}
 .order-card.type-c{border-left:3px solid var(--green);}
 .order-card.type-z{border-left:3px solid var(--yellow);}
-.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.order-card.type-d{border-left:3px solid var(--blue);opacity:.65;}
+.card-row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
 .card-id{font-size:.67rem;font-weight:800;color:var(--muted);letter-spacing:.8px;}
-.card-badge{font-size:.63rem;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
-.b-g{background:rgba(37,211,102,.15);color:var(--green);}
-.b-y{background:rgba(240,192,64,.12);color:var(--yellow);}
-.card-name{font-size:.92rem;font-weight:700;color:white;margin-bottom:1px;}
-.card-phone{font-size:.7rem;color:var(--muted);margin-bottom:2px;}
-.card-addr{font-size:.72rem;color:var(--muted);margin-bottom:8px;line-height:1.4;}
-.card-items{background:rgba(0,0,0,.25);border-radius:7px;padding:7px 9px;margin-bottom:8px;}
-.card-item{font-size:.73rem;color:rgba(255,255,255,.8);padding:2px 0;display:flex;gap:5px;}
+.badge{font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+.bg-g{background:rgba(37,211,102,.15);color:var(--green);}
+.bg-y{background:rgba(240,192,64,.12);color:var(--yellow);}
+.bg-b{background:rgba(74,158,255,.12);color:var(--blue);}
+.bg-r{background:rgba(232,69,69,.12);color:var(--red);}
+.card-name{font-size:.9rem;font-weight:700;color:white;}
+.card-meta{font-size:.7rem;color:var(--muted);margin:2px 0 8px;line-height:1.5;}
+.card-items{background:rgba(0,0,0,.2);border-radius:7px;padding:7px 10px;margin-bottom:9px;}
+.card-item{font-size:.72rem;color:rgba(255,255,255,.8);padding:2px 0;display:flex;gap:5px;}
 .card-item::before{content:'▸';color:var(--green);flex-shrink:0;}
 .card-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px;}
 .card-total{font-size:.92rem;font-weight:800;}
 .card-time{font-size:.67rem;color:var(--muted);}
-.card-btns{display:flex;gap:6px;flex-wrap:wrap;}
-.btn-sm{border:none;border-radius:7px;padding:5px 11px;font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:800;cursor:pointer;transition:opacity .15s;}
-.btn-sm:hover{opacity:.82;}
-.bt-g{background:var(--green);color:#0d1a0d;}
-.bt-y{background:var(--yellow);color:#0d1a0d;}
-.bt-b{background:var(--blue);color:white;}
-.bt-r{background:rgba(232,69,69,.2);color:var(--red);border:1px solid rgba(232,69,69,.3);}
+.card-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.btn-xs{border:none;border-radius:7px;padding:5px 10px;font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;transition:opacity .15s;}
+.btn-xs:hover{opacity:.82;}
+.bx-g{background:var(--green);color:#0a1409;}
+.bx-y{background:var(--yellow);color:#0a1409;}
+.bx-b{background:var(--blue);color:white;}
+.bx-o{background:var(--orange);color:white;}
+.bx-ghost{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--border);}
 
-.empty{text-align:center;padding:28px 14px;color:var(--muted);font-size:.83rem;}
-.empty em{display:block;font-size:1.8rem;margin-bottom:7px;font-style:normal;}
-.loading{text-align:center;padding:28px 14px;}
-.spin{width:26px;height:26px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 9px;}
+/* ─── SEARCH/FILTER BAR ──────────────────────────────────────────────── */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar input,.filter-bar select{background:var(--panel);border:1px solid var(--border);color:white;border-radius:9px;padding:8px 13px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;}
+.filter-bar input{flex:1;min-width:180px;}
+.filter-bar input::placeholder{color:var(--muted);}
+.filter-bar select option{background:var(--panel);}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--green);}
+
+/* ─── CHART ──────────────────────────────────────────────────────────── */
+.chart-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;}
+.chart-title{font-size:.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;}
+.bar{width:100%;background:rgba(37,211,102,.25);border-radius:4px 4px 0 0;transition:height .5s ease;position:relative;min-height:4px;cursor:default;}
+.bar:hover{background:rgba(37,211,102,.45);}
+.bar-lbl{font-size:.6rem;color:var(--muted);text-align:center;white-space:nowrap;}
+.bar-val{font-size:.6rem;color:var(--green);font-weight:700;text-align:center;}
+
+/* ─── REPORT TABLE ───────────────────────────────────────────────────── */
+.report-table{width:100%;border-collapse:collapse;}
+.report-table th{text-align:left;font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:8px 10px;border-bottom:1px solid var(--border);}
+.report-table td{font-size:.8rem;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);}
+.report-table tr:last-child td{border-bottom:none;}
+.report-table tr:hover td{background:rgba(255,255,255,.02);}
+
+/* ─── SETTINGS ───────────────────────────────────────────────────────── */
+.setting-group{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+.setting-group h3{font-size:.85rem;font-weight:800;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:16px;}
+.setting-row:last-child{border-bottom:none;padding-bottom:0;}
+.setting-label{font-size:.85rem;font-weight:600;}
+.setting-desc{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.setting-control select,.setting-control input[type=range]{background:var(--bg);border:1px solid var(--border);color:white;border-radius:8px;padding:6px 10px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;cursor:pointer;min-width:160px;}
+.setting-control select option{background:var(--panel);}
+.range-wrap{display:flex;align-items:center;gap:10px;}
+.range-wrap input{width:140px;}
+.range-val{font-size:.82rem;font-weight:800;min-width:38px;text-align:right;}
+
+/* ─── STATES ─────────────────────────────────────────────────────────── */
+.empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:.85rem;}
+.empty em{display:block;font-size:2rem;margin-bottom:9px;font-style:normal;}
+.loading-state{text-align:center;padding:32px 16px;}
+.spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading p{color:var(--muted);font-size:.8rem;}
-.err-box{background:rgba(232,69,69,.08);border:1px solid rgba(232,69,69,.25);border-radius:10px;padding:13px;color:#f08080;font-size:.78rem;line-height:1.6;margin:8px;}
+.loading-state p{color:var(--muted);font-size:.82rem;}
+.err-msg{background:rgba(232,69,69,.08);border:1px solid rgba(232,69,69,.2);border-radius:10px;padding:14px;color:#f08080;font-size:.8rem;line-height:1.6;margin:10px 0;}
 
-/* ── MODALS ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;}
-.overlay.open{display:flex;}
-
-/* Settings modal */
-.settings-box{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:24px;width:100%;max-width:360px;position:relative;}
-.settings-box h2{font-size:1rem;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
-.setting-row{margin-bottom:18px;}
-.setting-row label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.7px;}
-.setting-row select,.setting-row input[type=range]{width:100%;background:var(--bg);border:1px solid var(--border);color:white;border-radius:8px;padding:8px 12px;font-family:'Outfit',sans-serif;font-size:.88rem;outline:none;cursor:pointer;}
-.setting-row select option{background:#1a2e1a;}
-.range-row{display:flex;align-items:center;gap:10px;}
-.range-row input{flex:1;}
-.range-val{font-size:.88rem;font-weight:800;min-width:32px;text-align:right;}
-.settings-btns{display:flex;gap:8px;margin-top:20px;}
-.settings-btns button{flex:1;padding:10px;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;}
-.btn-save{background:var(--green);color:#0d1a0d;}
-.btn-test{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border)!important;}
-.s-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:none;border-radius:50%;width:28px;height:28px;color:var(--text);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
-
-/* Ticket modal */
-.ticket-wrap{background:white;color:#111;border-radius:18px;padding:22px 20px;width:100%;max-width:350px;position:relative;max-height:92vh;overflow-y:auto;}
-.t-close{position:absolute;top:12px;right:12px;background:#eee;border:none;border-radius:50%;width:27px;height:27px;font-size:.85rem;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;}
-.t-close:hover{background:#ddd;}
-.t-logo{font-weight:800;font-size:1.15rem;color:#1a3a1a;text-align:center;font-family:'Courier New',monospace;}
+/* ─── TICKET MODAL ───────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.ticket-paper{background:white;color:#111;border-radius:18px;padding:22px 20px;width:100%;max-width:340px;position:relative;max-height:94vh;overflow-y:auto;font-family:'Courier New',monospace;}
+.t-x{position:absolute;top:11px;right:11px;background:#eee;border:none;border-radius:50%;width:26px;height:26px;font-size:.82rem;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.t-x:hover{background:#ddd;}
+.t-logo{font-weight:800;font-size:1.1rem;color:#1a3a1a;text-align:center;}
 .t-logo span{color:#e8760a;}
-.t-rest{text-align:center;font-size:.7rem;color:#777;margin-top:2px;font-family:'Courier New',monospace;}
-.t-id{text-align:center;font-size:.7rem;color:#aaa;letter-spacing:1px;margin-top:5px;font-family:'Courier New',monospace;}
-.t-hr{border:none;border-top:1px dashed #ccc;margin:11px 0;}
-.t-row{display:flex;justify-content:space-between;font-size:.77rem;color:#444;padding:2px 0;gap:8px;font-family:'Courier New',monospace;}
-.t-row strong{color:#111;text-align:right;flex:1;}
-.t-items{background:#f7f7f7;border-radius:7px;padding:8px;margin:7px 0;font-family:'Courier New',monospace;}
-.t-item{font-size:.75rem;color:#333;padding:2px 0;}
-.t-total-line{display:flex;justify-content:space-between;font-size:.95rem;font-weight:800;border-top:2px solid #111;padding-top:6px;margin-top:6px;font-family:'Courier New',monospace;}
-#qrbox{display:flex;justify-content:center;margin:12px 0 3px;}
-#qrbox canvas,#qrbox img{width:140px!important;height:140px!important;}
-.qr-note{text-align:center;font-size:.65rem;color:#aaa;margin-bottom:9px;font-family:'Courier New',monospace;}
-.t-footer{text-align:center;font-size:.65rem;color:#aaa;margin-top:8px;padding-top:8px;border-top:1px dashed #ccc;font-family:'Courier New',monospace;}
-.t-print{width:100%;background:#1a3a1a;color:white;border:none;border-radius:9px;padding:11px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;margin-top:8px;}
-.t-print:hover{background:#2d5a27;}
+.t-header-info{text-align:center;font-size:.68rem;color:#777;margin-top:3px;line-height:1.5;}
+.t-ordid{text-align:center;font-size:.72rem;color:#aaa;letter-spacing:1px;margin-top:5px;}
+.t-hr{border:none;border-top:1px dashed #bbb;margin:11px 0;}
+.t-row{display:flex;justify-content:space-between;font-size:.76rem;color:#444;padding:2px 0;gap:8px;}
+.t-row strong{color:#111;text-align:right;max-width:58%;word-break:break-word;}
+.t-items-box{background:#f5f5f5;border-radius:7px;padding:8px 10px;margin:7px 0;}
+.t-item{font-size:.74rem;color:#333;padding:2px 0;border-bottom:1px dotted #ddd;}
+.t-item:last-child{border-bottom:none;}
+.t-total{display:flex;justify-content:space-between;font-size:.95rem;font-weight:800;border-top:2px solid #111;padding-top:7px;margin-top:7px;}
+#tkQR{display:flex;justify-content:center;margin:13px 0 4px;}
+#tkQR canvas,#tkQR img{width:140px!important;height:140px!important;}
+.t-qr-note{text-align:center;font-size:.64rem;color:#999;margin-bottom:9px;}
+.t-footer{text-align:center;font-size:.63rem;color:#bbb;margin-top:8px;padding-top:8px;border-top:1px dashed #bbb;line-height:1.6;}
+.t-print-btn{width:100%;background:#1a3a1a;color:white;border:none;border-radius:9px;padding:11px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;margin-top:8px;}
+.t-print-btn:hover{background:#2d5a27;}
 
-/* ── PRINT STYLES ── */
+/* ─── PRINT ──────────────────────────────────────────────────────────── */
 @media print{
-  body>*:not(.overlay){display:none!important;}
-  .overlay{position:static!important;background:none!important;display:block!important;padding:0!important;}
-  .ticket-wrap{max-height:none!important;border-radius:0!important;box-shadow:none!important;border:none!important;}
-  .t-close,.t-print,.icon-btn{display:none!important;}
-  #qrbox canvas{display:none!important;}
-  #qrbox img{display:block!important;width:140px!important;height:140px!important;}
+  body>*:not(.modal-overlay){display:none!important;}
+  .modal-overlay{position:static!important;background:none!important;display:block!important;padding:0!important;}
+  .ticket-paper{max-height:none!important;border-radius:0!important;box-shadow:none!important;border:none!important;}
+  .t-x,.t-print-btn{display:none!important;}
+  #tkQR canvas{display:none!important;}
+  #tkQR img{display:block!important;width:140px!important;height:140px!important;}
+}
+
+/* ─── MOBILE ─────────────────────────────────────────────────────────── */
+@media(max-width:720px){
+  #sidebar{transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #app{margin-left:0;}
+  .page{padding:14px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-box">
+<!-- ── LOGIN ─────────────────────────────────────────────────────────── -->
+<div id="loginScreen">
+  <div class="login-card">
     <div class="login-logo">🍽️ PIDE<span>YA</span></div>
-    <div class="login-sub">Panel de Cocina<br>El Conuco Restaurante</div>
-    <input type="password" id="passIn" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
-    <button onclick="login()">Entrar al Panel</button>
+    <div class="login-tagline">Panel de Gestión Completo<br>El Conuco Restaurante</div>
+    <input type="password" id="passIn" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Entrar al Panel</button>
     <div class="login-err" id="loginErr">Contraseña incorrecta.</div>
+    <div class="login-version">PIDEYA v3 · pideyanj-ai.github.io</div>
   </div>
 </div>
 
-<!-- DASHBOARD -->
-<div class="dashboard" id="dash">
+<!-- ── SIDEBAR ────────────────────────────────────────────────────────── -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">🍽️ PIDE<span>YA</span></div>
+    <div class="sb-sub">Panel de Gestión</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('cocina')"><span class="nav-icon">🍳</span>Cocina<span class="nav-badge" id="nb-cocina">0</span></div>
+    <div class="nav-item" onclick="showPage('zelle')"><span class="nav-icon">💸</span>Zelle Pendiente<span class="nav-badge" id="nb-zelle" style="background:var(--yellow)">0</span></div>
+    <div class="nav-item" onclick="showPage('ordenes')"><span class="nav-icon">📋</span>Todas las Órdenes</div>
+    <div class="nav-item" onclick="showPage('reportes')"><span class="nav-icon">📈</span>Reportes</div>
+    <div class="nav-item" onclick="showPage('ajustes')"><span class="nav-icon">⚙️</span>Ajustes</div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-connected"><div class="conn-dot"></div><span id="sbConn">0</span> clientes activos</div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ───────────────────────────────────────────────────────── -->
+<div id="app">
+  <!-- Top bar -->
   <div class="top-bar">
-    <div class="top-logo">🍽️ PIDE<span>YA</span> — Cocina</div>
-    <div class="top-right">
-      <div class="connected-badge"><div class="connected-dot"></div><span id="connCount">0</span> conectados</div>
+    <div class="page-title" id="pageTitle">📊 Dashboard</div>
+    <div class="top-actions">
       <span class="refresh-time" id="refTime">—</span>
-      <button class="icon-btn" onclick="openSettings()" title="Configuración">⚙️</button>
-      <button class="icon-btn" onclick="testSound()" title="Probar timbre">🔔</button>
-      <button class="btn-ref" id="btnRef" onclick="load()">⟳ Actualizar</button>
+      <button class="btn-icon" onclick="testSound()" title="Probar timbre">🔔</button>
+      <button class="btn-icon btn-green" id="btnRef" onclick="loadAll()">⟳ Actualizar</button>
     </div>
   </div>
 
-  <div class="stats-row">
-    <div class="stat"><span style="font-size:1.1rem">✅</span><div><div class="stat-val" id="sC">—</div><div class="stat-lbl">Confirmadas hoy</div></div></div>
-    <div class="stat"><span style="font-size:1.1rem">💸</span><div><div class="stat-val" id="sZ">—</div><div class="stat-lbl">Zelle pendiente</div></div></div>
-    <div class="stat"><span style="font-size:1.1rem">👥</span><div><div class="stat-val" id="sConn">—</div><div class="stat-lbl">Clientes activos</div></div></div>
-    <div class="stat"><span style="font-size:1.1rem">💰</span><div><div class="stat-val" id="sT">—</div><div class="stat-lbl">Total del día</div></div></div>
-    <div class="stat"><span style="font-size:1.1rem">📦</span><div><div class="stat-val" id="sAll">—</div><div class="stat-lbl">Órdenes totales</div></div></div>
+  <!-- ── PAGE: DASHBOARD ──────────────────────────────────────── -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-grid">
+      <div class="kpi g"><div class="kpi-icon">✅</div><div class="kpi-val" id="kpiConf">—</div><div class="kpi-lbl">Confirmadas hoy</div></div>
+      <div class="kpi y"><div class="kpi-icon">💸</div><div class="kpi-val" id="kpiZelle">—</div><div class="kpi-lbl">Zelle pendiente</div></div>
+      <div class="kpi b"><div class="kpi-icon">👥</div><div class="kpi-val" id="kpiConn">—</div><div class="kpi-lbl">Clientes activos</div></div>
+      <div class="kpi o"><div class="kpi-icon">💰</div><div class="kpi-val" id="kpiRev">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
+      <div class="kpi p"><div class="kpi-icon">📦</div><div class="kpi-val" id="kpiTotal">—</div><div class="kpi-lbl">Órdenes totales</div></div>
+      <div class="kpi g"><div class="kpi-icon">💳</div><div class="kpi-val" id="kpiFees">—</div><div class="kpi-lbl">Comisión Stripe</div></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Ingresos — últimos 7 días</div>
+      <div class="bar-chart" id="revenueChart"></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="sec-head"><div class="sec-title"><div class="sec-dot dot-g"></div>Últimas órdenes confirmadas</div></div>
+        <div id="dash-conf"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+      </div>
+      <div>
+        <div class="sec-head"><div class="sec-title"><div class="sec-dot dot-y"></div>Zelle pendientes</div></div>
+        <div id="dash-zelle"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+      </div>
+    </div>
   </div>
 
-  <div class="grid">
-    <div class="col">
-      <div class="col-head"><div class="col-dot dot-g"></div><h3>Confirmadas — Preparar ahora</h3><span class="col-cnt" id="cC">0</span></div>
-      <div id="listC"><div class="loading"><div class="spin"></div><p>Cargando...</p></div></div>
+  <!-- ── PAGE: COCINA ─────────────────────────────────────────── -->
+  <div class="page" id="page-cocina">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-dot dot-g"></div>Órdenes Confirmadas — Preparar ahora<span class="sec-cnt" id="cnt-cocina">0</span></div>
     </div>
-    <div class="col">
-      <div class="col-head"><div class="col-dot dot-y"></div><h3>Zelle — Esperar pago</h3><span class="col-cnt" id="cZ">0</span></div>
-      <div id="listZ"><div class="loading"><div class="spin"></div><p>Cargando...</p></div></div>
-    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">🖨️ Haz clic en <strong style="color:var(--green)">Imprimir Ticket</strong> en cada orden para imprimir el recibo de cocina con el código QR de navegación.</p>
+    <div id="list-cocina"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
   </div>
-</div>
 
-<!-- SETTINGS MODAL -->
-<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
-  <div class="settings-box">
-    <button class="s-close" onclick="closeSettings()">✕</button>
-    <h2>⚙️ Configuración del panel</h2>
+  <!-- ── PAGE: ZELLE ──────────────────────────────────────────── -->
+  <div class="page" id="page-zelle">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-dot dot-y"></div>Zelle Pendientes — Esperando pago<span class="sec-cnt" id="cnt-zelle">0</span></div>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">Al recibir el comprobante Zelle del cliente, escribe <strong style="color:var(--yellow)">PAGO [ID]</strong> en WhatsApp para confirmar la orden.</p>
+    <div id="list-zelle"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+  </div>
 
-    <div class="setting-row">
-      <label>🔔 Timbre — Duración de la alerta</label>
-      <select id="bellDuration">
-        <option value="1">1 toque</option>
-        <option value="2">2 toques</option>
-        <option value="3" selected>3 toques</option>
-        <option value="4">4 toques</option>
-        <option value="5">5 toques</option>
-        <option value="10">10 toques (alerta fuerte)</option>
+  <!-- ── PAGE: TODAS LAS ÓRDENES ──────────────────────────────── -->
+  <div class="page" id="page-ordenes">
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar por nombre, teléfono o ID..." oninput="filterOrders()">
+      <select id="statusFilter" onchange="filterOrders()">
+        <option value="">Todos los estados</option>
+        <option value="Confirmed">✅ Confirmadas</option>
+        <option value="Zelle-Pending">💸 Zelle Pendiente</option>
+      </select>
+      <select id="dateFilter" onchange="filterOrders()">
+        <option value="today">Hoy</option>
+        <option value="week">Esta semana</option>
+        <option value="all">Todas</option>
       </select>
     </div>
+    <div id="list-ordenes"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+  </div>
 
-    <div class="setting-row">
-      <label>🔊 Volumen del timbre</label>
-      <div class="range-row">
-        <input type="range" id="bellVolume" min="0.1" max="1" step="0.1" value="0.6" oninput="document.getElementById('volVal').textContent=Math.round(this.value*100)+'%'">
-        <span class="range-val" id="volVal">60%</span>
+  <!-- ── PAGE: REPORTES ───────────────────────────────────────── -->
+  <div class="page" id="page-reportes">
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi g"><div class="kpi-icon">💰</div><div class="kpi-val" id="rpRevHoy">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
+      <div class="kpi o"><div class="kpi-icon">📅</div><div class="kpi-val" id="rpRevSem">—</div><div class="kpi-lbl">Ingresos semana</div></div>
+      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripe">—</div><div class="kpi-lbl">Comisión Stripe</div></div>
+      <div class="kpi b"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestion">—</div><div class="kpi-lbl">Comisión Gestión</div></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Ingresos por día — últimos 14 días</div>
+      <div class="bar-chart" id="reportChart" style="height:140px"></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Resumen del día — Desglose</div>
+      <table class="report-table" id="reportTable">
+        <thead><tr><th>Concepto</th><th>Cantidad</th><th>Monto</th></tr></thead>
+        <tbody id="reportTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PAGE: AJUSTES ────────────────────────────────────────── -->
+  <div class="page" id="page-ajustes">
+    <div class="setting-group">
+      <h3>🔔 Timbre de nueva orden</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">Timbre activado</div><div class="setting-desc">Sonar al llegar una nueva orden</div></div>
+        <div class="setting-control">
+          <select id="sBellOn"><option value="yes">Activado</option><option value="no">Silencioso</option></select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Número de toques</div><div class="setting-desc">Cuántas veces suena el timbre</div></div>
+        <div class="setting-control">
+          <select id="sBellTones">
+            <option value="1">1 toque</option><option value="2">2 toques</option>
+            <option value="3">3 toques</option><option value="4">4 toques</option>
+            <option value="5">5 toques</option><option value="8">8 toques (fuerte)</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Volumen</div></div>
+        <div class="setting-control">
+          <div class="range-wrap">
+            <input type="range" id="sBellVol" min="0.1" max="1" step="0.1" value="0.6" oninput="document.getElementById('sVolVal').textContent=Math.round(this.value*100)+'%'">
+            <span class="range-val" id="sVolVal">60%</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn-icon" onclick="testSound()" style="flex:1;padding:10px;font-size:.85rem;">🔔 Probar timbre</button>
+        <button class="btn-icon btn-green" onclick="saveSettings()" style="flex:1;padding:10px;font-size:.85rem;font-weight:700;">✅ Guardar ajustes</button>
       </div>
     </div>
 
-    <div class="setting-row">
-      <label>⏱️ Auto-actualización</label>
-      <select id="refreshInterval">
-        <option value="30000">Cada 30 segundos</option>
-        <option value="60000" selected>Cada 1 minuto</option>
-        <option value="90000">Cada 90 segundos</option>
-        <option value="120000">Cada 2 minutos</option>
-        <option value="300000">Cada 5 minutos</option>
-      </select>
+    <div class="setting-group">
+      <h3>⏱️ Actualización automática</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">Intervalo</div><div class="setting-desc">Con qué frecuencia se recarga la información</div></div>
+        <div class="setting-control">
+          <select id="sRefresh">
+            <option value="30000">Cada 30 segundos</option>
+            <option value="60000">Cada 1 minuto</option>
+            <option value="90000">Cada 90 segundos</option>
+            <option value="120000">Cada 2 minutos</option>
+            <option value="300000">Cada 5 minutos</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="setting-row">
-      <label>🔔 Timbre activado</label>
-      <select id="bellEnabled">
-        <option value="yes" selected>Sí — sonar al llegar nueva orden</option>
-        <option value="no">No — silencioso</option>
-      </select>
-    </div>
-
-    <div class="settings-btns">
-      <button class="btn-test" onclick="testSound()">🔔 Probar timbre</button>
-      <button class="btn-save" onclick="saveSettings()">✅ Guardar</button>
+    <div class="setting-group">
+      <h3>ℹ️ Información del sistema</h3>
+      <div class="setting-row"><div class="setting-label">Restaurante</div><div style="font-size:.82rem;color:var(--muted)">El Conuco Restaurante</div></div>
+      <div class="setting-row"><div class="setting-label">Dirección</div><div style="font-size:.82rem;color:var(--muted)">715 Summit Ave, Union City, NJ 07087</div></div>
+      <div class="setting-row"><div class="setting-label">WhatsApp Bot</div><div style="font-size:.82rem;color:var(--green)">+1 (201) 772-7540</div></div>
+      <div class="setting-row"><div class="setting-label">Panel versión</div><div style="font-size:.82rem;color:var(--muted)">PIDEYA v3.0</div></div>
     </div>
   </div>
 </div>
 
-<!-- TICKET MODAL -->
-<div class="overlay" id="ticketOverlay" onclick="if(event.target===this)closeTicket()">
-  <div class="ticket-wrap">
-    <button class="t-close" onclick="closeTicket()">✕</button>
+<!-- ── TICKET MODAL ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="ticketModal" onclick="if(event.target===this)closeTicket()">
+  <div class="ticket-paper">
+    <button class="t-x" onclick="closeTicket()">✕</button>
     <div class="t-logo">🍳 PIDE<span>YA</span></div>
-    <div class="t-rest">El Conuco Restaurante · 715 Summit Ave, Union City NJ</div>
-    <div class="t-id" id="tId"></div>
+    <div class="t-header-info">El Conuco Restaurante<br>715 Summit Ave, Union City, NJ 07087<br>+1 (201) 772-7540</div>
+    <div class="t-ordid" id="tkId"></div>
     <hr class="t-hr">
-    <div class="t-row"><span>Cliente</span><strong id="tName"></strong></div>
-    <div class="t-row"><span>Teléfono</span><strong id="tPhone"></strong></div>
-    <div class="t-row"><span>Dirección</span><strong id="tAddr" style="max-width:58%;text-align:right"></strong></div>
-    <div class="t-row"><span>Hora</span><strong id="tTime"></strong></div>
-    <div class="t-row"><span>Pago</span><strong id="tPay"></strong></div>
+    <div class="t-row"><span>Cliente</span><strong id="tkName"></strong></div>
+    <div class="t-row"><span>Teléfono</span><strong id="tkPhone"></strong></div>
+    <div class="t-row"><span>Dirección</span><strong id="tkAddr"></strong></div>
+    <div class="t-row"><span>Fecha/Hora</span><strong id="tkTime"></strong></div>
+    <div class="t-row"><span>Método de pago</span><strong id="tkPay"></strong></div>
     <hr class="t-hr">
-    <div class="t-items" id="tItems"></div>
-    <div class="t-row"><span>Subtotal</span><strong id="tSub"></strong></div>
-    <div class="t-row"><span>Tax NJ (6.625%)</span><strong id="tTax"></strong></div>
-    <div class="t-row"><span>Gestión</span><strong id="tGes"></strong></div>
-    <div class="t-total-line"><span>TOTAL</span><span id="tTot"></span></div>
+    <div class="t-items-box" id="tkItems"></div>
+    <div class="t-row"><span>Subtotal</span><strong id="tkSub"></strong></div>
+    <div class="t-row"><span>Tax NJ (6.625%)</span><strong id="tkTax"></strong></div>
+    <div class="t-row"><span>Gestión</span><strong id="tkGes"></strong></div>
+    <div class="t-row" id="tkFeeRow" style="display:none"><span>Cargo Stripe (3.5%)</span><strong id="tkFee"></strong></div>
+    <div class="t-total"><span>TOTAL</span><span id="tkTot"></span></div>
     <hr class="t-hr">
-    <div id="qrbox"></div>
-    <div class="qr-note">📍 Escanear para navegar al destino</div>
-    <div class="t-footer">PIDEYA LLC · pideyanj-ai.github.io<br>El Conuco Restaurante · Union City, NJ</div>
-    <button class="t-print" onclick="window.print()">🖨️ Imprimir Ticket con QR</button>
+    <div id="tkQR"></div>
+    <div class="t-qr-note">📍 Escanea para navegar al destino de entrega</div>
+    <div class="t-footer">PIDEYA LLC · pideyanj-ai.github.io<br>¡Gracias por usar PIDEYA! 🍽️</div>
+    <button class="t-print-btn" onclick="window.print()">🖨️ Imprimir Ticket con QR</button>
   </div>
 </div>
 
 <script>
+// ── CONFIG ────────────────────────────────────────────────────────────────
 const PASS = 'pideya2024';
 const SHEET_ID = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
-const CSV_ORDERS  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+const CSV_ORDERS   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
 const CSV_SESSIONS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet2`;
 
-// ── SETTINGS (persisted in localStorage) ─────────────────────────────────
-const SETTINGS = {
-  bellTones: parseInt(localStorage.getItem('py_bellTones') || '3'),
-  bellVolume: parseFloat(localStorage.getItem('py_bellVolume') || '0.6'),
-  refreshMs: parseInt(localStorage.getItem('py_refreshMs') || '60000'),
-  bellEnabled: localStorage.getItem('py_bellEnabled') !== 'no'
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+const S = {
+  bellOn: localStorage.getItem('py_bOn') !== 'no',
+  tones:  parseInt(localStorage.getItem('py_tones') || '3'),
+  vol:    parseFloat(localStorage.getItem('py_vol')  || '0.6'),
+  refreshMs: parseInt(localStorage.getItem('py_ref') || '60000')
 };
 
-// ── SOUND ─────────────────────────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────────────────────────────
+let allOrders = [];
 let audioCtx = null;
-let knownOrderIds = new Set();
+let knownIds = new Set();
 let firstLoad = true;
 let refreshTimer = null;
+let currentPage = 'dashboard';
 
-function getCtx(){ if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
-
-function playBell(tones, vol){
-  if(!SETTINGS.bellEnabled) return;
-  try{
-    const ctx = getCtx();
-    for(let i=0;i<tones;i++){
-      const t = ctx.currentTime + i * 0.35;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, t);
-      osc.frequency.setValueAtTime(1100, t + 0.08);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(vol || SETTINGS.bellVolume, t + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-      osc.start(t); osc.stop(t + 0.35);
-    }
-  }catch(e){}
-}
-
-function testSound(){ playBell(SETTINGS.bellTones, SETTINGS.bellVolume); }
-
-function checkNewOrders(orders){
-  if(firstLoad){ orders.forEach(o=>knownOrderIds.add(o['Order ID'])); firstLoad=false; return; }
-  const newOnes = orders.filter(o=>
-    (o.Status==='Confirmed'||o.Status==='Zelle-Pending') &&
-    o['Order ID'] && !knownOrderIds.has(o['Order ID'])
-  );
-  if(newOnes.length>0){
-    newOnes.forEach(o=>knownOrderIds.add(o['Order ID']));
-    playBell(SETTINGS.bellTones);
-    let c=0; const orig=document.title;
-    const iv=setInterval(()=>{
-      document.title=c%2===0?`🔔 NUEVA ORDEN (${newOnes.length}) — PIDEYA Cocina`:orig;
-      if(++c>8){clearInterval(iv);document.title=orig;}
-    },500);
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+function doLogin(){
+  if(document.getElementById('passIn').value === PASS){
+    document.getElementById('loginScreen').style.display = 'none';
+    loadSettings();
+    loadAll();
+    refreshTimer = setInterval(loadAll, S.refreshMs);
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
   }
 }
 
-// ── SETTINGS MODAL ────────────────────────────────────────────────────────
-function openSettings(){
-  document.getElementById('bellDuration').value = SETTINGS.bellTones;
-  document.getElementById('bellVolume').value = SETTINGS.bellVolume;
-  document.getElementById('volVal').textContent = Math.round(SETTINGS.bellVolume*100)+'%';
-  document.getElementById('refreshInterval').value = SETTINGS.refreshMs;
-  document.getElementById('bellEnabled').value = SETTINGS.bellEnabled ? 'yes' : 'no';
-  document.getElementById('settingsOverlay').classList.add('open');
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+const pageTitles = {
+  dashboard:'📊 Dashboard', cocina:'🍳 Cocina — Preparar ahora',
+  zelle:'💸 Zelle Pendiente', ordenes:'📋 Todas las Órdenes',
+  reportes:'📈 Reportes', ajustes:'⚙️ Ajustes'
+};
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item')[['dashboard','cocina','zelle','ordenes','reportes','ajustes'].indexOf(id)]?.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[id];
+  currentPage = id;
+  if(id==='ordenes') filterOrders();
+  if(id==='reportes') renderReports();
 }
-function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
-function saveSettings(){
-  SETTINGS.bellTones = parseInt(document.getElementById('bellDuration').value);
-  SETTINGS.bellVolume = parseFloat(document.getElementById('bellVolume').value);
-  SETTINGS.refreshMs = parseInt(document.getElementById('refreshInterval').value);
-  SETTINGS.bellEnabled = document.getElementById('bellEnabled').value === 'yes';
-  localStorage.setItem('py_bellTones', SETTINGS.bellTones);
-  localStorage.setItem('py_bellVolume', SETTINGS.bellVolume);
-  localStorage.setItem('py_refreshMs', SETTINGS.refreshMs);
-  localStorage.setItem('py_bellEnabled', SETTINGS.bellEnabled ? 'yes' : 'no');
-  // Restart auto-refresh with new interval
-  if(refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(load, SETTINGS.refreshMs);
-  closeSettings();
-  load();
+
+// ── SOUND ─────────────────────────────────────────────────────────────────
+function getCtx(){ if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playBell(){
+  if(!S.bellOn) return;
+  try{
+    const ctx=getCtx();
+    for(let i=0;i<S.tones;i++){
+      const t=ctx.currentTime+i*0.38;
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type='sine'; osc.frequency.setValueAtTime(880,t); osc.frequency.setValueAtTime(1100,t+0.08);
+      gain.gain.setValueAtTime(0,t); gain.gain.linearRampToValueAtTime(S.vol,t+0.02); gain.gain.exponentialRampToValueAtTime(0.001,t+0.38);
+      osc.start(t); osc.stop(t+0.38);
+    }
+  }catch(e){}
+}
+function testSound(){ playBell(); }
+
+function checkNewOrders(orders){
+  if(firstLoad){ orders.forEach(o=>knownIds.add(o['Order ID'])); firstLoad=false; return; }
+  const news=orders.filter(o=>(o.Status==='Confirmed'||o.Status==='Zelle-Pending')&&o['Order ID']&&!knownIds.has(o['Order ID']));
+  if(news.length){
+    news.forEach(o=>knownIds.add(o['Order ID']));
+    playBell();
+    let c=0; const orig=document.title;
+    const iv=setInterval(()=>{ document.title=c++%2?orig:`🔔 NUEVA ORDEN — PIDEYA`; if(c>10){clearInterval(iv);document.title=orig;} },500);
+  }
 }
 
 // ── CSV PARSER ────────────────────────────────────────────────────────────
-function parseCSV(text){
+function parseCSV(txt){
   const rows=[]; let row=[],cell='',inQ=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(inQ){if(c==='"'&&text[i+1]==='"'){cell+='"';i++;}else if(c==='"'){inQ=false;}else cell+=c;}
-    else{if(c==='"'){inQ=true;}else if(c===','){row.push(cell);cell='';}else if(c==='\n'||c==='\r'){row.push(cell);cell='';if(row.some(v=>v))rows.push(row);row=[];if(c==='\r'&&text[i+1]==='\n')i++;}else cell+=c;}
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(inQ){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++;}else if(c==='"')inQ=false;else cell+=c;}
+    else{if(c==='"')inQ=true;else if(c===','){row.push(cell);cell='';}else if(c==='\n'||c==='\r'){row.push(cell);cell='';if(row.some(v=>v))rows.push(row);row=[];if(c==='\r'&&txt[i+1]==='\n')i++;}else cell+=c;}
   }
   if(cell||row.length){row.push(cell);if(row.some(v=>v))rows.push(row);}
   return rows;
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────────────────
-function login(){
-  if(document.getElementById('passIn').value===PASS){
-    document.getElementById('loginWrap').style.display='none';
-    document.getElementById('dash').style.display='flex';
-    load();
-    refreshTimer = setInterval(load, SETTINGS.refreshMs);
-  } else {
-    document.getElementById('loginErr').style.display='block';
-  }
-}
-
-// ── LOAD DATA ─────────────────────────────────────────────────────────────
-async function load(){
+// ── LOAD ALL DATA ─────────────────────────────────────────────────────────
+async function loadAll(){
   const btn=document.getElementById('btnRef');
   btn.disabled=true; btn.textContent='⟳ Cargando...';
   try{
-    const [ordersRes, sessionsRes] = await Promise.all([
-      fetch(CSV_ORDERS  + '&_=' + Date.now()),
-      fetch(CSV_SESSIONS + '&_=' + Date.now())
+    const [or,sr] = await Promise.all([
+      fetch(CSV_ORDERS+'&_='+Date.now()),
+      fetch(CSV_SESSIONS+'&_='+Date.now())
     ]);
-    // Parse orders
-    let orders = [];
-    if(ordersRes.ok){
-      const rows = parseCSV(await ordersRes.text());
+    // Orders
+    if(or.ok){
+      const rows=parseCSV(await or.text());
       if(rows.length>=2){
-        const h = rows[0].map(x=>x.trim());
-        orders = rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||'').trim());return o;});
+        const h=rows[0].map(x=>x.trim());
+        allOrders=rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||'').trim());return o;});
       }
     }
-    // Parse sessions (for connected clients count)
-    let connected = 0;
-    if(sessionsRes.ok){
-      const srows = parseCSV(await sessionsRes.text());
+    // Sessions (connected clients)
+    let conn=0;
+    if(sr.ok){
+      const srows=parseCSV(await sr.text());
       if(srows.length>=2){
-        const sh = srows[0].map(x=>x.trim());
-        const stepIdx = sh.indexOf('Step');
-        if(stepIdx>=0){
-          const activeSessions = srows.slice(1).filter(r=>{
-            const step=(r[stepIdx]||'').trim();
-            return step && step!=='start' && step!=='agent_online';
-          });
-          connected = activeSessions.length;
-        }
+        const sh=srows[0].map(x=>x.trim());
+        const si=sh.indexOf('Step');
+        if(si>=0) conn=srows.slice(1).filter(r=>{const s=(r[si]||'').trim();return s&&s!=='start'&&s!=='agent_online';}).length;
       }
     }
-    document.getElementById('connCount').textContent = connected;
-    document.getElementById('sConn').textContent = connected;
-    checkNewOrders(orders);
-    renderOrders(orders);
+    checkNewOrders(allOrders);
+    updateAll(conn);
   }catch(e){
-    document.getElementById('listC').innerHTML=`<div class="err-box">❌ Error cargando datos.<br><small>${e.message}</small><br><br>Asegúrate de que el Google Sheet está compartido como <em>"Cualquier persona con el enlace puede ver"</em>.</div>`;
-    document.getElementById('listZ').innerHTML='';
+    document.getElementById('list-cocina').innerHTML=`<div class="err-msg">❌ Error cargando datos.<br><small>${e.message}</small><br><br>Asegúrate de que el Google Sheet está compartido como <em>"Cualquier persona con el enlace puede ver"</em>.</div>`;
   }finally{
     btn.disabled=false; btn.textContent='⟳ Actualizar';
     document.getElementById('refTime').textContent='Actualizado: '+new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
   }
 }
 
-function renderOrders(orders){
-  const today = new Date().toISOString().slice(0,10);
-  const conf  = orders.filter(o=>o.Status==='Confirmed'&&(o.Timestamp||'').slice(0,10)===today).reverse();
-  const zel   = orders.filter(o=>o.Status==='Zelle-Pending').reverse();
-  const tot   = conf.reduce((s,o)=>s+parseFloat(o.Total||0),0);
+function updateAll(conn){
+  const today=new Date().toISOString().slice(0,10);
+  const conf=allOrders.filter(o=>o.Status==='Confirmed'&&(o.Timestamp||'').slice(0,10)===today).reverse();
+  const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
+  const todayRev=conf.reduce((s,o)=>s+parseFloat(o.Total||0),0);
+  const todayFees=conf.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
 
-  document.getElementById('cC').textContent = conf.length;
-  document.getElementById('cZ').textContent = zel.length;
-  document.getElementById('sC').textContent = conf.length;
-  document.getElementById('sZ').textContent = zel.length;
-  document.getElementById('sT').textContent = '$'+tot.toFixed(2);
-  document.getElementById('sAll').textContent = orders.length;
+  // KPIs
+  document.getElementById('kpiConf').textContent=conf.length;
+  document.getElementById('kpiZelle').textContent=zel.length;
+  document.getElementById('kpiConn').textContent=conn;
+  document.getElementById('kpiRev').textContent='$'+todayRev.toFixed(2);
+  document.getElementById('kpiTotal').textContent=allOrders.length;
+  document.getElementById('kpiFees').textContent='$'+todayFees.toFixed(2);
 
-  document.getElementById('listC').innerHTML = conf.length
-    ? conf.map(o=>card(o,'c')).join('')
-    : '<div class="empty"><em>✅</em>Sin órdenes confirmadas hoy</div>';
-  document.getElementById('listZ').innerHTML = zel.length
-    ? zel.map(o=>card(o,'z')).join('')
-    : '<div class="empty"><em>💸</em>Sin órdenes Zelle pendientes</div>';
+  // Badges
+  document.getElementById('nb-cocina').textContent=conf.length;
+  document.getElementById('nb-zelle').textContent=zel.length;
+  document.getElementById('sbConn').textContent=conn;
+
+  // Dashboard preview (last 5)
+  document.getElementById('dash-conf').innerHTML=conf.length?conf.slice(0,5).map(o=>card(o,'c',true)).join(''):'<div class="empty"><em>✅</em>Sin órdenes hoy</div>';
+  document.getElementById('dash-zelle').innerHTML=zel.length?zel.slice(0,5).map(o=>card(o,'z',true)).join(''):'<div class="empty"><em>💸</em>Sin pendientes</div>';
+
+  // Cocina page
+  document.getElementById('cnt-cocina').textContent=conf.length;
+  document.getElementById('list-cocina').innerHTML=conf.length?conf.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
+
+  // Zelle page
+  document.getElementById('cnt-zelle').textContent=zel.length;
+  document.getElementById('list-zelle').innerHTML=zel.length?zel.map(o=>card(o,'z',false)).join(''):'<div class="empty"><em>💸</em>No hay órdenes Zelle pendientes</div>';
+
+  // Revenue chart
+  renderChart('revenueChart', 7);
+  if(currentPage==='ordenes') filterOrders();
+  if(currentPage==='reportes') renderReports();
 }
 
-function card(o,type){
+// ── ORDER CARD ────────────────────────────────────────────────────────────
+function card(o, type, compact){
   const items=(o.Items||'').split(' | ').map(i=>`<div class="card-item">${i}</div>`).join('');
   const time=o.Timestamp?new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}):'—';
-  const badge=type==='c'
-    ?'<span class="card-badge b-g">✅ Confirmada</span>'
-    :'<span class="card-badge b-y">💸 Zelle Pendiente</span>';
-  const btnColor=type==='c'?'bt-g':'bt-y';
+  const badge=type==='c'?'<span class="badge bg-g">✅ Confirmada</span>':'<span class="badge bg-y">💸 Zelle Pendiente</span>';
+  const bticket=type==='c'?'bx-g':'bx-y';
+  const phone=o.Phone?`<br>📱 +${o.Phone}`:'';
   return `<div class="order-card type-${type}">
-    <div class="card-top"><span class="card-id">#${o['Order ID']||'—'}</span>${badge}</div>
+    <div class="card-row1"><span class="card-id">#${o['Order ID']||'—'}</span>${badge}</div>
     <div class="card-name">${o.Name||'—'}</div>
-    <div class="card-phone">📱 +${o.Phone||'—'}</div>
-    <div class="card-addr">📍 ${o.Address||'—'}</div>
-    <div class="card-items">${items||'(sin items)'}</div>
+    <div class="card-meta">📍 ${o.Address||'—'}${phone}</div>
+    ${compact?'':`<div class="card-items">${items||'(sin items)'}</div>`}
     <div class="card-foot">
       <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div><div class="card-time">⏰ ${time}</div></div>
       <div class="card-btns">
-        <button class="btn-sm ${btnColor}" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Ticket</button>
-        <button class="btn-sm bt-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}")'>🗺️ Maps</button>
+        <button class="btn-xs ${bticket}" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Imprimir Ticket</button>
+        <button class="btn-xs bx-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}","${o.Name||''}")'>🗺️</button>
       </div>
     </div>
   </div>`;
 }
 
-function openMaps(addr){ window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr),'_blank'); }
+// ── FILTER ORDERS PAGE ────────────────────────────────────────────────────
+function filterOrders(){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const st=document.getElementById('statusFilter')?.value||'';
+  const df=document.getElementById('dateFilter')?.value||'today';
+  const today=new Date().toISOString().slice(0,10);
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+
+  let filtered=allOrders.filter(o=>{
+    if(st && o.Status!==st) return false;
+    if(df==='today' && (o.Timestamp||'').slice(0,10)!==today) return false;
+    if(df==='week' && (o.Timestamp||'').slice(0,10)<weekAgo) return false;
+    if(q && !`${o['Order ID']} ${o.Name} ${o.Phone} ${o.Address} ${o.Items}`.toLowerCase().includes(q)) return false;
+    return true;
+  }).reverse();
+
+  const type=o=>o.Status==='Confirmed'?'c':o.Status==='Zelle-Pending'?'z':'d';
+  document.getElementById('list-ordenes').innerHTML=filtered.length
+    ?filtered.map(o=>`<div class="order-card type-${type(o)}">
+        <div class="card-row1"><span class="card-id">#${o['Order ID']||'—'}</span>
+          ${o.Status==='Confirmed'?'<span class="badge bg-g">✅ Confirmada</span>':o.Status==='Zelle-Pending'?'<span class="badge bg-y">💸 Zelle Pendiente</span>':'<span class="badge bg-b">'+o.Status+'</span>'}
+        </div>
+        <div class="card-name">${o.Name||'—'}</div>
+        <div class="card-meta">📍 ${o.Address||'—'}<br>📱 +${o.Phone||'—'} · ⏰ ${o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</div>
+        <div class="card-items">${(o.Items||'').split(' | ').map(i=>`<div class="card-item">${i}</div>`).join('')}</div>
+        <div class="card-foot">
+          <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div></div>
+          <div class="card-btns">
+            <button class="btn-xs bx-g" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Imprimir Ticket</button>
+            <button class="btn-xs bx-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}","${o.Name||''}")'>🗺️ Maps</button>
+          </div>
+        </div>
+      </div>`).join('')
+    :'<div class="empty"><em>📋</em>No se encontraron órdenes</div>';
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────
+function renderReports(){
+  const today=new Date().toISOString().slice(0,10);
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+  const conf=allOrders.filter(o=>o.Status==='Confirmed');
+  const todayO=conf.filter(o=>(o.Timestamp||'').slice(0,10)===today);
+  const weekO=conf.filter(o=>(o.Timestamp||'').slice(0,10)>=weekAgo);
+
+  document.getElementById('rpRevHoy').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
+  document.getElementById('rpRevSem').textContent='$'+weekO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
+  document.getElementById('rpStripe').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2);
+  document.getElementById('rpGestion').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2);
+
+  // Report table
+  const zelleToday=allOrders.filter(o=>o.Status==='Zelle-Pending'&&(o.Timestamp||'').slice(0,10)===today);
+  const rows=[
+    ['Órdenes tarjeta hoy', todayO.length, '$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
+    ['Órdenes Zelle hoy', zelleToday.length, '$'+zelleToday.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
+    ['Subtotal bruto', todayO.length+zelleToday.length, '$'+[...todayO,...zelleToday].reduce((s,o)=>s+parseFloat(o.Subtotal||0),0).toFixed(2)],
+    ['Tax NJ cobrado', '—', '$'+[...todayO,...zelleToday].reduce((s,o)=>s+parseFloat(o.Tax||0),0).toFixed(2)],
+    ['Comisión Gestión', '—', '$'+todayO.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2)],
+    ['Comisión Stripe', '—', '$'+todayO.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2)],
+  ];
+  document.getElementById('reportTbody').innerHTML=rows.map(([c,n,m])=>`<tr><td>${c}</td><td style="font-weight:700">${n}</td><td style="font-weight:700;color:var(--green)">${m}</td></tr>`).join('');
+
+  renderChart('reportChart', 14);
+}
+
+// ── CHART ─────────────────────────────────────────────────────────────────
+function renderChart(id, days){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const data=[];
+  for(let i=days-1;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000);
+    const ds=d.toISOString().slice(0,10);
+    const lbl=d.toLocaleDateString('es-DO',{weekday:'short',day:'numeric'});
+    const rev=allOrders.filter(o=>o.Status==='Confirmed'&&(o.Timestamp||'').slice(0,10)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);
+    data.push({lbl,rev});
+  }
+  const max=Math.max(...data.map(d=>d.rev),1);
+  el.innerHTML=data.map(d=>`<div class="bar-wrap">
+    <div class="bar-val">${d.rev>0?'$'+d.rev.toFixed(0):''}</div>
+    <div class="bar" style="height:${Math.max((d.rev/max)*100,d.rev>0?8:2)}%" title="$${d.rev.toFixed(2)}"></div>
+    <div class="bar-lbl">${d.lbl}</div>
+  </div>`).join('');
+}
 
 // ── TICKET MODAL ──────────────────────────────────────────────────────────
 function openTicket(o){
-  const addr = o.Address||'';
-  document.getElementById('tId').textContent = 'Orden #'+(o['Order ID']||'—');
-  document.getElementById('tName').textContent = o.Name||'—';
-  document.getElementById('tPhone').textContent = o.Phone?'+'+o.Phone:'—';
-  document.getElementById('tAddr').textContent = addr;
-  document.getElementById('tTime').textContent = o.Timestamp
-    ? new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-  document.getElementById('tPay').textContent = o.Status==='Zelle-Pending'?'💸 Zelle (Pendiente)':'✅ Tarjeta Confirmado';
-  document.getElementById('tSub').textContent = '$'+parseFloat(o.Subtotal||0).toFixed(2);
-  document.getElementById('tTax').textContent = '$'+parseFloat(o.Tax||0).toFixed(2);
-  document.getElementById('tGes').textContent = '$'+parseFloat(o.Gestion||0).toFixed(2);
-  document.getElementById('tTot').textContent = '$'+parseFloat(o.Total||0).toFixed(2);
-  document.getElementById('tItems').innerHTML = (o.Items||'').split(' | ').map(i=>`<div class="t-item">• ${i}</div>`).join('');
-
-  // QR code — links to Google Maps for delivery navigation
-  const qrbox = document.getElementById('qrbox');
-  qrbox.innerHTML = '';
-  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);
+  const addr=o.Address||'';
+  const fee=parseFloat(o.StripeFee||0);
+  document.getElementById('tkId').textContent='Orden #'+(o['Order ID']||'—');
+  document.getElementById('tkName').textContent=o.Name||'—';
+  document.getElementById('tkPhone').textContent=o.Phone?'+'+o.Phone:'—';
+  document.getElementById('tkAddr').textContent=addr;
+  document.getElementById('tkTime').textContent=o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('tkPay').textContent=o.Status==='Zelle-Pending'?'💸 Zelle (Pendiente)':'✅ Tarjeta — Pagado';
+  document.getElementById('tkSub').textContent='$'+parseFloat(o.Subtotal||0).toFixed(2);
+  document.getElementById('tkTax').textContent='$'+parseFloat(o.Tax||0).toFixed(2);
+  document.getElementById('tkGes').textContent='$'+parseFloat(o.Gestion||0).toFixed(2);
+  document.getElementById('tkTot').textContent='$'+parseFloat(o.Total||0).toFixed(2);
+  const feeRow=document.getElementById('tkFeeRow');
+  if(fee>0){document.getElementById('tkFee').textContent='$'+fee.toFixed(2);feeRow.style.display='flex';}
+  else feeRow.style.display='none';
+  document.getElementById('tkItems').innerHTML=(o.Items||'').split(' | ').map(i=>`<div class="t-item">• ${i}</div>`).join('');
+  // QR — Google Maps link for delivery address
+  const qrEl=document.getElementById('tkQR');
+  qrEl.innerHTML='';
+  const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);
   try{
-    new QRCode(qrbox,{
-      text: mapsUrl,
-      width:140, height:140,
-      colorDark:'#000', colorLight:'#fff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  }catch(e){ qrbox.innerHTML='<p style="color:#e8760a;font-weight:bold;padding:16px 0;font-family:Courier New">📍 Usa el link de Maps</p>'; }
-
-  document.getElementById('ticketOverlay').classList.add('open');
+    new QRCode(qrEl,{text:mapsUrl,width:140,height:140,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){qrEl.innerHTML='<p style="color:#e8760a;font-weight:bold;padding:14px;font-family:Courier New">📍 Escanea para navegar</p>';}
+  document.getElementById('ticketModal').classList.add('open');
 }
-function closeTicket(){ document.getElementById('ticketOverlay').classList.remove('open'); }
+function closeTicket(){ document.getElementById('ticketModal').classList.remove('open'); }
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    closeTicket();
-    closeSettings();
-  }
-});
+function openMaps(addr){ window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr),'_blank'); }
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+function loadSettings(){
+  document.getElementById('sBellOn').value=S.bellOn?'yes':'no';
+  document.getElementById('sBellTones').value=S.tones;
+  document.getElementById('sBellVol').value=S.vol;
+  document.getElementById('sVolVal').textContent=Math.round(S.vol*100)+'%';
+  document.getElementById('sRefresh').value=S.refreshMs;
+}
+function saveSettings(){
+  S.bellOn=document.getElementById('sBellOn').value==='yes';
+  S.tones=parseInt(document.getElementById('sBellTones').value);
+  S.vol=parseFloat(document.getElementById('sBellVol').value);
+  S.refreshMs=parseInt(document.getElementById('sRefresh').value);
+  localStorage.setItem('py_bOn',S.bellOn?'yes':'no');
+  localStorage.setItem('py_tones',S.tones);
+  localStorage.setItem('py_vol',S.vol);
+  localStorage.setItem('py_ref',S.refreshMs);
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer=setInterval(loadAll,S.refreshMs);
+  alert('✅ Ajustes guardados correctamente.');
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeTicket(); });
 </script>
 </body>
 </html>

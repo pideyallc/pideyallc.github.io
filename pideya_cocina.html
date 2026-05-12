@@ -329,7 +329,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
       <select id="dateFilter" onchange="filterOrders()">
         <option value="today">Hoy</option>
         <option value="week">Esta semana</option>
-        <option value="all">Todas</option>
+        <option value="all" selected>Todas</option>
       </select>
     </div>
     <div id="list-ordenes"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
@@ -462,32 +462,20 @@ const S = {
   refreshMs: parseInt(localStorage.getItem('py_ref') || '60000')
 };
 
-// ── DATE HELPER ────────────────────────────────────────────────────────────
-// Google Sheets gviz CSV exports dates in locale format e.g. "12/5/2026, 9:30 a.m."
-// That is DD/MM/YYYY (Spanish locale). JS parses M/D/YYYY so "12/5" becomes Dec 5.
-// This function resolves the ambiguity using proximity to today.
+// ── DATE HELPER ─────────────────────────────────────────────────────────
+// Google Sheets Spanish locale exports as "D/M/YYYY, H:MM a.m./p.m."
+// Day comes FIRST (DD/MM/YYYY). Confirmed from live data:
+// "12/5/2026, 9:30 a.m." = May 12 2026, NOT December 5.
 function toDateStr(ts){
   if(!ts) return '';
-  ts = (ts+'').trim();
-  // Match D/M/YYYY or DD/MM/YYYY patterns (with optional time after comma)
-  const m = ts.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  ts=(ts+'').trim();
+  var m=ts.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if(m){
-    const a=parseInt(m[1]), b=parseInt(m[2]), y=parseInt(m[3]);
-    // If first number >12 it must be the day (DD/MM)
-    if(a>12) return y+'-'+String(b).padStart(2,'0')+'-'+String(a).padStart(2,'0');
-    // If second number >12 it must be the day (MM/DD, unlikely for this sheet)
-    if(b>12) return y+'-'+String(a).padStart(2,'0')+'-'+String(b).padStart(2,'0');
-    // Ambiguous (both <=12): use proximity to today to decide
-    const now=new Date();
-    const asDD_MM=new Date(y,b-1,a); // treat first as Day, second as Month
-    const asMM_DD=new Date(y,a-1,b); // treat first as Month, second as Day
-    const best=Math.abs(asDD_MM-now)<=Math.abs(asMM_DD-now)?asDD_MM:asMM_DD;
-    return best.toISOString().slice(0,10);
+    // Spanish locale DD/MM/YYYY: first=day, second=month
+    return m[3]+'-'+(m[2].length===1?'0'+m[2]:m[2])+'-'+(m[1].length===1?'0'+m[1]:m[1]);
   }
-  // Handle "a.m."/"p.m." which JS can't parse — normalize to AM/PM
-  ts = ts.replace(/\ba\.m\.\b/gi,'AM').replace(/\bp\.m\.\b/gi,'PM');
-  try{ const d=new Date(ts); if(!isNaN(d)) return d.toISOString().slice(0,10); }
-  catch(e){}
+  ts=ts.replace(/\ba\.m\.\b/gi,'AM').replace(/\bp\.m\.\b/gi,'PM');
+  try{var d=new Date(ts);if(!isNaN(d))return d.toISOString().slice(0,10);}catch(e){}
   return ts.slice(0,10);
 }
 

@@ -3,157 +3,833 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PIDEYA — Ticket de Cocina</title>
+<title>PIDEYA — Panel de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Courier New', monospace; background:#f0f0f0; display:flex; justify-content:center; padding:20px; }
-  .ticket { background:white; width:340px; padding:20px; border:1px solid #ccc; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); }
-  .header { text-align:center; border-bottom:2px dashed #333; padding-bottom:14px; margin-bottom:14px; }
-  .logo { font-size:1.5rem; font-weight:bold; letter-spacing:2px; }
-  .restaurant { font-size:0.85rem; color:#555; margin-top:4px; }
-  .order-id { font-size:1.3rem; font-weight:900; margin-top:10px; color:#1a3a1a; background:#e8f5e9; padding:6px 16px; border-radius:6px; display:inline-block; letter-spacing:1px; }
-  .order-time { font-size:0.75rem; color:#888; margin-top:4px; }
-  .section { margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed #ccc; }
-  .section:last-of-type { border:none; }
-  .section-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#888; margin-bottom:6px; }
-  .field { display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.82rem; }
-  .field .k { color:#555; }
-  .field .v { font-weight:bold; text-align:right; max-width:200px; word-break:break-word; }
-  .items-list { font-size:0.82rem; }
-  .item-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dotted #eee; }
-  .item-row:last-child { border:none; }
-  .item-qty { color:#e8760a; font-weight:bold; min-width:24px; }
-  .item-name { flex:1; padding:0 6px; }
-  .item-price { font-weight:bold; }
-  .item-note { font-size:0.72rem; color:#888; font-style:italic; padding-left:28px; }
-  .totals { margin-top:10px; }
-  .total-row { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:3px; }
-  .total-row.stripe-fee { color:#888; font-size:0.78rem; }
-  .total-row.grand { font-size:1rem; font-weight:bold; border-top:2px solid #333; padding-top:6px; margin-top:6px; }
-  .qr-section { text-align:center; margin-top:14px; padding-top:14px; border-top:1px dashed #ccc; }
-  .qr-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:1.5px; color:#888; margin-bottom:8px; }
-  #qr-canvas { display:inline-block; }
-  #qr-canvas canvas, #qr-canvas img { width:150px !important; height:150px !important; }
-  .qr-addr { font-size:0.7rem; color:#888; margin-top:6px; }
-  .maps-link { display:inline-block; margin-top:6px; font-size:0.72rem; color:#e8760a; font-weight:bold; text-decoration:none; }
-  .footer { text-align:center; margin-top:14px; padding-top:10px; border-top:2px dashed #333; font-size:0.72rem; color:#888; }
-  .print-btn { display:block; width:100%; margin-top:20px; padding:12px; background:#1a3a1a; color:white; border:none; border-radius:8px; font-size:1rem; font-weight:bold; cursor:pointer; font-family:inherit; }
-  .print-btn:hover { background:#2d5a27; }
-  .no-order { text-align:center; padding:40px 20px; color:#888; }
-  .no-order .icon { font-size:3rem; margin-bottom:12px; }
-  @media print {
-    body { background:white; padding:0; }
-    .ticket { box-shadow:none; border:none; width:100%; }
-    .print-btn { display:none !important; }
-  }
+:root{
+  --bg:#0F1115;
+  --sidebar:#13161D;
+  --panel:#171A21;
+  --card:#1C2030;
+  --card2:#1F2335;
+  --border:rgba(255,255,255,.07);
+  --green:#22C55E;
+  --green-hover:#16A34A;
+  --orange:#F59E0B;
+  --red:#EF4444;
+  --yellow:#F59E0B;
+  --blue:#3B82F6;
+  --purple:#8B5CF6;
+  --text:#F3F4F6;
+  --muted:#9CA3AF;
+  --muted2:rgba(156,163,175,.45);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.25);
+  --shadow-lg:0 4px 24px rgba(0,0,0,.5);
+  --sidebar-w:220px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* ─── LOGIN ─────────────────────────────────────────────────────────── */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.login-card{background:var(--panel);border:1px solid var(--border);border-radius:24px;padding:44px 40px;width:100%;max-width:380px;text-align:center;}
+.login-logo{font-size:2.2rem;font-weight:900;color:white;letter-spacing:-1px;}
+.login-logo span{color:var(--orange);}
+.login-tagline{color:var(--muted);font-size:.88rem;margin:6px 0 32px;line-height:1.5;}
+.login-card input{width:100%;background:#0F1115;border:1px solid var(--border);color:white;border-radius:12px;padding:13px 16px;font-family:'Outfit',sans-serif;font-size:1rem;outline:none;margin-bottom:14px;letter-spacing:3px;text-align:center;}
+.login-card input:focus{border-color:var(--green);}
+.login-card button{width:100%;background:var(--green);color:#0F1115;border:none;border-radius:12px;padding:14px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:background .2s;}
+.login-card button:hover{background:#16A34A;}
+.login-err{color:var(--red);font-size:.8rem;margin-top:10px;display:none;}
+.login-version{color:var(--muted2);font-size:.72rem;margin-top:20px;}
+
+/* ─── SIDEBAR ────────────────────────────────────────────────────────── */
+#sidebar{width:var(--sidebar-w);background:var(--sidebar);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10;transition:transform .3s;}
+.sb-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+.sb-logo-text{font-size:1.1rem;font-weight:900;color:white;letter-spacing:-0.5px;}
+.sb-logo-text span{color:var(--orange);}
+.sb-sub{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.sb-nav{flex:1;padding:12px 8px;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:.85rem;font-weight:600;transition:all .15s;margin-bottom:2px;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);}
+.nav-item.active{background:rgba(34,197,94,.12);color:var(--green);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--green);border-radius:0 3px 3px 0;}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--orange);color:#0F1115;font-size:.6rem;font-weight:800;padding:2px 6px;border-radius:20px;min-width:18px;text-align:center;}
+.sb-bottom{padding:14px 8px;border-top:1px solid var(--border);}
+.sb-connected{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(34,197,94,.08);border-radius:10px;font-size:.78rem;color:var(--green);}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ─── MAIN CONTENT ───────────────────────────────────────────────────── */
+#app{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.top-bar{background:var(--panel);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;gap:12px;}
+.page-title{font-size:1rem;font-weight:800;color:white;}
+.top-actions{display:flex;align-items:center;gap:8px;}
+.refresh-time{color:var(--muted);font-size:.72rem;}
+.btn-icon{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:6px 11px;font-size:.82rem;cursor:pointer;color:var(--text);transition:background .15s;}
+.btn-icon:hover{background:rgba(255,255,255,.11);}
+.btn-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25);}
+.btn-green:hover{background:rgba(34,197,94,.2);}
+.btn-green:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ─── PAGES ──────────────────────────────────────────────────────────── */
+.page{display:none;flex:1;padding:20px 24px;overflow-y:auto;}
+.page.active{display:block;}
+
+/* ─── STATS GRID ─────────────────────────────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:transform .15s;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.g::before{background:var(--green);}
+.kpi.y::before{background:var(--yellow);}
+.kpi.o::before{background:var(--orange);}
+.kpi.b::before{background:var(--blue);}
+.kpi.p::before{background:var(--purple);}
+.kpi-icon{font-size:1.4rem;margin-bottom:8px;}
+.kpi-val{font-size:1.6rem;font-weight:900;line-height:1;color:white;}
+.kpi-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:4px;}
+
+/* ─── SECTION HEADERS ────────────────────────────────────────────────── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:800;}
+.sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-g{background:var(--green);}
+.dot-y{background:var(--yellow);}
+.dot-o{background:var(--orange);}
+.dot-b{background:var(--blue);}
+.sec-cnt{background:rgba(255,255,255,.07);color:var(--muted);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;}
+
+/* ─── TWO-COLUMN LAYOUT ──────────────────────────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:800px){.two-col{grid-template-columns:1fr;}}
+
+/* ─── ORDER CARDS ────────────────────────────────────────────────────── */
+.order-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;transition:border-color .15s;box-shadow:var(--shadow);}
+.order-card:hover{border-color:rgba(255,255,255,.15);}
+.order-card.type-c{border-left:3px solid var(--green);}
+.order-card.type-z{border-left:3px solid var(--yellow);}
+.order-card.type-d{border-left:3px solid var(--blue);opacity:.65;}
+.card-row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.card-id{font-size:.67rem;font-weight:800;color:var(--muted);letter-spacing:.8px;}
+.badge{font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+.bg-g{background:rgba(34,197,94,.15);color:var(--green);}
+.bg-y{background:rgba(240,192,64,.12);color:var(--yellow);}
+.bg-b{background:rgba(59,130,246,.12);color:var(--blue);}
+.bg-r{background:rgba(232,69,69,.12);color:var(--red);}
+.card-name{font-size:.9rem;font-weight:700;color:white;}
+.card-meta{font-size:.7rem;color:var(--muted);margin:2px 0 8px;line-height:1.5;}
+.card-items{background:rgba(0,0,0,.2);border-radius:7px;padding:7px 10px;margin-bottom:9px;}
+.card-item{font-size:.72rem;color:rgba(255,255,255,.8);padding:2px 0;display:flex;gap:5px;}
+.card-item::before{content:'▸';color:var(--green);flex-shrink:0;}
+.card-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px;}
+.card-total{font-size:.92rem;font-weight:800;}
+.card-time{font-size:.67rem;color:var(--muted);}
+.card-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.btn-xs{border:none;border-radius:7px;padding:5px 10px;font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;transition:opacity .15s;}
+.btn-xs:hover{opacity:.82;}
+.bx-g{background:var(--green);color:#0F1115;}
+.bx-y{background:var(--yellow);color:#0F1115;}
+.bx-b{background:var(--blue);color:white;}
+.bx-o{background:var(--orange);color:white;}
+.bx-ghost{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--border);}
+
+/* ─── SEARCH/FILTER BAR ──────────────────────────────────────────────── */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar input,.filter-bar select{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:8px 13px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;}
+.filter-bar input{flex:1;min-width:180px;}
+.filter-bar input::placeholder{color:var(--muted);}
+.filter-bar select option{background:var(--panel);}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--green);}
+
+/* ─── CHART ──────────────────────────────────────────────────────────── */
+.chart-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow);}
+.chart-title{font-size:.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;}
+.bar{width:100%;background:rgba(34,197,94,.25);border-radius:4px 4px 0 0;transition:height .5s ease;position:relative;min-height:4px;cursor:default;}
+.bar:hover{background:rgba(34,197,94,.45);}
+.bar-lbl{font-size:.6rem;color:var(--muted);text-align:center;white-space:nowrap;}
+.bar-val{font-size:.6rem;color:var(--green);font-weight:700;text-align:center;}
+
+/* ─── REPORT TABLE ───────────────────────────────────────────────────── */
+.report-table{width:100%;border-collapse:collapse;}
+.report-table th{text-align:left;font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);}
+.report-table td{font-size:.8rem;padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text);}
+.report-table tr:last-child td{border-bottom:none;}
+.report-table tr:hover td{background:rgba(255,255,255,.02);}
+
+/* ─── SETTINGS ───────────────────────────────────────────────────────── */
+.setting-group{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.setting-group h3{font-size:.85rem;font-weight:800;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05);gap:16px;}
+.setting-row:last-child{border-bottom:none;padding-bottom:0;}
+.setting-label{font-size:.85rem;font-weight:600;}
+.setting-desc{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.setting-control select,.setting-control input[type=range]{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;cursor:pointer;min-width:160px;}
+.setting-control select option{background:var(--panel);}
+.range-wrap{display:flex;align-items:center;gap:10px;}
+.range-wrap input{width:140px;}
+.range-val{font-size:.82rem;font-weight:800;min-width:38px;text-align:right;}
+
+/* ─── STATES ─────────────────────────────────────────────────────────── */
+.empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:.85rem;}
+.empty em{display:block;font-size:2rem;margin-bottom:9px;font-style:normal;}
+.loading-state{text-align:center;padding:32px 16px;}
+.spin{width:28px;height:28px;border:2.5px solid rgba(255,255,255,.1);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state p{color:var(--muted);font-size:.82rem;}
+.err-msg{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px;color:#f08080;font-size:.8rem;line-height:1.6;margin:10px 0;}
+
+/* ─── TICKET MODAL ───────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.ticket-paper{background:#FFFFFF;color:#111;border-radius:20px;padding:24px 22px;width:100%;max-width:340px;position:relative;max-height:94vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.6);font-family:'Courier New',monospace;}
+.t-x{position:absolute;top:11px;right:11px;background:#eee;border:none;border-radius:50%;width:26px;height:26px;font-size:.82rem;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.t-x:hover{background:#ddd;}
+.t-logo{font-weight:800;font-size:1.1rem;color:#1a3a1a;text-align:center;}
+.t-logo span{color:#F59E0B;}
+.t-header-info{text-align:center;font-size:.68rem;color:#777;margin-top:3px;line-height:1.5;}
+.t-ordid{text-align:center;font-size:.72rem;color:#aaa;letter-spacing:1px;margin-top:5px;}
+.t-hr{border:none;border-top:1px dashed #bbb;margin:11px 0;}
+.t-row{display:flex;justify-content:space-between;font-size:.76rem;color:#444;padding:2px 0;gap:8px;}
+.t-row strong{color:#111;text-align:right;max-width:58%;word-break:break-word;}
+.t-items-box{background:#f5f5f5;border-radius:7px;padding:8px 10px;margin:7px 0;}
+.t-item{font-size:.74rem;color:#333;padding:2px 0;border-bottom:1px dotted #ddd;}
+.t-item:last-child{border-bottom:none;}
+.t-total{display:flex;justify-content:space-between;font-size:.95rem;font-weight:800;border-top:2px solid #111;padding-top:7px;margin-top:7px;}
+#tkQR{display:flex;justify-content:center;margin:13px 0 4px;}
+#tkQR canvas,#tkQR img{width:140px!important;height:140px!important;}
+.t-qr-note{text-align:center;font-size:.64rem;color:#999;margin-bottom:9px;}
+.t-footer{text-align:center;font-size:.63rem;color:#bbb;margin-top:8px;padding-top:8px;border-top:1px dashed #bbb;line-height:1.6;}
+.t-print-btn{width:100%;background:#1a3a1a;color:white;border:none;border-radius:9px;padding:11px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;margin-top:8px;}
+.t-print-btn:hover{background:#2d5a27;}
+
+/* ─── PRINT ──────────────────────────────────────────────────────────── */
+@media print{
+  body>*:not(.modal-overlay){display:none!important;}
+  .modal-overlay{position:static!important;background:none!important;display:block!important;padding:0!important;}
+  .ticket-paper{max-height:none!important;border-radius:0!important;box-shadow:none!important;border:none!important;}
+  .t-x,.t-print-btn{display:none!important;}
+  #tkQR canvas{display:none!important;}
+  #tkQR img{display:block!important;width:140px!important;height:140px!important;}
+}
+
+/* ─── MOBILE ─────────────────────────────────────────────────────────── */
+@media(max-width:720px){
+  #sidebar{transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #app{margin-left:0;}
+  .page{padding:14px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
 </style>
 </head>
 <body>
-<div class="ticket">
-  <div id="ticket-content">
-    <div class="no-order"><div class="icon">⏳</div><p>Cargando ticket...</p></div>
+
+<!-- ── LOGIN ─────────────────────────────────────────────────────────── -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🍽️ PIDE<span>YA</span></div>
+    <div class="login-tagline">Panel de Gestión Completo<br>El Conuco Restaurante</div>
+    <input type="password" id="passIn" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Entrar al Panel</button>
+    <div class="login-err" id="loginErr">Contraseña incorrecta.</div>
+    <div class="login-version">PIDEYA v3 · pideyanj-ai.github.io</div>
   </div>
-  <button class="print-btn" onclick="window.print()" id="print-btn" style="display:none">🖨️ Imprimir Ticket</button>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-function getParams(){
-  const p=new URLSearchParams(window.location.search);
-  return{
-    order:p.get('order')||'',name:p.get('name')||'',phone:p.get('phone')||'',
-    address:p.get('address')||'',items:p.get('items')||'',
-    subtotal:p.get('subtotal')||'0',tax:p.get('tax')||'0',
-    gestion:p.get('gestion')||'0',stripefee:p.get('stripefee')||'0',
-    total:p.get('total')||'0'
-  };
-}
+<!-- ── SIDEBAR ────────────────────────────────────────────────────────── -->
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">🍽️ PIDE<span>YA</span></div>
+    <div class="sb-sub">Panel de Gestión</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
+    <div class="nav-item" onclick="showPage('cocina')"><span class="nav-icon">🍳</span>Cocina<span class="nav-badge" id="nb-cocina">0</span></div>
+    <div class="nav-item" onclick="showPage('zelle')"><span class="nav-icon">💸</span>Zelle Pendiente<span class="nav-badge" id="nb-zelle" style="background:var(--yellow)">0</span></div>
+    <div class="nav-item" onclick="showPage('ordenes')"><span class="nav-icon">📋</span>Todas las Órdenes</div>
+    <div class="nav-item" onclick="showPage('reportes')"><span class="nav-icon">📈</span>Reportes</div>
+    <div class="nav-item" onclick="showPage('ajustes')"><span class="nav-icon">⚙️</span>Ajustes</div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-connected"><div class="conn-dot"></div><span id="sbConn">0</span> clientes activos</div>
+  </div>
+</div>
 
-function formatItems(str){
-  if(!str)return '<div class="item-row"><span>Sin detalle</span></div>';
-  return str.split('|').map(raw=>{
-    raw=raw.trim();
-    const m=raw.match(/^(\d+)x\s+(.+?)\s+(?:\((.+?)\)\s+)?-\s+\$?([\d.]+)$/i);
-    if(m){
-      const note=m[3]?`<div class="item-note">📝 ${m[3]}</div>`:'';
-      return `<div class="item-row"><span class="item-qty">${m[1]}x</span><span class="item-name">${m[2]}</span><span class="item-price">$${parseFloat(m[4]).toFixed(2)}</span></div>${note}`;
-    }
-    return `<div class="item-row"><span>${raw}</span></div>`;
-  }).join('');
-}
-
-function mapsUrl(addr){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);}
-
-function render(){
-  const p=getParams();
-  if(!p.order){
-    document.getElementById('ticket-content').innerHTML='<div class="no-order"><div class="icon">🎫</div><p>No se encontró información del pedido.<br>Este link se genera automáticamente al confirmar una orden.</p></div>';
-    return;
-  }
-  const addr=decodeURIComponent(p.address);
-  const name=decodeURIComponent(p.name);
-  const items=decodeURIComponent(p.items);
-  const fee=parseFloat(p.stripefee);
-  const now=new Date();
-  const timeStr=now.toLocaleString('es-DO',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  const stripeFeeRow=fee>0?`<div class="total-row stripe-fee"><span>Cargo Stripe (3.5%)</span><span>$${fee.toFixed(2)}</span></div>`:'';
-
-  document.getElementById('ticket-content').innerHTML=`
-    <div class="header">
-      <div class="logo">🍳 PIDEYA</div>
-      <div class="restaurant">El Conuco Restaurante</div>
-      <div class="order-id">#${p.order}</div>
-      <div class="order-time">${timeStr}</div>
+<!-- ── MAIN APP ───────────────────────────────────────────────────────── -->
+<div id="app">
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="page-title" id="pageTitle">📊 Dashboard</div>
+    <div class="top-actions">
+      <span class="refresh-time" id="refTime">—</span>
+      <button class="btn-icon" onclick="testSound()" title="Probar timbre">🔔</button>
+      <button class="btn-icon btn-green" id="btnRef" onclick="loadAll()">⟳ Actualizar</button>
+      <button class="btn-icon" onclick="toggleDebug()" id="dbgBtn" style="font-size:.65rem;padding:4px 7px;opacity:.4;" title="Debug">🔍</button>
     </div>
-    <div class="section">
-      <div class="section-label">👤 Cliente</div>
-      <div class="field"><span class="k">Nombre</span><span class="v">${name}</span></div>
-      <div class="field"><span class="k">Teléfono</span><span class="v">+${p.phone}</span></div>
-      <div class="field"><span class="k">Dirección</span><span class="v">${addr}</span></div>
+  </div>
+  <div id="dbgPanel" style="display:none;background:#1a1a2e;border-bottom:1px solid #333;padding:6px 18px;font-size:.68rem;color:#7bed9f;font-family:monospace;word-break:break-all;" id="dbgPanel"></div>
+
+  <!-- ── PAGE: DASHBOARD ──────────────────────────────────────── -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-grid">
+      <div class="kpi g"><div class="kpi-icon">✅</div><div class="kpi-val" id="kpiConf">—</div><div class="kpi-lbl">Confirmadas hoy</div></div>
+      <div class="kpi y"><div class="kpi-icon">💸</div><div class="kpi-val" id="kpiZelle">—</div><div class="kpi-lbl">Zelle pendiente</div></div>
+      <div class="kpi b"><div class="kpi-icon">👥</div><div class="kpi-val" id="kpiConn">—</div><div class="kpi-lbl">Clientes activos</div></div>
+      <div class="kpi o"><div class="kpi-icon">💰</div><div class="kpi-val" id="kpiRev">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
+      <div class="kpi p"><div class="kpi-icon">📦</div><div class="kpi-val" id="kpiTotal">—</div><div class="kpi-lbl">Órdenes totales</div></div>
+      <div class="kpi g"><div class="kpi-icon">💳</div><div class="kpi-val" id="kpiFees">—</div><div class="kpi-lbl">Comisión Stripe</div></div>
     </div>
-    <div class="section">
-      <div class="section-label">🍽️ Pedido</div>
-      <div class="items-list">${formatItems(items)}</div>
+
+    <div class="chart-box">
+      <div class="chart-title">Ingresos — últimos 7 días</div>
+      <div class="bar-chart" id="revenueChart"></div>
     </div>
-    <div class="section">
-      <div class="section-label">💰 Totales</div>
-      <div class="totals">
-        <div class="total-row"><span>Subtotal</span><span>$${parseFloat(p.subtotal).toFixed(2)}</span></div>
-        <div class="total-row"><span>Tax NJ (6.625%)</span><span>$${parseFloat(p.tax).toFixed(2)}</span></div>
-        <div class="total-row"><span>Gestión</span><span>$${parseFloat(p.gestion).toFixed(2)}</span></div>
-        ${stripeFeeRow}
-        <div class="total-row grand"><span>TOTAL</span><span>$${parseFloat(p.total).toFixed(2)}</span></div>
+
+    <div class="two-col">
+      <div>
+        <div class="sec-head"><div class="sec-title"><div class="sec-dot dot-g"></div>Últimas órdenes confirmadas</div></div>
+        <div id="dash-conf"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+      </div>
+      <div>
+        <div class="sec-head"><div class="sec-title"><div class="sec-dot dot-y"></div>Zelle pendientes</div></div>
+        <div id="dash-zelle"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
       </div>
     </div>
-    <div class="section qr-section">
-      <div class="qr-label">📍 QR Repartidor — Navegar al destino</div>
-      <a href="${mapsUrl(addr)}" target="_blank"><div id="qr-canvas"></div></a>
-      <div class="qr-addr">${addr}</div>
-      <a href="${mapsUrl(addr)}" target="_blank" class="maps-link">🗺️ Abrir en Google Maps</a>
+  </div>
+
+  <!-- ── PAGE: COCINA ─────────────────────────────────────────── -->
+  <div class="page" id="page-cocina">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-dot dot-g"></div>Órdenes Confirmadas — Preparar ahora<span class="sec-cnt" id="cnt-cocina">0</span></div>
     </div>
-    <div class="footer">
-      715 Summit Ave, Union City, NJ 07087<br>
-      PIDEYA LLC · pideyanj-ai.github.io
-    </div>`;
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">🖨️ Haz clic en <strong style="color:var(--green)">Imprimir Ticket</strong> en cada orden para imprimir el recibo de cocina con el código QR de navegación.</p>
+    <div id="list-cocina"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+  </div>
 
-  // QR with QRCode.js — no external API, always works
-  try{
-    new QRCode(document.getElementById('qr-canvas'),{
-      text:mapsUrl(addr),width:150,height:150,
-      colorDark:'#000000',colorLight:'#ffffff',
-      correctLevel:QRCode.CorrectLevel.M
-    });
-  }catch(e){
-    document.getElementById('qr-canvas').innerHTML='<p style="color:#e8760a;font-weight:bold;padding:20px 0">📍 Usa el link de abajo</p>';
+  <!-- ── PAGE: ZELLE ──────────────────────────────────────────── -->
+  <div class="page" id="page-zelle">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-dot dot-y"></div>Zelle Pendientes — Esperando pago<span class="sec-cnt" id="cnt-zelle">0</span></div>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">Al recibir el comprobante Zelle del cliente, escribe <strong style="color:var(--yellow)">PAGO [ID]</strong> en WhatsApp para confirmar la orden.</p>
+    <div id="list-zelle"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+  </div>
+
+  <!-- ── PAGE: TODAS LAS ÓRDENES ──────────────────────────────── -->
+  <div class="page" id="page-ordenes">
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Nombre, teléfono, ID de orden..." oninput="filterOrders()">
+      <select id="statusFilter" onchange="filterOrders()">
+        <option value="">Todos los estados</option>
+        <option value="Confirmed">✅ Confirmadas</option>
+        <option value="Zelle-Pending">💸 Zelle Pendiente</option>
+      </select>
+      <select id="dateFilter" onchange="filterOrders()">
+        <option value="today">Hoy</option>
+        <option value="week">Esta semana</option>
+        <option value="all" selected>Todas</option>
+      </select>
+    </div>
+    <div id="list-ordenes"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+  </div>
+
+  <!-- ── PAGE: REPORTES ───────────────────────────────────────── -->
+  <div class="page" id="page-reportes">
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi g"><div class="kpi-icon">💰</div><div class="kpi-val" id="rpRevHoy">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
+      <div class="kpi o"><div class="kpi-icon">📅</div><div class="kpi-val" id="rpRevSem">—</div><div class="kpi-lbl">Ingresos semana</div></div>
+      <div class="kpi g"><div class="kpi-icon">📦</div><div class="kpi-val" id="rpRevAll">—</div><div class="kpi-lbl">Total histórico</div></div>
+      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripe">—</div><div class="kpi-lbl">Comisión Stripe total</div></div>
+      <div class="kpi b"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestion">—</div><div class="kpi-lbl">Comisión Gestión total</div></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Ingresos por día — últimos 14 días</div>
+      <div class="bar-chart" id="reportChart" style="height:140px"></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="chart-title">Resumen del día — Desglose</div>
+      <table class="report-table" id="reportTable">
+        <thead><tr><th>Concepto</th><th>Cantidad</th><th>Monto</th></tr></thead>
+        <tbody id="reportTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── PAGE: AJUSTES ────────────────────────────────────────── -->
+  <div class="page" id="page-ajustes">
+    <div class="setting-group">
+      <h3>🔔 Timbre de nueva orden</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">Timbre activado</div><div class="setting-desc">Sonar al llegar una nueva orden</div></div>
+        <div class="setting-control">
+          <select id="sBellOn"><option value="yes">Activado</option><option value="no">Silencioso</option></select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Número de toques</div><div class="setting-desc">Cuántas veces suena el timbre</div></div>
+        <div class="setting-control">
+          <select id="sBellTones">
+            <option value="1">1 toque</option><option value="2">2 toques</option>
+            <option value="3">3 toques</option><option value="4">4 toques</option>
+            <option value="5">5 toques</option><option value="8">8 toques (fuerte)</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Volumen</div></div>
+        <div class="setting-control">
+          <div class="range-wrap">
+            <input type="range" id="sBellVol" min="0.1" max="1" step="0.1" value="0.6" oninput="document.getElementById('sVolVal').textContent=Math.round(this.value*100)+'%'">
+            <span class="range-val" id="sVolVal">60%</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn-icon" onclick="testSound()" style="flex:1;padding:10px;font-size:.85rem;">🔔 Probar timbre</button>
+        <button class="btn-icon btn-green" onclick="saveSettings()" style="flex:1;padding:10px;font-size:.85rem;font-weight:700;">✅ Guardar ajustes</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>⏱️ Actualización automática</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">Intervalo</div><div class="setting-desc">Con qué frecuencia se recarga la información</div></div>
+        <div class="setting-control">
+          <select id="sRefresh">
+            <option value="30000" selected>Cada 30 segundos</option>
+            <option value="60000">Cada 1 minuto</option>
+            <option value="90000">Cada 90 segundos</option>
+            <option value="120000">Cada 2 minutos</option>
+            <option value="300000">Cada 5 minutos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>ℹ️ Información del sistema</h3>
+      <div class="setting-row"><div class="setting-label">Restaurante</div><div style="font-size:.82rem;color:var(--muted)">El Conuco Restaurante</div></div>
+      <div class="setting-row"><div class="setting-label">Dirección</div><div style="font-size:.82rem;color:var(--muted)">715 Summit Ave, Union City, NJ 07087</div></div>
+      <div class="setting-row"><div class="setting-label">WhatsApp Bot</div><div style="font-size:.82rem;color:var(--green)">+1 (201) 772-7540</div></div>
+      <div class="setting-row"><div class="setting-label">Panel versión</div><div style="font-size:.82rem;color:var(--muted)">PIDEYA v3.0</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TICKET MODAL ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="ticketModal" onclick="if(event.target===this)closeTicket()">
+  <div class="ticket-paper">
+    <button class="t-x" onclick="closeTicket()">✕</button>
+    <div class="t-logo">🍳 PIDE<span>YA</span></div>
+    <div class="t-header-info">El Conuco Restaurante<br>715 Summit Ave, Union City, NJ 07087<br>+1 (201) 772-7540</div>
+    <div style="text-align:center;margin:6px 0"><span class="t-ordid" id="tkId"></span></div>
+    <hr class="t-hr">
+    <div class="t-row"><span>Cliente</span><strong id="tkName"></strong></div>
+    <div class="t-row"><span>Teléfono</span><strong id="tkPhone"></strong></div>
+    <div class="t-row"><span>Dirección</span><strong id="tkAddr"></strong></div>
+    <div class="t-row"><span>Fecha/Hora</span><strong id="tkTime"></strong></div>
+    <div class="t-row"><span>Método de pago</span><strong id="tkPay"></strong></div>
+    <hr class="t-hr">
+    <div class="t-items-box" id="tkItems"></div>
+    <div class="t-row"><span>Subtotal</span><strong id="tkSub"></strong></div>
+    <div class="t-row"><span>Tax NJ (6.625%)</span><strong id="tkTax"></strong></div>
+    <div class="t-row"><span>Gestión</span><strong id="tkGes"></strong></div>
+    <div class="t-row" id="tkFeeRow" style="display:none"><span>Cargo Stripe (3.5%)</span><strong id="tkFee"></strong></div>
+    <div class="t-total"><span>TOTAL</span><span id="tkTot"></span></div>
+    <hr class="t-hr">
+    <div id="tkQR"></div>
+    <div class="t-qr-note">📍 Escanea para navegar al destino de entrega</div>
+    <div class="t-footer">PIDEYA LLC · pideyanj-ai.github.io<br>¡Gracias por usar PIDEYA! 🍽️</div>
+    <button class="t-print-btn" onclick="window.print()">🖨️ Imprimir Ticket con QR</button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const PASS = 'pideya2024';
+const SHEET_ID = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const CSV_ORDERS   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet1`;
+const CSV_SESSIONS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet2`;
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+const S = {
+  bellOn: localStorage.getItem('py_bOn') !== 'no',
+  tones:  parseInt(localStorage.getItem('py_tones') || '3'),
+  vol:    parseFloat(localStorage.getItem('py_vol')  || '0.6'),
+  refreshMs: parseInt(localStorage.getItem('py_ref') || '30000')
+};
+
+// ── DATE HELPER ─────────────────────────────────────────────────────────
+// Google Sheets Spanish locale exports as "D/M/YYYY, H:MM a.m./p.m."
+// Day comes FIRST (DD/MM/YYYY). Confirmed from live data:
+// "12/5/2026, 9:30 a.m." = May 12 2026, NOT December 5.
+function toDateStr(ts){
+  if(!ts) return '';
+  ts=(ts+'').trim();
+  var m=ts.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m){
+    // Spanish locale DD/MM/YYYY: first=day, second=month
+    return m[3]+'-'+(m[2].length===1?'0'+m[2]:m[2])+'-'+(m[1].length===1?'0'+m[1]:m[1]);
   }
+  ts=ts.replace(/\ba\.m\.\b/gi,'AM').replace(/\bp\.m\.\b/gi,'PM');
+  try{var d=new Date(ts);if(!isNaN(d))return d.toISOString().slice(0,10);}catch(e){}
+  return ts.slice(0,10);
+}
 
-  document.getElementById('print-btn').style.display='block';
-  if(new URLSearchParams(window.location.search).get('print')==='1'){
-    setTimeout(()=>window.print(),1000);
+// ── STATE ─────────────────────────────────────────────────────────────────
+let allOrders = [];
+let audioCtx = null;
+let knownIds = new Set();
+let firstLoad = true;
+let refreshTimer = null;
+let currentPage = 'dashboard';
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────
+function doLogin(){
+  if(document.getElementById('passIn').value === PASS){
+    document.getElementById('loginScreen').style.display = 'none';
+    loadSettings();
+    loadAll();
+    refreshTimer = setInterval(loadAll, S.refreshMs);
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
   }
 }
 
-render();
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+const pageTitles = {
+  dashboard:'📊 Dashboard', cocina:'🍳 Cocina — Preparar ahora',
+  zelle:'💸 Zelle Pendiente', ordenes:'📋 Todas las Órdenes',
+  reportes:'📈 Reportes', ajustes:'⚙️ Ajustes'
+};
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item')[['dashboard','cocina','zelle','ordenes','reportes','ajustes'].indexOf(id)]?.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[id];
+  currentPage = id;
+  if(id==='ordenes') filterOrders();
+  if(id==='reportes') renderReports();
+}
+
+// ── SOUND ─────────────────────────────────────────────────────────────────
+function getCtx(){ if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playBell(){
+  if(!S.bellOn) return;
+  try{
+    const ctx=getCtx();
+    for(let i=0;i<S.tones;i++){
+      const t=ctx.currentTime+i*0.38;
+      const osc=ctx.createOscillator(), gain=ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type='sine'; osc.frequency.setValueAtTime(880,t); osc.frequency.setValueAtTime(1100,t+0.08);
+      gain.gain.setValueAtTime(0,t); gain.gain.linearRampToValueAtTime(S.vol,t+0.02); gain.gain.exponentialRampToValueAtTime(0.001,t+0.38);
+      osc.start(t); osc.stop(t+0.38);
+    }
+  }catch(e){}
+}
+function testSound(){ playBell(); }
+
+function checkNewOrders(orders){
+  if(firstLoad){ orders.forEach(o=>knownIds.add(o['Order ID'])); firstLoad=false; return; }
+  const news=orders.filter(o=>(o.Status==='Confirmed'||o.Status==='Zelle-Pending')&&o['Order ID']&&!knownIds.has(o['Order ID']));
+  if(news.length){
+    news.forEach(o=>knownIds.add(o['Order ID']));
+    playBell();
+    let c=0; const orig=document.title;
+    const iv=setInterval(()=>{ document.title=c++%2?orig:`🔔 NUEVA ORDEN — PIDEYA`; if(c>10){clearInterval(iv);document.title=orig;} },500);
+  }
+}
+
+// ── CSV PARSER ────────────────────────────────────────────────────────────
+function parseCSV(txt){
+  const rows=[]; let row=[],cell='',inQ=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(inQ){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++;}else if(c==='"')inQ=false;else cell+=c;}
+    else{if(c==='"')inQ=true;else if(c===','){row.push(cell);cell='';}else if(c==='\n'||c==='\r'){row.push(cell);cell='';if(row.some(v=>v))rows.push(row);row=[];if(c==='\r'&&txt[i+1]==='\n')i++;}else cell+=c;}
+  }
+  if(cell||row.length){row.push(cell);if(row.some(v=>v))rows.push(row);}
+  return rows;
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────────────────
+async function loadAll(){
+  const btn=document.getElementById('btnRef');
+  btn.disabled=true; btn.textContent='⟳ Cargando...';
+  try{
+    const [or,sr] = await Promise.all([
+      fetch(CSV_ORDERS+'&_='+Date.now()),
+      fetch(CSV_SESSIONS+'&_='+Date.now())
+    ]);
+    // Orders
+    if(or.ok){
+      let csvText = await or.text();
+      // Remove UTF-8 BOM if present (Google Sheets adds this, corrupts first column header)
+      if(csvText.charCodeAt(0)===0xFEFF) csvText=csvText.slice(1);
+      const rows=parseCSV(csvText);
+      if(rows.length>=2){
+        // Parse headers — trim all whitespace and invisible chars
+        const h=rows[0].map(x=>x.replace(/[\uFEFF\u200B\u00A0]/g,'').trim());
+        // Positional fallback schema in case header names don't match
+        const POS=['Order ID','Timestamp','Phone','Name','Address','Items','Subtotal','Tax','Gestion','StripeFee','Total','Status','StripeLink'];
+        allOrders=rows.slice(1).map(r=>{
+          const o={};
+          // Map by header name first
+          h.forEach((k,i)=>{ if(k) o[k]=(r[i]||'').trim(); });
+          // Positional fallback: if key fields are missing, use column position
+          POS.forEach((k,i)=>{ if(!o[k]&&r[i]!==undefined) o[k]=(r[i]||'').trim(); });
+          return o;
+        });
+      }
+    }
+    // Sessions (connected clients)
+    let conn=0;
+    if(sr.ok){
+      let sText=await sr.text();
+      if(sText.charCodeAt(0)===0xFEFF) sText=sText.slice(1);
+      const srows=parseCSV(sText);
+      if(srows.length>=2){
+        const sh=srows[0].map(x=>x.trim());
+        const si=sh.indexOf('Step');
+        if(si>=0) conn=srows.slice(1).filter(r=>{const s=(r[si]||'').trim();return s&&s!=='start'&&s!=='agent_online';}).length;
+      }
+    }
+    checkNewOrders(allOrders);
+    updateAll(conn);
+  }catch(e){
+    document.getElementById('list-cocina').innerHTML=`<div class="err-msg">❌ Error cargando datos.<br><small>${e.message}</small><br><br>Asegúrate de que el Google Sheet está compartido como <em>"Cualquier persona con el enlace puede ver"</em>.</div>`;
+  }finally{
+    btn.disabled=false; btn.textContent='⟳ Actualizar';
+    document.getElementById('refTime').textContent='Actualizado: '+new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
+  }
+}
+
+function updateAll(conn){
+  const today=new Date().toISOString().slice(0,10);
+  const confToday=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today);
+  const conf=allOrders.filter(o=>o.Status==='Confirmed').reverse();
+  const sevenDaysAgo=new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10);
+  const confRecent=conf.filter(o=>toDateStr(o.Timestamp)>=sevenDaysAgo);
+  const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
+  const todayRev=confToday.reduce((s,o)=>s+parseFloat(o.Total||0),0);
+  const todayFees=confToday.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
+
+  // KPIs
+  document.getElementById('kpiConf').textContent=confToday.length;
+  document.getElementById('kpiZelle').textContent=zel.length;
+  document.getElementById('kpiConn').textContent=conn;
+  document.getElementById('kpiRev').textContent='$'+todayRev.toFixed(2);
+  document.getElementById('kpiTotal').textContent=allOrders.length;
+  document.getElementById('kpiFees').textContent='$'+todayFees.toFixed(2);
+
+  // Badges
+  document.getElementById('nb-cocina').textContent=conf.length;
+  document.getElementById('nb-zelle').textContent=zel.length;
+  document.getElementById('sbConn').textContent=conn;
+
+  // Dashboard preview (last 5)
+  document.getElementById('dash-conf').innerHTML=conf.length?conf.slice(0,5).map(o=>card(o,'c',true)).join(''):'<div class="empty"><em>✅</em>Sin órdenes hoy</div>';
+  document.getElementById('dash-zelle').innerHTML=zel.length?zel.slice(0,5).map(o=>card(o,'z',true)).join(''):'<div class="empty"><em>💸</em>Sin pendientes</div>';
+
+  // Cocina page
+  const cocinaList=confRecent.length?confRecent:conf.slice(0,20);
+  document.getElementById('cnt-cocina').textContent=confRecent.length;
+  document.getElementById('list-cocina').innerHTML=cocinaList.length?cocinaList.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
+
+  // Zelle page
+  document.getElementById('cnt-zelle').textContent=zel.length;
+  document.getElementById('list-zelle').innerHTML=zel.length?zel.map(o=>card(o,'z',false)).join(''):'<div class="empty"><em>💸</em>No hay órdenes Zelle pendientes</div>';
+
+  // Revenue chart
+  renderChart('revenueChart', 7);
+  if(currentPage==='ordenes') filterOrders();
+  if(currentPage==='reportes') renderReports();
+}
+
+// ── ORDER CARD ────────────────────────────────────────────────────────────
+function card(o, type, compact){
+  const items=(o.Items||'').split(' | ').map(i=>`<div class="card-item">${i}</div>`).join('');
+  const time=o.Timestamp?new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}):'—';
+  const badge=type==='c'?'<span class="badge bg-g">✅ Confirmada</span>':'<span class="badge bg-y">💸 Zelle Pendiente</span>';
+  const bticket=type==='c'?'bx-g':'bx-y';
+  const phone=o.Phone?`<br>📱 +${o.Phone}`:'';
+  return `<div class="order-card type-${type}">
+    <div class="card-row1"><span class="card-id">#${o['Order ID']||'—'}</span>${badge}</div>
+    <div class="card-name">${o.Name||'—'}</div>
+    <div class="card-meta">📍 ${o.Address||'—'}${phone}</div>
+    ${compact?'':`<div class="card-items">${items||'(sin items)'}</div>`}
+    <div class="card-foot">
+      <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div><div class="card-time">⏰ ${time}</div></div>
+      <div class="card-btns">
+        <button class="btn-xs ${bticket}" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Imprimir Ticket</button>
+        <button class="btn-xs bx-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}","${o.Name||''}")'>🗺️</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── FILTER ORDERS PAGE ────────────────────────────────────────────────────
+function filterOrders(){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const st=document.getElementById('statusFilter')?.value||'';
+  const df=document.getElementById('dateFilter')?.value||'today';
+  const today=new Date().toISOString().slice(0,10);
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10); // YYYY-MM-DD always safe for comparison with toDateStr()
+
+  let filtered=allOrders.filter(o=>{
+    if(st && o.Status!==st) return false;
+    if(df==='today' && toDateStr(o.Timestamp)!==today) return false;
+    if(df==='week' && toDateStr(o.Timestamp)<weekAgo) return false;
+    if(q && !`${o['Order ID']} ${o.Name} ${o.Phone} ${o.Address} ${o.Items}`.toLowerCase().includes(q)) return false;
+    return true;
+  }).reverse();
+
+  const type=o=>o.Status==='Confirmed'?'c':o.Status==='Zelle-Pending'?'z':'d';
+  document.getElementById('list-ordenes').innerHTML=filtered.length
+    ?filtered.map(o=>`<div class="order-card type-${type(o)}">
+        <div class="card-row1"><span class="card-id">#${o['Order ID']||'—'}</span>
+          ${o.Status==='Confirmed'?'<span class="badge bg-g">✅ Confirmada</span>':o.Status==='Zelle-Pending'?'<span class="badge bg-y">💸 Zelle Pendiente</span>':'<span class="badge bg-b">'+o.Status+'</span>'}
+        </div>
+        <div class="card-name">${o.Name||'—'}</div>
+        <div class="card-meta">📍 ${o.Address||'—'}<br>📱 +${(o.Phone||'').replace(/^whatsapp:/i,'') || '—'} · ⏰ ${o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</div>
+        <div class="card-items">${(o.Items||'').split(' | ').map(i=>`<div class="card-item">${i}</div>`).join('')}</div>
+        <div class="card-foot">
+          <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div></div>
+          <div class="card-btns">
+            <button class="btn-xs bx-g" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Imprimir Ticket</button>
+            <button class="btn-xs bx-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}","${o.Name||''}")'>🗺️ Maps</button>
+          </div>
+        </div>
+      </div>`).join('')
+    :'<div class="empty"><em>📋</em>No se encontraron órdenes</div>';
+}
+
+// ── REPORTS ───────────────────────────────────────────────────────────────
+function renderReports(){
+  const today=new Date().toISOString().slice(0,10);
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10); // YYYY-MM-DD always safe for comparison with toDateStr()
+  const conf=allOrders.filter(o=>o.Status==='Confirmed');
+  const todayO=conf.filter(o=>toDateStr(o.Timestamp)===today);
+  const weekO=conf.filter(o=>toDateStr(o.Timestamp)>=weekAgo);
+
+  document.getElementById('rpRevHoy').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
+  document.getElementById('rpRevSem').textContent='$'+weekO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
+  document.getElementById('rpRevAll').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
+  document.getElementById('rpStripe').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2);
+  document.getElementById('rpGestion').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2);
+
+  // Report table
+  const zelleToday=allOrders.filter(o=>o.Status==='Zelle-Pending'&&toDateStr(o.Timestamp)===today);
+  const rows=[
+    ['Órdenes tarjeta hoy', todayO.length, '$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
+    ['Órdenes Zelle hoy', zelleToday.length, '$'+zelleToday.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
+    ['Subtotal bruto', todayO.length+zelleToday.length, '$'+[...todayO,...zelleToday].reduce((s,o)=>s+parseFloat(o.Subtotal||0),0).toFixed(2)],
+    ['Tax NJ cobrado', '—', '$'+[...todayO,...zelleToday].reduce((s,o)=>s+parseFloat(o.Tax||0),0).toFixed(2)],
+    ['Comisión Gestión', '—', '$'+todayO.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2)],
+    ['Comisión Stripe', '—', '$'+todayO.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2)],
+  ];
+  document.getElementById('reportTbody').innerHTML=rows.map(([c,n,m])=>`<tr><td>${c}</td><td style="font-weight:700">${n}</td><td style="font-weight:700;color:var(--green)">${m}</td></tr>`).join('');
+
+  renderChart('reportChart', 14);
+}
+
+// ── CHART ─────────────────────────────────────────────────────────────────
+function renderChart(id, days){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const data=[];
+  for(let i=days-1;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000);
+    const ds=d.toISOString().slice(0,10);
+    const lbl=d.toLocaleDateString('es-DO',{weekday:'short',day:'numeric'});
+    const rev=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);
+    data.push({lbl,rev});
+  }
+  const max=Math.max(...data.map(d=>d.rev),1);
+  el.innerHTML=data.map(d=>`<div class="bar-wrap">
+    <div class="bar-val">${d.rev>0?'$'+d.rev.toFixed(0):''}</div>
+    <div class="bar" style="height:${Math.max((d.rev/max)*100,d.rev>0?8:2)}%" title="$${d.rev.toFixed(2)}"></div>
+    <div class="bar-lbl">${d.lbl}</div>
+  </div>`).join('');
+}
+
+// ── TICKET MODAL ──────────────────────────────────────────────────────────
+function openTicket(o){
+  const addr=o.Address||'';
+  const fee=parseFloat(o.StripeFee||0);
+  document.getElementById('tkId').textContent='Orden #'+(o['Order ID']||'—');
+  document.getElementById('tkName').textContent=o.Name||'—';
+  document.getElementById('tkPhone').textContent=o.Phone?'+'+(o.Phone+'').replace(/^whatsapp:/i,''):'—';
+  document.getElementById('tkAddr').textContent=addr;
+  document.getElementById('tkTime').textContent=o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('tkPay').textContent=o.Status==='Zelle-Pending'?'💸 Zelle (Pendiente)':'✅ Tarjeta — Pagado';
+  document.getElementById('tkSub').textContent='$'+parseFloat(o.Subtotal||0).toFixed(2);
+  document.getElementById('tkTax').textContent='$'+parseFloat(o.Tax||0).toFixed(2);
+  document.getElementById('tkGes').textContent='$'+parseFloat(o.Gestion||0).toFixed(2);
+  document.getElementById('tkTot').textContent='$'+parseFloat(o.Total||0).toFixed(2);
+  const feeRow=document.getElementById('tkFeeRow');
+  if(fee>0){document.getElementById('tkFee').textContent='$'+fee.toFixed(2);feeRow.style.display='flex';}
+  else feeRow.style.display='none';
+  document.getElementById('tkItems').innerHTML=(o.Items||'').split(' | ').map(i=>`<div class="t-item">• ${i}</div>`).join('');
+  // QR — Google Maps link for delivery address
+  const qrEl=document.getElementById('tkQR');
+  qrEl.innerHTML='';
+  const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);
+  try{
+    new QRCode(qrEl,{text:mapsUrl,width:140,height:140,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+  }catch(e){qrEl.innerHTML='<p style="color:#F59E0B;font-weight:bold;padding:14px;font-family:Courier New">📍 Escanea para navegar</p>';}
+  document.getElementById('ticketModal').classList.add('open');
+}
+function closeTicket(){ document.getElementById('ticketModal').classList.remove('open'); }
+
+function toggleDebug(){
+  const p=document.getElementById('dbgPanel');
+  if(p.style.display==='none'){
+    p.style.display='block';
+    // Show debug info about loaded data
+    if(allOrders.length>0){
+      const o=allOrders[0];
+      p.textContent='Columns detected: '+Object.keys(o).join(' | ')+' || Sample: OrderID='+o['Order ID']+' Status='+o.Status+' Phone='+o.Phone;
+    } else {
+      p.textContent='No orders loaded yet';
+    }
+  } else { p.style.display='none'; }
+}
+
+function openMaps(addr){ window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr),'_blank'); }
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+function loadSettings(){
+  document.getElementById('sBellOn').value=S.bellOn?'yes':'no';
+  document.getElementById('sBellTones').value=S.tones;
+  document.getElementById('sBellVol').value=S.vol;
+  document.getElementById('sVolVal').textContent=Math.round(S.vol*100)+'%';
+  document.getElementById('sRefresh').value=S.refreshMs;
+}
+function saveSettings(){
+  S.bellOn=document.getElementById('sBellOn').value==='yes';
+  S.tones=parseInt(document.getElementById('sBellTones').value);
+  S.vol=parseFloat(document.getElementById('sBellVol').value);
+  S.refreshMs=parseInt(document.getElementById('sRefresh').value);
+  localStorage.setItem('py_bOn',S.bellOn?'yes':'no');
+  localStorage.setItem('py_tones',S.tones);
+  localStorage.setItem('py_vol',S.vol);
+  localStorage.setItem('py_ref',S.refreshMs);
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer=setInterval(loadAll,S.refreshMs);
+  alert('✅ Ajustes guardados correctamente.');
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeTicket(); });
 </script>
 </body>
 </html>

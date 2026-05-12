@@ -129,6 +129,7 @@
     <div class="top-logo">🍽️ PIDE<span>YA</span> — Cocina</div>
     <div class="top-right">
       <span class="refresh-time" id="refTime">—</span>
+      <button class="btn-ref" id="btnSound" onclick="testSound()" title="Probar sonido de notificación">🔔</button>
       <button class="btn-ref" id="btnRef" onclick="load()">⟳ Actualizar</button>
     </div>
   </div>
@@ -187,9 +188,64 @@
 
 <script>
 const PASS = 'pideya2024';
-// Public CSV export — works as long as the Google Sheet is set to
-// "Anyone with the link can view" (no API key needed)
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4/gviz/tq?tqx=out:csv&sheet=Sheet1';
+
+// ── SOUND NOTIFICATION ────────────────────────────────────────────────────
+// Uses Web Audio API — no external file needed
+let audioCtx = null;
+let knownOrderIds = new Set();
+let firstLoad = true;
+
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playNewOrderSound(){
+  try{
+    const ctx = getAudioCtx();
+    // Restaurant bell pattern: ding-ding-ding
+    const notes = [880, 1100, 880, 1320];
+    const times = [0, 0.18, 0.36, 0.54];
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + times[i]);
+      gain.gain.setValueAtTime(0, ctx.currentTime + times[i]);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + times[i] + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + times[i] + 0.4);
+      osc.start(ctx.currentTime + times[i]);
+      osc.stop(ctx.currentTime + times[i] + 0.4);
+    });
+  }catch(e){ console.log('Audio not supported'); }
+}
+
+function checkNewOrders(orders){
+  if(firstLoad){
+    // On first load just record existing IDs silently
+    orders.forEach(o => knownOrderIds.add(o['Order ID']));
+    firstLoad = false;
+    return;
+  }
+  const newOrders = orders.filter(o =>
+    (o.Status === 'Confirmed' || o.Status === 'Zelle-Pending') &&
+    o['Order ID'] && !knownOrderIds.has(o['Order ID'])
+  );
+  if(newOrders.length > 0){
+    newOrders.forEach(o => knownOrderIds.add(o['Order ID']));
+    playNewOrderSound();
+    // Flash the page title
+    let count = 0;
+    const orig = document.title;
+    const flash = setInterval(() => {
+      document.title = count % 2 === 0 ? `🔔 NUEVA ORDEN — PIDEYA Cocina` : orig;
+      if(++count > 6){ clearInterval(flash); document.title = orig; }
+    }, 500);
+  }
+}
 
 function login(){
   if(document.getElementById('passIn').value === PASS){
@@ -257,6 +313,7 @@ async function load(){
 }
 
 function render(orders){
+  checkNewOrders(orders);
   const today = new Date().toISOString().slice(0,10);
   const conf = orders.filter(o => o.Status === 'Confirmed' && (o.Timestamp||'').slice(0,10) === today).reverse();
   const zel  = orders.filter(o => o.Status === 'Zelle-Pending').reverse();
@@ -326,6 +383,10 @@ function openT(o){
 
 function closeT(){ document.getElementById('overlay').classList.remove('open'); }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeT(); });
+
+function testSound(){
+  playNewOrderSound();
+}
 </script>
 </body>
 </html>

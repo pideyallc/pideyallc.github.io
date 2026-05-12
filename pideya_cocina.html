@@ -268,8 +268,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
       <span class="refresh-time" id="refTime">—</span>
       <button class="btn-icon" onclick="testSound()" title="Probar timbre">🔔</button>
       <button class="btn-icon btn-green" id="btnRef" onclick="loadAll()">⟳ Actualizar</button>
+      <button class="btn-icon" onclick="toggleDebug()" id="dbgBtn" style="font-size:.65rem;padding:4px 7px;opacity:.4;" title="Debug">🔍</button>
     </div>
   </div>
+  <div id="dbgPanel" style="display:none;background:#1a1a2e;border-bottom:1px solid #333;padding:6px 18px;font-size:.68rem;color:#7bed9f;font-family:monospace;word-break:break-all;" id="dbgPanel"></div>
 
   <!-- ── PAGE: DASHBOARD ──────────────────────────────────────── -->
   <div class="page active" id="page-dashboard">
@@ -569,16 +571,31 @@ async function loadAll(){
     ]);
     // Orders
     if(or.ok){
-      const rows=parseCSV(await or.text());
+      let csvText = await or.text();
+      // Remove UTF-8 BOM if present (Google Sheets adds this, corrupts first column header)
+      if(csvText.charCodeAt(0)===0xFEFF) csvText=csvText.slice(1);
+      const rows=parseCSV(csvText);
       if(rows.length>=2){
-        const h=rows[0].map(x=>x.trim());
-        allOrders=rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=(r[i]||'').trim());return o;});
+        // Parse headers — trim all whitespace and invisible chars
+        const h=rows[0].map(x=>x.replace(/[\uFEFF\u200B\u00A0]/g,'').trim());
+        // Positional fallback schema in case header names don't match
+        const POS=['Order ID','Timestamp','Phone','Name','Address','Items','Subtotal','Tax','Gestion','StripeFee','Total','Status','StripeLink'];
+        allOrders=rows.slice(1).map(r=>{
+          const o={};
+          // Map by header name first
+          h.forEach((k,i)=>{ if(k) o[k]=(r[i]||'').trim(); });
+          // Positional fallback: if key fields are missing, use column position
+          POS.forEach((k,i)=>{ if(!o[k]&&r[i]!==undefined) o[k]=(r[i]||'').trim(); });
+          return o;
+        });
       }
     }
     // Sessions (connected clients)
     let conn=0;
     if(sr.ok){
-      const srows=parseCSV(await sr.text());
+      let sText=await sr.text();
+      if(sText.charCodeAt(0)===0xFEFF) sText=sText.slice(1);
+      const srows=parseCSV(sText);
       if(srows.length>=2){
         const sh=srows[0].map(x=>x.trim());
         const si=sh.indexOf('Step');
@@ -768,6 +785,20 @@ function openTicket(o){
   document.getElementById('ticketModal').classList.add('open');
 }
 function closeTicket(){ document.getElementById('ticketModal').classList.remove('open'); }
+
+function toggleDebug(){
+  const p=document.getElementById('dbgPanel');
+  if(p.style.display==='none'){
+    p.style.display='block';
+    // Show debug info about loaded data
+    if(allOrders.length>0){
+      const o=allOrders[0];
+      p.textContent='Columns detected: '+Object.keys(o).join(' | ')+' || Sample: OrderID='+o['Order ID']+' Status='+o.Status+' Phone='+o.Phone;
+    } else {
+      p.textContent='No orders loaded yet';
+    }
+  } else { p.style.display='none'; }
+}
 
 function openMaps(addr){ window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr),'_blank'); }
 

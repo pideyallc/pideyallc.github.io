@@ -399,7 +399,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
         <div><div class="setting-label">Intervalo</div><div class="setting-desc">Con qué frecuencia se recarga la información</div></div>
         <div class="setting-control">
           <select id="sRefresh">
-            <option value="30000">Cada 30 segundos</option>
+            <option value="30000" selected>Cada 30 segundos</option>
             <option value="60000">Cada 1 minuto</option>
             <option value="90000">Cada 90 segundos</option>
             <option value="120000">Cada 2 minutos</option>
@@ -425,7 +425,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
     <button class="t-x" onclick="closeTicket()">✕</button>
     <div class="t-logo">🍳 PIDE<span>YA</span></div>
     <div class="t-header-info">El Conuco Restaurante<br>715 Summit Ave, Union City, NJ 07087<br>+1 (201) 772-7540</div>
-    <div class="t-ordid" id="tkId"></div>
+    <div style="text-align:center;margin:6px 0"><span class="t-ordid" id="tkId"></span></div>
     <hr class="t-hr">
     <div class="t-row"><span>Cliente</span><strong id="tkName"></strong></div>
     <div class="t-row"><span>Teléfono</span><strong id="tkPhone"></strong></div>
@@ -459,7 +459,7 @@ const S = {
   bellOn: localStorage.getItem('py_bOn') !== 'no',
   tones:  parseInt(localStorage.getItem('py_tones') || '3'),
   vol:    parseFloat(localStorage.getItem('py_vol')  || '0.6'),
-  refreshMs: parseInt(localStorage.getItem('py_ref') || '60000')
+  refreshMs: parseInt(localStorage.getItem('py_ref') || '30000')
 };
 
 // ── DATE HELPER ─────────────────────────────────────────────────────────

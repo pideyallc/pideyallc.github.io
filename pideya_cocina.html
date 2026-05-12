@@ -3,513 +3,329 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PideYa — Cocina 🍳</title>
+<title>PIDEYA — Panel de Cocina</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root{--green:#1a3a1a;--orange:#e8760a;}
+  :root{
+    --bg:#0d1a0d;--panel:#152015;--card:#1a2e1a;--border:#253525;
+    --green:#25d366;--orange:#e8760a;--red:#e84545;--yellow:#f0c040;
+    --text:#e9edef;--muted:rgba(255,255,255,.45);
+  }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Outfit',sans-serif;background:#111;color:white;min-height:100vh;}
-  .header{background:var(--green);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.5);}
-  .header h1{font-size:1.1rem;font-weight:800;}.header h1 span{color:var(--orange);}
-  .dot{width:10px;height:10px;border-radius:50%;background:#25d366;display:inline-block;margin-right:6px;animation:pg 2s infinite;}
-  @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.6)}50%{box-shadow:0 0 0 6px rgba(37,211,102,0)}}
-  .right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-  .badge{background:var(--orange);border-radius:50px;padding:4px 12px;font-size:.82rem;font-weight:700;}
-  .sbtn{background:rgba(255,255,255,.1);border:none;color:white;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem;}
-  .sbtn:hover{background:rgba(255,255,255,.2);}
-  #flash{display:none;position:fixed;inset:0;z-index:1000;background:rgba(232,118,10,.22);pointer-events:none;animation:fa .7s ease;}
-  @keyframes fa{0%{opacity:0}30%{opacity:1}70%{opacity:1}100%{opacity:0}}
-  #banner{display:none;background:var(--orange);color:white;text-align:center;padding:14px;font-size:1.05rem;font-weight:800;animation:sd .3s ease;}
-  @keyframes sd{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-  #errbanner{display:none;background:#c0392b;color:white;text-align:center;padding:12px 20px;font-size:.88rem;font-weight:600;line-height:1.6;}
-  .stats{display:flex;gap:1px;background:#222;}
-  .stat{flex:1;text-align:center;padding:12px 8px;background:#1a1a1a;}
-  .stat .v{font-size:1.5rem;font-weight:800;}.stat .l{font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:1px;}
-  .ov{color:var(--orange);}.gv{color:#25d366;}
-  #orders{padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
-  .card{background:#1e1e1e;border-radius:16px;overflow:hidden;border:2px solid #333;transition:border-color .3s;}
-  .card.new-card{border-color:var(--orange);animation:glow 1s ease 3;}
-  @keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(232,118,10,.6)}}
-  .card.done-card{border-color:#25d366;opacity:.55;}
-  .ch{background:var(--green);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
-  .oid{font-weight:800;font-size:1rem;}.otime{font-size:.75rem;color:rgba(255,255,255,.6);}
-  .kbadge{border-radius:50px;padding:3px 10px;font-size:.72rem;font-weight:700;background:var(--orange);}
-  .kbadge.done{background:#25d366;}
-  .cb{padding:14px 16px;}
-  .nm{font-weight:700;font-size:1rem;}.ph,.ad{font-size:.78rem;color:#ccc;margin-top:2px;}
-  .items{margin:10px 0;}
-  .irow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #2a2a2a;font-size:.88rem;}
-  .irow:last-child{border:none;}.qty{color:var(--orange);font-weight:700;margin-right:6px;}
-  .tots{margin-top:10px;padding-top:10px;border-top:1px solid #2a2a2a;}
-  .tr{display:flex;justify-content:space-between;font-size:.82rem;color:#aaa;margin-bottom:4px;}
-  .tr.grand{color:white;font-weight:800;font-size:1.05rem;}
-  .cact{padding:12px 16px;display:flex;gap:8px;}
-  .btn{flex:1;padding:10px;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;font-size:.88rem;transition:transform .1s;}
-  .btn:active{transform:scale(.97);}
-  .bp{background:#2d2d2d;color:white;}.bd{background:#25d366;color:white;}.bd.m{background:#1a3a1a;color:#25d366;}
-  #empty{display:none;text-align:center;padding:60px 20px;color:#555;}
-  #empty .big{font-size:3rem;margin-bottom:12px;}
-  #lc{font-size:.72rem;color:rgba(255,255,255,.45);}
+  body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-  /* Login */
-  #login-screen{position:fixed;inset:0;background:#111;display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
-  #login-box{background:#1e1e1e;border-radius:20px;padding:40px 32px;width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.5);}
-  #login-box .icon{font-size:2.5rem;margin-bottom:12px;}
-  #login-box h2{color:white;font-size:1.3rem;font-weight:800;margin-bottom:4px;}
-  #login-box h2 span{color:#e8760a;}
-  #login-box p{color:#888;font-size:.85rem;margin-bottom:28px;}
-  #pin-input{width:100%;padding:13px 16px;background:#2a2a2a;border:2px solid #444;color:white;border-radius:12px;font-size:1rem;font-family:'Outfit',sans-serif;outline:none;margin-bottom:12px;box-sizing:border-box;}
-  #pin-input:focus{border-color:#e8760a;}
-  #login-btn{width:100%;padding:14px;background:#e8760a;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
-  #login-btn:hover{background:#cf6a09;}
-  #login-err{color:#e74c3c;font-size:.82rem;margin-top:12px;display:none;}
+  /* LOGIN */
+  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .login-box{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:360px;text-align:center;}
+  .login-logo{font-size:2rem;font-weight:800;color:white;margin-bottom:6px;}
+  .login-logo span{color:var(--orange);}
+  .login-sub{color:var(--muted);font-size:.85rem;margin-bottom:28px;line-height:1.5;}
+  .login-box input{width:100%;background:var(--bg);border:1px solid var(--border);color:white;border-radius:10px;padding:12px 16px;font-family:'Outfit',sans-serif;font-size:1rem;outline:none;margin-bottom:12px;letter-spacing:2px;}
+  .login-box input:focus{border-color:var(--green);}
+  .login-box button{width:100%;background:var(--green);color:#0d1a0d;border:none;border-radius:10px;padding:13px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;}
+  .login-box button:hover{background:#1da851;}
+  .login-err{color:var(--red);font-size:.8rem;margin-top:10px;display:none;}
+
+  /* DASHBOARD */
+  .dashboard{display:none;flex-direction:column;min-height:100vh;}
+  .top-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:13px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;gap:12px;}
+  .top-logo{font-size:1rem;font-weight:800;}
+  .top-logo span{color:var(--orange);}
+  .top-right{display:flex;align-items:center;gap:10px;}
+  .refresh-time{color:var(--muted);font-size:.73rem;}
+  .btn-ref{background:rgba(37,211,102,.12);color:var(--green);border:1px solid rgba(37,211,102,.25);border-radius:8px;padding:6px 14px;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;}
+  .btn-ref:hover{background:rgba(37,211,102,.22);}
+  .btn-ref:disabled{opacity:.4;cursor:not-allowed;}
+
+  .stats-row{display:flex;gap:10px;padding:14px 20px;flex-wrap:wrap;}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+  .stat-val{font-size:1.3rem;font-weight:800;}
+  .stat-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;flex:1;}
+  @media(max-width:680px){.grid{grid-template-columns:1fr;}}
+  .col{padding:16px 20px;border-right:1px solid var(--border);}
+  .col:last-child{border-right:none;}
+  .col-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .col-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .dot-g{background:var(--green);}
+  .dot-y{background:var(--yellow);}
+  .col-head h3{font-size:.88rem;font-weight:800;}
+  .col-cnt{background:rgba(255,255,255,.07);color:var(--muted);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;}
+
+  .order-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+  .order-card.type-c{border-left:3px solid var(--green);}
+  .order-card.type-z{border-left:3px solid var(--yellow);}
+  .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .card-id{font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.8px;}
+  .card-badge{font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:20px;text-transform:uppercase;}
+  .b-g{background:rgba(37,211,102,.15);color:var(--green);}
+  .b-y{background:rgba(240,192,64,.12);color:var(--yellow);}
+  .card-name{font-size:.95rem;font-weight:700;color:white;margin-bottom:2px;}
+  .card-addr{font-size:.73rem;color:var(--muted);margin-bottom:9px;line-height:1.4;}
+  .card-items{background:rgba(0,0,0,.25);border-radius:7px;padding:8px 10px;margin-bottom:9px;}
+  .card-item{font-size:.75rem;color:rgba(255,255,255,.8);padding:2px 0;display:flex;gap:6px;}
+  .card-item::before{content:'▸';color:var(--green);flex-shrink:0;}
+  .card-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .card-total{font-size:.95rem;font-weight:800;}
+  .card-time{font-size:.68rem;color:var(--muted);}
+  .btn-t{border:none;border-radius:8px;padding:6px 13px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:800;cursor:pointer;}
+  .btn-t:hover{opacity:.85;}
+  .bt-g{background:var(--green);color:#0d1a0d;}
+  .bt-y{background:var(--yellow);color:#0d1a0d;}
+
+  .empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:.85rem;}
+  .empty em{display:block;font-size:2rem;margin-bottom:8px;font-style:normal;}
+  .loading{text-align:center;padding:32px 16px;}
+  .spin{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading p{color:var(--muted);font-size:.82rem;}
+  .err-box{background:rgba(232,69,69,.08);border:1px solid rgba(232,69,69,.25);border-radius:10px;padding:14px;color:#f08080;font-size:.8rem;line-height:1.6;margin:8px;}
+
+  /* TICKET MODAL */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:16px;}
+  .overlay.open{display:flex;}
+  .ticket{background:white;color:#111;border-radius:18px;padding:24px 22px;width:100%;max-width:340px;position:relative;max-height:92vh;overflow-y:auto;}
+  .t-close{position:absolute;top:12px;right:12px;background:#eee;border:none;border-radius:50%;width:28px;height:28px;font-size:.9rem;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .t-close:hover{background:#ddd;}
+  .t-logo{font-weight:800;font-size:1.2rem;color:#1a3a1a;text-align:center;}
+  .t-logo span{color:#e8760a;}
+  .t-rest{text-align:center;font-size:.72rem;color:#777;margin-top:2px;}
+  .t-id{text-align:center;font-size:.7rem;color:#aaa;letter-spacing:1px;margin-top:6px;}
+  .t-hr{border:none;border-top:1px dashed #ccc;margin:12px 0;}
+  .t-row{display:flex;justify-content:space-between;font-size:.79rem;color:#444;padding:2px 0;gap:8px;}
+  .t-row strong{color:#111;text-align:right;flex:1;}
+  .t-items{background:#f7f7f7;border-radius:7px;padding:9px;margin:8px 0;}
+  .t-item{font-size:.77rem;color:#333;padding:2px 0;}
+  .t-total-line{display:flex;justify-content:space-between;font-size:1rem;font-weight:800;border-top:2px solid #111;padding-top:7px;margin-top:7px;}
+  #qrbox{display:flex;justify-content:center;margin:14px 0 4px;}
+  .qr-note{text-align:center;font-size:.67rem;color:#aaa;margin-bottom:10px;}
+  .t-print{width:100%;background:#1a3a1a;color:white;border:none;border-radius:9px;padding:11px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;}
+  .t-print:hover{background:#2d5a27;}
 
   @media print{
-    body{background:white;color:black;}
-    .header,.stats,.cact,#banner,#flash,#errbanner,#login-screen{display:none!important;}
-    .card{border:1px solid #ccc;break-inside:avoid;margin-bottom:20px;}
-    .ch{background:#eee;color:black;}
-    #orders{display:block;padding:0;}.card.done-card{display:none;}
+    body > *:not(.overlay){display:none!important;}
+    .overlay{position:static!important;background:none!important;display:block!important;padding:0!important;}
+    .ticket{max-height:none!important;border-radius:0!important;box-shadow:none!important;}
+    .t-close,.t-print{display:none!important;}
   }
 </style>
 </head>
 <body>
 
-<div id="flash"></div>
-
-<!-- LOGIN SCREEN -->
-<div id="login-screen">
-  <div id="login-box">
-    <div class="icon">🍳</div>
-    <h2>PideYa <span>Cocina</span></h2>
-    <p>El Conuco Restaurante — Panel Interno</p>
-    <input id="pin-input" type="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
-    <button id="login-btn" onclick="doLogin()">🔓 Entrar</button>
-    <p id="login-err">Contraseña incorrecta. Intenta de nuevo.</p>
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">🍽️ PIDE<span>YA</span></div>
+    <div class="login-sub">Panel de Cocina<br>El Conuco Restaurante</div>
+    <input type="password" id="passIn" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">Entrar al Panel</button>
+    <div class="login-err" id="loginErr">Contraseña incorrecta.</div>
   </div>
 </div>
 
-<header class="header">
-  <h1>🍳 PideYa <span>Cocina</span> — El Conuco</h1>
-  <div class="right">
-    <span><span class="dot"></span><span id="lc">Conectando...</span></span>
-    <span class="badge" id="pb">0 pendientes</span>
-    <button class="sbtn" id="sndBtn" onclick="toggleSound()">🔔 Sonido ON</button>
-    <select id="snd-duration" onchange="setSoundDuration(this.value)" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;border-radius:8px;padding:5px 10px;font-family:Outfit,sans-serif;font-size:.82rem;cursor:pointer;outline:none;">
-      <option value="10">🔔 10 seg</option>
-      <option value="20" selected>🔔 20 seg</option>
-      <option value="30">🔔 30 seg</option>
-      <option value="60">🔔 1 min</option>
-      <option value="120">🔔 2 min</option>
-      <option value="300">🔔 5 min</option>
-    </select>
+<div class="dashboard" id="dash">
+  <div class="top-bar">
+    <div class="top-logo">🍽️ PIDE<span>YA</span> — Cocina</div>
+    <div class="top-right">
+      <span class="refresh-time" id="refTime">—</span>
+      <button class="btn-ref" id="btnRef" onclick="load()">⟳ Actualizar</button>
+    </div>
   </div>
-</header>
 
-<div id="banner">🔔 ¡NUEVA ORDEN LLEGÓ! — Preparar ahora</div>
-<div id="errbanner"></div>
+  <div class="stats-row">
+    <div class="stat"><span style="font-size:1.2rem">✅</span><div><div class="stat-val" id="sC">—</div><div class="stat-lbl">Confirmadas hoy</div></div></div>
+    <div class="stat"><span style="font-size:1.2rem">💸</span><div><div class="stat-val" id="sZ">—</div><div class="stat-lbl">Zelle pendiente</div></div></div>
+    <div class="stat"><span style="font-size:1.2rem">💰</span><div><div class="stat-val" id="sT">—</div><div class="stat-lbl">Total del día</div></div></div>
+  </div>
 
-<div class="stats">
-  <div class="stat"><div class="v ov" id="sp">0</div><div class="l">Pendientes</div></div>
-  <div class="stat"><div class="v gv" id="sd">0</div><div class="l">Completadas</div></div>
-  <div class="stat"><div class="v" id="st">$0</div><div class="l">Total Hoy</div></div>
-  <div class="stat"><div class="v" id="sc">0</div><div class="l">Pedidos</div></div>
-  <div class="stat"><div class="v" style="color:#25d366;animation:pg 2s infinite;" id="stat-clients">0</div><div class="l">🟢 En vivo</div></div>
+  <div class="grid">
+    <div class="col">
+      <div class="col-head">
+        <div class="col-dot dot-g"></div>
+        <h3>Confirmadas — Preparar ahora</h3>
+        <span class="col-cnt" id="cC">0</span>
+      </div>
+      <div id="listC"><div class="loading"><div class="spin"></div><p>Cargando...</p></div></div>
+    </div>
+    <div class="col">
+      <div class="col-head">
+        <div class="col-dot dot-y"></div>
+        <h3>Zelle — Esperar pago</h3>
+        <span class="col-cnt" id="cZ">0</span>
+      </div>
+      <div id="listZ"><div class="loading"><div class="spin"></div><p>Cargando...</p></div></div>
+    </div>
+  </div>
 </div>
 
-<div id="orders"></div>
-<div id="empty"><div class="big">🍽️</div><p>Sin pedidos activos.<br>Actualiza cada 15 seg automáticamente.</p></div>
+<!-- TICKET MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeT()">
+  <div class="ticket">
+    <button class="t-close" onclick="closeT()">✕</button>
+    <div class="t-logo">PIDE<span>YA</span></div>
+    <div class="t-rest">El Conuco Restaurante · 715 Summit Ave, Union City NJ</div>
+    <div class="t-id" id="tId"></div>
+    <hr class="t-hr">
+    <div class="t-row"><span>Cliente</span><strong id="tName"></strong></div>
+    <div class="t-row"><span>Teléfono</span><strong id="tPhone"></strong></div>
+    <div class="t-row"><span>Dirección</span><strong id="tAddr" style="max-width:58%;text-align:right"></strong></div>
+    <div class="t-row"><span>Hora</span><strong id="tTime"></strong></div>
+    <div class="t-row"><span>Pago</span><strong id="tPay"></strong></div>
+    <hr class="t-hr">
+    <div class="t-items" id="tItems"></div>
+    <div class="t-row"><span>Subtotal</span><strong id="tSub"></strong></div>
+    <div class="t-row"><span>Tax NJ (6.625%)</span><strong id="tTax"></strong></div>
+    <div class="t-row"><span>Gestión</span><strong id="tGes"></strong></div>
+    <div class="t-total-line"><span>TOTAL</span><span id="tTot"></span></div>
+    <hr class="t-hr">
+    <div id="qrbox"></div>
+    <div class="qr-note">Escanear para verificar la orden</div>
+    <button class="t-print" onclick="window.print()">🖨️ Imprimir Ticket</button>
+  </div>
+</div>
 
 <script>
-// ── CONFIG ──
-// Uses public CSV export — NO API key needed, NO Google Cloud Console needed
-// Sheet just needs to be "Anyone with the link can view"
-const SHEET_ID  = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
-const GID       = '0'; // Sheet1 tab GID
-const GID2      = '638346367'; // Sheet2 (sessions)
-const CSV_URL   = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
-const CSV_URL2  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID2}`;
-const PASSWORD  = 'pideya2024';
+const PASS = 'pideya2024';
+// Public CSV export — works as long as the Google Sheet is set to
+// "Anyone with the link can view" (no API key needed)
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4/gviz/tq?tqx=out:csv&sheet=Sheet1';
 
-let soundOn   = true;
-let firstLoad = true;
-let knownIds  = new Set();
-let allOrders = [];
-let localDone = new Set();
-let audioCtx  = null;
-
-// ── AUTH ──
-function checkAuth() {
-  return sessionStorage.getItem('pideya_auth') === PASSWORD;
-}
-function doLogin() {
-  const val = document.getElementById('pin-input').value.trim();
-  if (val === PASSWORD) {
-    sessionStorage.setItem('pideya_auth', PASSWORD);
-    document.getElementById('login-screen').style.display = 'none';
-    startPolling();
+function login(){
+  if(document.getElementById('passIn').value === PASS){
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('dash').style.display = 'flex';
+    load();
+    setInterval(load, 90000);
   } else {
-    document.getElementById('login-err').style.display = 'block';
-    document.getElementById('pin-input').value = '';
-    document.getElementById('pin-input').focus();
+    document.getElementById('loginErr').style.display = 'block';
   }
 }
 
-window.addEventListener('load', () => {
-  Notification.requestPermission();
-  // Restore saved sound duration
-  const saved = localStorage.getItem('pideya_snd_duration');
-  if (saved) {
-    soundDuration = parseInt(saved);
-    const sel = document.getElementById('snd-duration');
-    if (sel) sel.value = saved;
+// ── CSV PARSER ─────────────────────────────────────────────────────────────
+function parseCSV(text){
+  const rows = [];
+  let row = [], cell = '', inQ = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(inQ){
+      if(c==='"' && text[i+1]==='"'){cell+='"';i++;}
+      else if(c==='"'){inQ=false;}
+      else{cell+=c;}
+    } else {
+      if(c==='"'){inQ=true;}
+      else if(c===','){row.push(cell);cell='';}
+      else if(c==='\n'||c==='\r'){
+        row.push(cell);cell='';
+        if(row.some(v=>v)){rows.push(row);}
+        row=[];
+        if(c==='\r'&&text[i+1]==='\n')i++;
+      } else {cell+=c;}
+    }
   }
-  if (checkAuth()) {
-    document.getElementById('login-screen').style.display = 'none';
-    startPolling();
-  } else {
-    setTimeout(() => document.getElementById('pin-input').focus(), 100);
-  }
-});
+  if(cell||row.length){row.push(cell);if(row.some(v=>v))rows.push(row);}
+  return rows;
+}
 
-function startPolling() { poll(); setInterval(poll, 15000); pollClients(); setInterval(pollClients, 30000); }
-
-// ── LIVE CLIENTS ──
-async function pollClients() {
-  try {
-    const res = await fetch(CSV_URL2 + '&t=' + Date.now());
-    if (!res.ok) return;
+async function load(){
+  const btn = document.getElementById('btnRef');
+  btn.disabled = true; btn.textContent = '⟳ Cargando...';
+  try{
+    // Cache-bust to always get fresh data
+    const res = await fetch(CSV_URL + '&_=' + Date.now());
+    if(!res.ok) throw new Error('Error HTTP ' + res.status);
     const text = await res.text();
-    const lines = text.trim().split('\n').slice(1).filter(l => l.trim());
-    // Active = session step is NOT 'start' and updated in last 10 minutes
-    const now = Date.now();
-    let active = 0;
-    lines.forEach(line => {
-      const cols = [];
-      let cur = '', inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') { inQ = !inQ; }
-        else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-        else { cur += c; }
-      }
-      cols.push(cur.trim());
-      const step = (cols[1] || '').toLowerCase();
-      if (step && step !== 'start' && step !== '') active++;
+    const rows = parseCSV(text);
+    if(rows.length < 2){ renderEmpty(); return; }
+    const headers = rows[0].map(h => h.trim());
+    const orders = rows.slice(1).map(r => {
+      const o = {};
+      headers.forEach((h,i) => o[h] = (r[i]||'').trim());
+      return o;
     });
-    document.getElementById('stat-clients').textContent = active;
-  } catch(e) {}
-}
-
-// ── AUDIO ──
-let soundDuration = parseInt(localStorage.getItem('pideya_snd_duration') || '20');
-
-function setSoundDuration(val) {
-  soundDuration = parseInt(val);
-  try { localStorage.setItem('pideya_snd_duration', val); } catch(e) {}
-}
-
-function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
-function playAlert() {
-  if (!soundOn) return; initAudio();
-  const pattern = [880,1100,880,1100];
-  const beepDuration = 0.15;
-  const beepGap = 0.18;
-  const cycleLength = 1.5;
-  const cycles = Math.ceil(soundDuration / cycleLength);
-  for (let c = 0; c < cycles; c++) {
-    pattern.forEach((freq, i) => {
-      const t = audioCtx.currentTime + c * cycleLength + i * beepGap;
-      if (t > audioCtx.currentTime + soundDuration) return;
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.connect(g); g.connect(audioCtx.destination); o.type = 'square';
-      o.frequency.setValueAtTime(freq, t);
-      g.gain.setValueAtTime(0.3, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + beepDuration);
-      o.start(t); o.stop(t + beepDuration);
-    });
-  }
-}
-function toggleSound() {
-  soundOn=!soundOn; initAudio();
-  document.getElementById('sndBtn').textContent = soundOn?'🔔 Sonido ON':'🔕 Sonido OFF';
-}
-function flashScreen() {
-  const e=document.getElementById('flash'); e.style.display='block';
-  setTimeout(()=>e.style.display='none',700);
-}
-function showBanner() {
-  const b=document.getElementById('banner'); b.style.display='block';
-  setTimeout(()=>b.style.display='none',6000);
-}
-function showErr(msg) {
-  const e=document.getElementById('errbanner'); e.style.display='block'; e.innerHTML=msg;
-}
-function hideErr() { document.getElementById('errbanner').style.display='none'; }
-function setStatus(t){ document.getElementById('lc').textContent=t; }
-
-// ── CSV PARSER ──
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  // skip header row
-  return lines.slice(1).map(line => {
-    // Handle quoted fields with commas inside
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') { inQ = !inQ; }
-      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-      else { cur += c; }
-    }
-    cols.push(cur.trim());
-    return {
-      id:       cols[0]||'',
-      ts:       cols[1]||'',
-      phone:    cols[2]||'',
-      name:     cols[3]||'',
-      address:  cols[4]||'',
-      items:    cols[5]||'',
-      subtotal: cols[6]||'0',
-      tax:      cols[7]||'0',
-      gestion:  cols[8]||'0',
-      total:    cols[9]||'0',
-      status:   (cols[10]||'confirmed').toLowerCase(),
-      stripe:   cols[11]||'',
-    };
-  }).filter(o=>o.id);
-}
-
-// ── POLL ──
-async function poll() {
-  try {
-    // Add cache-busting timestamp
-    const res = await fetch(CSV_URL + '&t=' + Date.now());
-    if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
-        showErr('⚠️ El Google Sheet no es público.<br>Ve a <b>Compartir → Acceso general → Cualquier persona con el enlace → Lector</b> y haz clic en Listo.');
-      } else {
-        showErr('⚠️ Error ' + res.status + ' al conectar con Google Sheets.');
-      }
-      setStatus('Error ' + res.status);
-      return;
-    }
-    hideErr();
-    const text = await res.text();
-    const parsed = parseCSV(text).reverse();
-    detectNew(parsed);
-    allOrders = parsed;
-    renderOrders(parsed);
-    setStatus('✅ Últ: ' + new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-  } catch(e) {
-    setStatus('⚠️ Sin conexión');
-    showErr('⚠️ Error de red. Verifica tu conexión a internet.');
+    render(orders);
+  } catch(e){
+    const msg = `<div class="err-box">❌ No se pudo cargar las órdenes.<br><br>
+      <strong>Solución:</strong> Abre el Google Sheet → Compartir → cambia a <em>"Cualquier persona con el enlace puede ver"</em> → Guardar.<br><br>
+      <small>Error: ${e.message}</small></div>`;
+    document.getElementById('listC').innerHTML = msg;
+    document.getElementById('listZ').innerHTML = '';
+  } finally {
+    btn.disabled = false; btn.textContent = '⟳ Actualizar';
+    document.getElementById('refTime').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
   }
 }
 
-function detectNew(fresh) {
-  if (firstLoad) { fresh.forEach(o=>knownIds.add(o.id)); firstLoad=false; return; }
-  const news = fresh.filter(o=>!knownIds.has(o.id));
-  if (news.length) {
-    news.forEach(o=>knownIds.add(o.id));
-    playAlert(); flashScreen(); showBanner();
-    if (Notification.permission==='granted')
-      new Notification('🔔 Nueva orden PideYa!',{body:news[0].name+' · $'+parseFloat(news[0].total).toFixed(2)});
-  }
+function render(orders){
+  const today = new Date().toISOString().slice(0,10);
+  const conf = orders.filter(o => o.Status === 'Confirmed' && (o.Timestamp||'').slice(0,10) === today).reverse();
+  const zel  = orders.filter(o => o.Status === 'Zelle-Pending').reverse();
+
+  document.getElementById('cC').textContent = conf.length;
+  document.getElementById('cZ').textContent = zel.length;
+  document.getElementById('sC').textContent = conf.length;
+  document.getElementById('sZ').textContent = zel.length;
+  const tot = conf.reduce((s,o) => s + parseFloat(o.Total||0), 0);
+  document.getElementById('sT').textContent = '$' + tot.toFixed(2);
+
+  document.getElementById('listC').innerHTML = conf.length
+    ? conf.map(o => card(o,'c')).join('')
+    : '<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
+
+  document.getElementById('listZ').innerHTML = zel.length
+    ? zel.map(o => card(o,'z')).join('')
+    : '<div class="empty"><em>💸</em>No hay órdenes Zelle pendientes</div>';
 }
 
-function renderOrders(orders) {
-  const cont=document.getElementById('orders'), em=document.getElementById('empty');
-  if (!orders) orders=allOrders;
-  // ── FEATURE 3: Only show orders where payment is confirmed (status = paid) ──
-  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-  const todayOrders = orders.filter(o => {
-    if (!o.id) return false;
-    // Check if order is from today
-    if (o.ts) {
-      try { const d = new Date(o.ts); return d.toLocaleDateString('en-CA') === todayStr; } catch(e) {}
-    }
-    return true; // include if no timestamp
-  });
-  const paid=todayOrders.filter(o=>o.status==='paid'||o.status==='pagado');
-  const pending=paid.filter(o=>!localDone.has(o.id)&&o.status!=='completed'&&o.status!=='entregado');
-  const done=paid.filter(o=>localDone.has(o.id)||o.status==='completed'||o.status==='entregado');
-  const awaitingPayment=todayOrders.filter(o=>(o.status==='confirmed'||o.status==='confirmado')&&!localDone.has(o.id));
-  document.getElementById('sp').textContent=pending.length;
-  document.getElementById('sd').textContent=done.length;
-  document.getElementById('sc').textContent=paid.length;
-  document.getElementById('pb').textContent=pending.length+' pendientes';
-  document.getElementById('st').textContent='$'+paid.reduce((s,o)=>s+parseFloat(o.total||0),0).toFixed(2);
-  if (!todayOrders.length){ cont.innerHTML=''; em.style.display='block'; return; }
-  em.style.display='none';
-  let html = '';
-  // ── AWAITING PAYMENT BANNER ──
-  if(awaitingPayment.length){
-    html += `<div style="grid-column:1/-1;background:#2a1a00;border:1px solid #e8760a;border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
-      <span style="font-size:1.2rem;">⏳</span>
-      <div>
-        <div style="font-size:.82rem;font-weight:700;color:#e8760a;">${awaitingPayment.length} orden${awaitingPayment.length>1?'es':''} esperando confirmación de pago</div>
-        <div style="font-size:.72rem;color:#888;margin-top:2px;">Se mostrarán aquí automáticamente cuando el pago sea confirmado por Stripe</div>
-      </div>
-    </div>`;
-  }
-  // ── PENDING SECTION ──
-  if(pending.length){
-    html += `<div style="grid-column:1/-1;padding:4px 0 8px;border-bottom:2px solid #e8760a;margin-bottom:4px;">
-      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:#e8760a;font-weight:800;">🔥 Pendientes — Pago Confirmado (${pending.length})</span>
-    </div>`;
-    html += pending.map(buildCard).join('');
-  } else if(!awaitingPayment.length) {
-    html += `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#555;font-size:.88rem;">✅ Sin órdenes pendientes</div>`;
-  }
-  // ── COMPLETED SECTION ──
-  if(done.length){
-    html += `<div style="grid-column:1/-1;padding:16px 0 8px;border-bottom:2px solid #25d366;margin-top:8px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:#25d366;font-weight:800;">✅ Preparadas (${done.length})</span>
-      <button onclick="toggleDone()" id="toggle-done-btn" style="background:rgba(37,211,102,.15);border:1px solid #25d366;color:#25d366;border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:Outfit,sans-serif;">Ocultar</button>
-    </div>`;
-    html += `<div id="done-section" style="display:contents;">` + done.map(buildCard).join('') + `</div>`;
-  }
-  cont.innerHTML = html;
+function renderEmpty(){
+  document.getElementById('listC').innerHTML = '<div class="empty"><em>✅</em>Sin órdenes hoy</div>';
+  document.getElementById('listZ').innerHTML = '<div class="empty"><em>💸</em>Sin órdenes pendientes</div>';
+  ['sC','sZ','cC','cZ'].forEach(id => document.getElementById(id).textContent = '0');
+  document.getElementById('sT').textContent = '$0.00';
 }
 
-function buildCard(o) {
-  const isDone=localDone.has(o.id)||o.status==='completed'||o.status==='entregado';
-  const ds=o.ts?new Date(o.ts).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}):'—';
-  return `<div class="card ${isDone?'done-card':'new-card'}" id="card-${o.id}">
-    <div class="ch">
-      <div><div class="oid">Orden ${o.id}</div><div class="otime">${ds}</div></div>
-      <span class="kbadge ${isDone?'done':''}">${isDone?'✅ Listo':'🔥 Nuevo'}</span>
-    </div>
-    <div class="cb">
-      <div class="nm">👤 ${o.name||'—'}</div>
-      <div class="ph">📱 +${o.phone||'—'}</div>
-      <div class="ad">📍 ${o.address||'—'}</div>
-      <div class="items">${fmtItems(o.items)}</div>
-      <div class="tots">
-        <div class="tr"><span>Subtotal</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
-        <div class="tr"><span>Tax NJ (6.625%)</span><span>$${parseFloat(o.tax).toFixed(2)}</span></div>
-        <div class="tr"><span>Gestión</span><span>$${parseFloat(o.gestion).toFixed(2)}</span></div>
-        <div class="tr grand"><span>TOTAL</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
-      </div>
-    </div>
-    <div class="cact">
-      <button class="btn bp" onclick="printT('${o.id}')">🖨️ Imprimir</button>
-      <button class="btn bd ${isDone?'m':''}" id="db-${o.id}" onclick="markDone('${o.id}',this)">${isDone?'✅ Completado':'Marcar listo'}</button>
+function card(o, type){
+  const items = (o.Items||'').split(' | ').map(i => `<div class="card-item">${i}</div>`).join('');
+  const time = o.Timestamp ? new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const badge = type==='c'
+    ? '<span class="card-badge b-g">✅ Confirmada</span>'
+    : '<span class="card-badge b-y">💸 Zelle Pendiente</span>';
+  const btnCls = type==='c' ? 'btn-t bt-g' : 'btn-t bt-y';
+  const safe = JSON.stringify(o).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return `<div class="order-card type-${type}">
+    <div class="card-top"><span class="card-id">#${o['Order ID']||'—'}</span>${badge}</div>
+    <div class="card-name">${o.Name||'—'}</div>
+    <div class="card-addr">📍 ${o.Address||'—'}</div>
+    <div class="card-items">${items||'(sin items)'}</div>
+    <div class="card-foot">
+      <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div><div class="card-time">⏰ ${time}</div></div>
+      <button class="${btnCls}" onclick='openT(${JSON.stringify(o)})'>🖨️ Ticket</button>
     </div>
   </div>`;
 }
 
-function fmtItems(str) {
-  if (!str||str==='—') return '<div class="irow">Sin detalle</div>';
-  return str.split('|').map(item=>{
-    item=item.trim();
-    const m=item.match(/^(\d+)x?\s+(.+?)\s+-\s+(\$[\d.]+)$/i);
-    return m
-      ?`<div class="irow"><span><span class="qty">${m[1]}x</span>${m[2]}</span><span>${m[3]}</span></div>`
-      :`<div class="irow"><span>${item}</span></div>`;
-  }).join('');
+function openT(o){
+  document.getElementById('tId').textContent = 'Orden #'+(o['Order ID']||'—');
+  document.getElementById('tName').textContent = o.Name||'—';
+  document.getElementById('tPhone').textContent = o.Phone ? '+'+o.Phone : '—';
+  document.getElementById('tAddr').textContent = o.Address||'—';
+  document.getElementById('tTime').textContent = o.Timestamp
+    ? new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  document.getElementById('tPay').textContent = o.Status==='Zelle-Pending' ? '💸 Zelle (Pendiente)' : '✅ Tarjeta Confirmado';
+  document.getElementById('tSub').textContent = '$'+parseFloat(o.Subtotal||0).toFixed(2);
+  document.getElementById('tTax').textContent = '$'+parseFloat(o.Tax||0).toFixed(2);
+  document.getElementById('tGes').textContent = '$'+parseFloat(o.Gestion||0).toFixed(2);
+  document.getElementById('tTot').textContent = '$'+parseFloat(o.Total||0).toFixed(2);
+  document.getElementById('tItems').innerHTML = (o.Items||'').split(' | ').map(i=>`<div class="t-item">• ${i}</div>`).join('');
+  const qrbox = document.getElementById('qrbox');
+  qrbox.innerHTML = '';
+  const qrText = `PIDEYA #${o['Order ID']} | ${o.Name} | $${parseFloat(o.Total||0).toFixed(2)} | ${o.Status}`;
+  try{ new QRCode(qrbox,{text:qrText,width:140,height:140,colorDark:'#111',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M}); }catch(e){}
+  document.getElementById('overlay').classList.add('open');
 }
 
-function toggleDone() {
-  const sec = document.getElementById('done-section');
-  const btn = document.getElementById('toggle-done-btn');
-  if (!sec || !btn) return;
-  const hidden = sec.style.display === 'none';
-  sec.style.display = hidden ? 'contents' : 'none';
-  btn.textContent = hidden ? 'Ocultar' : 'Mostrar';
-}
-
-function markDone(id,btn) {
-  localDone.add(id);
-  const card=document.getElementById('card-'+id);
-  if(card){card.classList.remove('new-card');card.classList.add('done-card');}
-  btn.textContent='✅ Completado'; btn.classList.add('m');
-  renderOrders();
-}
-
-function printT(id) {
-  const o=allOrders.find(x=>x.id===id); if(!o) return;
-  const ds=o.ts?new Date(o.ts).toLocaleString('es-DO'):'—';
-  const mapsUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(o.address);
-  const w=window.open('','_blank','width=420,height=820');
-
-  // Minimal QR encoder — generates QR as SVG inline, no external deps
-  function makeQR(text) {
-    // Use a data URI approach with Google Charts as base64 embedded
-    // Fall back to showing the URL as text if blocked
-    const encoded = encodeURIComponent(text);
-    return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encoded}&format=svg`;
-  }
-
-  // Build SVG QR using goqr.me (reliable, returns SVG inline)
-  const qrSvgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mapsUrl)}&format=svg&ecc=M`;
-  const qrPngUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(mapsUrl)}&format=png&ecc=M`;
-
-  w.document.write(`<!DOCTYPE html><html><head><title>Ticket ${id}</title>
-  <style>
-    *{box-sizing:border-box;}
-    body{font-family:'Courier New',monospace;font-size:13px;padding:20px;max-width:320px;margin:0 auto;background:white;}
-    h2,h3{text-align:center;margin:4px 0;}
-    hr{border:none;border-top:1px dashed #000;margin:8px 0;}
-    .r{display:flex;justify-content:space-between;margin:2px 0;}
-    .b{font-weight:bold;font-size:1.05rem;}
-    .qr-section{text-align:center;margin:12px 0;padding:10px;border:1px dashed #ccc;border-radius:4px;}
-    .qr-section .title{font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
-    .qr-section img{width:180px;height:180px;display:block;margin:0 auto;}
-    .qr-section .addr{font-size:9px;color:#666;margin-top:6px;word-break:break-all;}
-    .qr-section .link{display:block;font-size:10px;color:#000;font-weight:bold;margin-top:4px;text-decoration:none;}
-    @media print{body{padding:10px;}}
-  </style></head>
-  <body>
-  <h2>EL CONUCO RESTAURANTE</h2>
-  <h3 style="font-weight:normal;font-size:11px;">PideYa LLC · 715 Summit Ave, Union City NJ</h3>
-  <hr>
-  <div class="r"><span><b>Orden:</b></span><span>${o.id}</span></div>
-  <div class="r"><span><b>Fecha:</b></span><span>${ds}</span></div>
-  <hr>
-  <b>Cliente:</b> ${o.name}<br>
-  <b>Tel:</b> +${o.phone}<br>
-  <b>Dir:</b> ${o.address}
-  <hr>
-  <b>PEDIDO:</b><br>${o.items.split('|').map(i=>'<div style="margin:2px 0">'+i.trim()+'</div>').join('')}
-  <hr>
-  <div class="r"><span>Subtotal:</span><span>$${parseFloat(o.subtotal).toFixed(2)}</span></div>
-  <div class="r"><span>Tax NJ:</span><span>$${parseFloat(o.tax).toFixed(2)}</span></div>
-  <div class="r"><span>Gestión:</span><span>$${parseFloat(o.gestion).toFixed(2)}</span></div>
-  <div class="r b"><span>TOTAL:</span><span>$${parseFloat(o.total).toFixed(2)}</span></div>
-  <hr>
-  <div class="qr-section">
-    <div class="title">📍 QR Repartidor — Navegar al destino</div>
-    <img id="qr1" src="${qrPngUrl}" alt="QR"
-      onload="this.style.display='block';document.getElementById('qr-status').style.display='none';"
-      onerror="this.style.display='none';document.getElementById('qr-fallback').style.display='block';">
-    <div id="qr-status" style="font-size:10px;color:#888;padding:10px;">Cargando QR...</div>
-    <div id="qr-fallback" style="display:none;padding:10px;">
-      <div style="font-size:10px;color:#c00;margin-bottom:6px;">⚠️ QR no disponible</div>
-    </div>
-    <a class="link" href="${mapsUrl}" target="_blank">🗺️ Abrir en Google Maps</a>
-    <div class="addr">${o.address}</div>
-  </div>
-  <hr>
-  <div style="text-align:center;font-size:12px;">¡Gracias! 🙏</div>
-  <script>
-    var done = false;
-    function go() { if(!done){done=true;window.print();} }
-    var img = document.getElementById('qr1');
-    // If image already loaded (cached)
-    if(img.complete && img.naturalWidth > 0) { setTimeout(go, 500); }
-    else {
-      img.addEventListener('load', function(){ setTimeout(go, 500); });
-      img.addEventListener('error', function(){ setTimeout(go, 500); });
-      // Max wait 5 seconds
-      setTimeout(go, 5000);
-    }
-  <\/script>
-  </body></html>`);
-  w.document.close();
-}
+function closeT(){ document.getElementById('overlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeT(); });
 </script>
 </body>
 </html>

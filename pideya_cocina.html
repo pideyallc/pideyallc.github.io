@@ -342,8 +342,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
     <div class="kpi-grid" style="margin-bottom:20px">
       <div class="kpi g"><div class="kpi-icon">💰</div><div class="kpi-val" id="rpRevHoy">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
       <div class="kpi o"><div class="kpi-icon">📅</div><div class="kpi-val" id="rpRevSem">—</div><div class="kpi-lbl">Ingresos semana</div></div>
-      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripe">—</div><div class="kpi-lbl">Comisión Stripe</div></div>
-      <div class="kpi b"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestion">—</div><div class="kpi-lbl">Comisión Gestión</div></div>
+      <div class="kpi g"><div class="kpi-icon">📦</div><div class="kpi-val" id="rpRevAll">—</div><div class="kpi-lbl">Total histórico</div></div>
+      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripe">—</div><div class="kpi-lbl">Comisión Stripe total</div></div>
+      <div class="kpi b"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestion">—</div><div class="kpi-lbl">Comisión Gestión total</div></div>
     </div>
 
     <div class="chart-box">
@@ -616,6 +617,8 @@ function updateAll(conn){
   const today=new Date().toISOString().slice(0,10);
   const confToday=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today);
   const conf=allOrders.filter(o=>o.Status==='Confirmed').reverse();
+  const sevenDaysAgo=new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10);
+  const confRecent=conf.filter(o=>toDateStr(o.Timestamp)>=sevenDaysAgo);
   const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
   const todayRev=confToday.reduce((s,o)=>s+parseFloat(o.Total||0),0);
   const todayFees=confToday.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
@@ -638,8 +641,9 @@ function updateAll(conn){
   document.getElementById('dash-zelle').innerHTML=zel.length?zel.slice(0,5).map(o=>card(o,'z',true)).join(''):'<div class="empty"><em>💸</em>Sin pendientes</div>';
 
   // Cocina page
-  document.getElementById('cnt-cocina').textContent=conf.length;
-  document.getElementById('list-cocina').innerHTML=conf.length?conf.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
+  const cocinaList=confRecent.length?confRecent:conf.slice(0,20);
+  document.getElementById('cnt-cocina').textContent=confRecent.length;
+  document.getElementById('list-cocina').innerHTML=cocinaList.length?cocinaList.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
 
   // Zelle page
   document.getElementById('cnt-zelle').textContent=zel.length;
@@ -696,7 +700,7 @@ function filterOrders(){
           ${o.Status==='Confirmed'?'<span class="badge bg-g">✅ Confirmada</span>':o.Status==='Zelle-Pending'?'<span class="badge bg-y">💸 Zelle Pendiente</span>':'<span class="badge bg-b">'+o.Status+'</span>'}
         </div>
         <div class="card-name">${o.Name||'—'}</div>
-        <div class="card-meta">📍 ${o.Address||'—'}<br>📱 +${o.Phone||'—'} · ⏰ ${o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</div>
+        <div class="card-meta">📍 ${o.Address||'—'}<br>📱 +${(o.Phone||'').replace(/^whatsapp:/i,'') || '—'} · ⏰ ${o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'}</div>
         <div class="card-items">${(o.Items||'').split(' | ').map(i=>`<div class="card-item">${i}</div>`).join('')}</div>
         <div class="card-foot">
           <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div></div>
@@ -719,8 +723,9 @@ function renderReports(){
 
   document.getElementById('rpRevHoy').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
   document.getElementById('rpRevSem').textContent='$'+weekO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
-  document.getElementById('rpStripe').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2);
-  document.getElementById('rpGestion').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2);
+  document.getElementById('rpRevAll').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
+  document.getElementById('rpStripe').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2);
+  document.getElementById('rpGestion').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2);
 
   // Report table
   const zelleToday=allOrders.filter(o=>o.Status==='Zelle-Pending'&&toDateStr(o.Timestamp)===today);
@@ -763,7 +768,7 @@ function openTicket(o){
   const fee=parseFloat(o.StripeFee||0);
   document.getElementById('tkId').textContent='Orden #'+(o['Order ID']||'—');
   document.getElementById('tkName').textContent=o.Name||'—';
-  document.getElementById('tkPhone').textContent=o.Phone?'+'+o.Phone:'—';
+  document.getElementById('tkPhone').textContent=o.Phone?'+'+(o.Phone+'').replace(/^whatsapp:/i,''):'—';
   document.getElementById('tkAddr').textContent=addr;
   document.getElementById('tkTime').textContent=o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
   document.getElementById('tkPay').textContent=o.Status==='Zelle-Pending'?'💸 Zelle (Pendiente)':'✅ Tarjeta — Pagado';

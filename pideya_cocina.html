@@ -320,7 +320,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
   <!-- ── PAGE: TODAS LAS ÓRDENES ──────────────────────────────── -->
   <div class="page" id="page-ordenes">
     <div class="filter-bar">
-      <input type="text" id="searchInput" placeholder="🔍 Buscar por nombre, teléfono o ID..." oninput="filterOrders()">
+      <input type="text" id="searchInput" placeholder="🔍 Nombre, teléfono, ID de orden..." oninput="filterOrders()">
       <select id="statusFilter" onchange="filterOrders()">
         <option value="">Todos los estados</option>
         <option value="Confirmed">✅ Confirmadas</option>
@@ -462,6 +462,16 @@ const S = {
   refreshMs: parseInt(localStorage.getItem('py_ref') || '60000')
 };
 
+// ── DATE HELPER — normalizes any date format from Google Sheets CSV ─────────
+// Google Sheets gviz CSV exports dates as locale strings (e.g. "5/12/2026, 9:34 AM")
+// NOT as ISO strings, so .slice(0,10) comparisons always fail.
+// This function parses any format into a YYYY-MM-DD string for safe comparison.
+function toDateStr(ts){
+  if(!ts) return '';
+  try{ return new Date(ts).toISOString().slice(0,10); }
+  catch(e){ return (ts+'').slice(0,10); }
+}
+
 // ── STATE ─────────────────────────────────────────────────────────────────
 let allOrders = [];
 let audioCtx = null;
@@ -580,7 +590,7 @@ async function loadAll(){
 
 function updateAll(conn){
   const today=new Date().toISOString().slice(0,10);
-  const conf=allOrders.filter(o=>o.Status==='Confirmed'&&(o.Timestamp||'').slice(0,10)===today).reverse();
+  const conf=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today).reverse();
   const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
   const todayRev=conf.reduce((s,o)=>s+parseFloat(o.Total||0),0);
   const todayFees=conf.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
@@ -644,12 +654,12 @@ function filterOrders(){
   const st=document.getElementById('statusFilter')?.value||'';
   const df=document.getElementById('dateFilter')?.value||'today';
   const today=new Date().toISOString().slice(0,10);
-  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10); // YYYY-MM-DD always safe for comparison with toDateStr()
 
   let filtered=allOrders.filter(o=>{
     if(st && o.Status!==st) return false;
-    if(df==='today' && (o.Timestamp||'').slice(0,10)!==today) return false;
-    if(df==='week' && (o.Timestamp||'').slice(0,10)<weekAgo) return false;
+    if(df==='today' && toDateStr(o.Timestamp)!==today) return false;
+    if(df==='week' && toDateStr(o.Timestamp)<weekAgo) return false;
     if(q && !`${o['Order ID']} ${o.Name} ${o.Phone} ${o.Address} ${o.Items}`.toLowerCase().includes(q)) return false;
     return true;
   }).reverse();
@@ -677,10 +687,10 @@ function filterOrders(){
 // ── REPORTS ───────────────────────────────────────────────────────────────
 function renderReports(){
   const today=new Date().toISOString().slice(0,10);
-  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10); // YYYY-MM-DD always safe for comparison with toDateStr()
   const conf=allOrders.filter(o=>o.Status==='Confirmed');
-  const todayO=conf.filter(o=>(o.Timestamp||'').slice(0,10)===today);
-  const weekO=conf.filter(o=>(o.Timestamp||'').slice(0,10)>=weekAgo);
+  const todayO=conf.filter(o=>toDateStr(o.Timestamp)===today);
+  const weekO=conf.filter(o=>toDateStr(o.Timestamp)>=weekAgo);
 
   document.getElementById('rpRevHoy').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
   document.getElementById('rpRevSem').textContent='$'+weekO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
@@ -688,7 +698,7 @@ function renderReports(){
   document.getElementById('rpGestion').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2);
 
   // Report table
-  const zelleToday=allOrders.filter(o=>o.Status==='Zelle-Pending'&&(o.Timestamp||'').slice(0,10)===today);
+  const zelleToday=allOrders.filter(o=>o.Status==='Zelle-Pending'&&toDateStr(o.Timestamp)===today);
   const rows=[
     ['Órdenes tarjeta hoy', todayO.length, '$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
     ['Órdenes Zelle hoy', zelleToday.length, '$'+zelleToday.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
@@ -711,7 +721,7 @@ function renderChart(id, days){
     const d=new Date(Date.now()-i*86400000);
     const ds=d.toISOString().slice(0,10);
     const lbl=d.toLocaleDateString('es-DO',{weekday:'short',day:'numeric'});
-    const rev=allOrders.filter(o=>o.Status==='Confirmed'&&(o.Timestamp||'').slice(0,10)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);
+    const rev=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);
     data.push({lbl,rev});
   }
   const max=Math.max(...data.map(d=>d.rev),1);

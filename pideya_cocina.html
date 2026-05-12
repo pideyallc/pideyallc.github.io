@@ -236,7 +236,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
     <input type="password" id="passIn" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
     <button onclick="doLogin()">Entrar al Panel</button>
     <div class="login-err" id="loginErr">Contraseña incorrecta.</div>
-    <div class="login-version">PIDEYA v3 · pideyanj-ai.github.io</div>
+    <div class="login-version">PIDEYA v3 · El Conuco Restaurante</div>
   </div>
 </div>
 
@@ -428,7 +428,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
     <button class="t-x" onclick="closeTicket()">✕</button>
     <div class="t-logo">🍳 PIDE<span>YA</span></div>
     <div class="t-header-info">El Conuco Restaurante<br>715 Summit Ave, Union City, NJ 07087<br>+1 (201) 772-7540</div>
-    <div style="text-align:center;margin:6px 0"><span class="t-ordid" id="tkId"></span></div>
+    <div style="text-align:center;margin:8px 0"><div style="font-size:.65rem;color:#999;letter-spacing:1px;font-family:Courier New;margin-bottom:3px">NÚMERO DE ORDEN</div><span class="t-ordid" id="tkId" style="font-size:1.1rem;font-weight:900;color:#1a3a1a;background:#d4edda;padding:6px 18px;border-radius:8px;display:inline-block;letter-spacing:2px;border:2px solid #1a3a1a"></span></div>
     <hr class="t-hr">
     <div class="t-row"><span>Cliente</span><strong id="tkName"></strong></div>
     <div class="t-row"><span>Teléfono</span><strong id="tkPhone"></strong></div>
@@ -445,7 +445,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);disp
     <hr class="t-hr">
     <div id="tkQR"></div>
     <div class="t-qr-note">📍 Escanea para navegar al destino de entrega</div>
-    <div class="t-footer">PIDEYA LLC · pideyanj-ai.github.io<br>¡Gracias por usar PIDEYA! 🍽️</div>
+    <div class="t-footer">PIDEYA LLC · El Conuco Restaurante<br>715 Summit Ave, Union City, NJ · +1 (201) 772-7540<br>¡Gracias por usar PIDEYA! 🍽️</div>
     <button class="t-print-btn" onclick="window.print()">🖨️ Imprimir Ticket con QR</button>
   </div>
 </div>
@@ -484,6 +484,8 @@ function toDateStr(ts){
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let allOrders = [];
+let orderMap = {}; // id → order object for safe ticket opening
+let orderMap = {}; // lookup by Order ID to avoid JSON in onclick
 let audioCtx = null;
 let knownIds = new Set();
 let firstLoad = true;
@@ -589,6 +591,9 @@ async function loadAll(){
           POS.forEach((k,i)=>{ if(!o[k]&&r[i]!==undefined) o[k]=(r[i]||'').trim(); });
           return o;
         });
+        // Build lookup map for safe onclick (avoids JSON.stringify in HTML)
+        orderMap={};
+        allOrders.forEach(o=>{ if(o['Order ID']) orderMap[o['Order ID']]=o; });
       }
     }
     // Sessions (connected clients)
@@ -643,7 +648,7 @@ function updateAll(conn){
   // Cocina page
   const cocinaList=confRecent.length?confRecent:conf.slice(0,20);
   document.getElementById('cnt-cocina').textContent=confRecent.length;
-  document.getElementById('list-cocina').innerHTML=cocinaList.length?cocinaList.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
+  document.getElementById('list-cocina').innerHTML=cocinaList.length?cocinaList.map((o)=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
 
   // Zelle page
   document.getElementById('cnt-zelle').textContent=zel.length;
@@ -657,25 +662,37 @@ function updateAll(conn){
 
 // ── ORDER CARD ────────────────────────────────────────────────────────────
 function card(o, type, compact){
-  const items=(o.Items||'').split(' | ').map(i=>`<div class="card-item">${i}</div>`).join('');
-  const time=o.Timestamp?new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}):'—';
-  const badge=type==='c'?'<span class="badge bg-g">✅ Confirmada</span>':'<span class="badge bg-y">💸 Zelle Pendiente</span>';
-  const bticket=type==='c'?'bx-g':'bx-y';
-  const phone=o.Phone?`<br>📱 +${o.Phone}`:'';
-  return `<div class="order-card type-${type}">
-    <div class="card-row1"><span class="card-id">#${o['Order ID']||'—'}</span>${badge}</div>
-    <div class="card-name">${o.Name||'—'}</div>
-    <div class="card-meta">📍 ${o.Address||'—'}${phone}</div>
-    ${compact?'':`<div class="card-items">${items||'(sin items)'}</div>`}
-    <div class="card-foot">
-      <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div><div class="card-time">⏰ ${time}</div></div>
-      <div class="card-btns">
-        <button class="btn-xs ${bticket}" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Imprimir Ticket</button>
-        <button class="btn-xs bx-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}","${o.Name||''}")'>🗺️</button>
-      </div>
-    </div>
-  </div>`;
+  try{
+    const items=(o.Items||'').split(' | ').map(i=>'<div class="card-item">'+escH(i)+'</div>').join('');
+    const time=o.Timestamp?new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}):'—';
+    const badge=type==='c'?'<span class="badge bg-g">✅ Confirmada</span>':type==='z'?'<span class="badge bg-y">💸 Zelle Pendiente</span>':'<span class="badge bg-b">'+escH(o.Status||type)+'</span>';
+    const bticket=type==='c'?'bx-g':'bx-y';
+    const phone=o.Phone?('<br>📱 +'+escH((o.Phone||'').replace(/^whatsapp:/i,''))):'';
+    const idx=allOrders.indexOf(o);
+    const orderId=escH(o['Order ID']||'—');
+    const addr=escH(o.Address||'—');
+    const name=escH(o.Name||'—');
+    const total=parseFloat(o.Total||0).toFixed(2);
+    return '<div class="order-card type-'+type+'">'
+      +'<div class="card-row1"><span class="card-id">#'+orderId+'</span>'+badge+'</div>'
+      +'<div class="card-name">'+name+'</div>'
+      +'<div class="card-meta">📍 '+addr+phone+'</div>'
+      +(compact?'':'<div class="card-items">'+(items||'(sin items)')+'</div>')
+      +'<div class="card-foot">'
+        +'<div><div class="card-total">$'+total+'</div><div class="card-time">⏰ '+time+'</div></div>'
+        +'<div class="card-btns">'
+          +'<button class="btn-xs '+bticket+'" onclick="openTicketByIdx('+idx+')">🖨️ Imprimir Ticket</button>'
+          +'<button class="btn-xs bx-b" onclick="openMaps('+idx+')">🗺️</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }catch(e){
+    return '<div class="order-card type-'+type+'"><div class="card-name" style="color:var(--red)">⚠️ Error: '+e.message+'</div></div>';
+  }
 }
+function escH(s){ s=s||''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function openTicketByIdx(idx){ try{ if(allOrders[idx]) openTicket(allOrders[idx]); }catch(e){ console.error(e); } }
+
 
 // ── FILTER ORDERS PAGE ────────────────────────────────────────────────────
 function filterOrders(){
@@ -705,7 +722,7 @@ function filterOrders(){
         <div class="card-foot">
           <div><div class="card-total">$${parseFloat(o.Total||0).toFixed(2)}</div></div>
           <div class="card-btns">
-            <button class="btn-xs bx-g" onclick='openTicket(${JSON.stringify(o)})'>🖨️ Imprimir Ticket</button>
+            <button class="btn-xs bx-g" onclick="openTicketById('" + (o['Order ID']||'') + "')">🖨️ Imprimir Ticket</button>
             <button class="btn-xs bx-b" onclick='openMaps("${(o.Address||'').replace(/"/g,"'")}","${o.Name||''}")'>🗺️ Maps</button>
           </div>
         </div>
@@ -766,7 +783,7 @@ function renderChart(id, days){
 function openTicket(o){
   const addr=o.Address||'';
   const fee=parseFloat(o.StripeFee||0);
-  document.getElementById('tkId').textContent='Orden #'+(o['Order ID']||'—');
+  var _oid=(o['Order ID']||'').trim(); document.getElementById('tkId').textContent=_oid?('#'+_oid):'# SIN NÚMERO';
   document.getElementById('tkName').textContent=o.Name||'—';
   document.getElementById('tkPhone').textContent=o.Phone?'+'+(o.Phone+'').replace(/^whatsapp:/i,''):'—';
   document.getElementById('tkAddr').textContent=addr;
@@ -791,6 +808,13 @@ function openTicket(o){
 }
 function closeTicket(){ document.getElementById('ticketModal').classList.remove('open'); }
 
+// Safe ticket opener — avoids JSON.stringify in HTML onclick (breaks with apostrophes/quotes)
+function openTicketById(id){
+  const o = orderMap[id];
+  if(o) openTicket(o);
+  else { console.warn('Order not found:', id); }
+}
+
 function toggleDebug(){
   const p=document.getElementById('dbgPanel');
   if(p.style.display==='none'){
@@ -805,7 +829,7 @@ function toggleDebug(){
   } else { p.style.display='none'; }
 }
 
-function openMaps(addr){ window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr),'_blank'); }
+function openMaps(idxOrAddr){ const addr=typeof idxOrAddr==='number'?(allOrders[idxOrAddr]||{}).Address:idxOrAddr; window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr||''),'_blank'); }
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 function loadSettings(){

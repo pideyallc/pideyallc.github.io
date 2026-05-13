@@ -959,7 +959,7 @@ function renderMenuGrid(items){
   if(!list.length){ grid.innerHTML='<div class="empty"><em>📋</em>No se encontraron platos</div>'; return; }
   grid.innerHTML = list.map(item=>{
     const avail = (item.Available||'').toUpperCase().trim();
-    const isAvail = avail==='YES'||avail==='SI'||avail==='SÍ'||avail==='';
+    const isAvail = avail !== 'NO'; // available unless explicitly set to NO
     const id = item.ID||item.id||'';
     const cat = item.Category||item.Cat||'General';
     const price = parseFloat(item.Price||0).toFixed(2);

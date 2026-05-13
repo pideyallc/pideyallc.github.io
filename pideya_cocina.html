@@ -286,6 +286,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
       <div class="kpi o"><div class="kpi-icon">💰</div><div class="kpi-val" id="kpiRev">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
       <div class="kpi p"><div class="kpi-icon">📦</div><div class="kpi-val" id="kpiTotal">—</div><div class="kpi-lbl">Órdenes totales</div></div>
       <div class="kpi g"><div class="kpi-icon">💳</div><div class="kpi-val" id="kpiFees">—</div><div class="kpi-lbl">Comisión Stripe</div></div>
+      <div class="kpi b"><div class="kpi-icon">🛵</div><div class="kpi-val" id="kpiEnviadas">—</div><div class="kpi-lbl">Enviadas hoy</div></div>
     </div>
 
     <div class="chart-box">
@@ -511,6 +512,7 @@ const CSV_SESSIONS = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq
 const CSV_MENU = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Menu`;
 const N8N_EDIT_ORDER = 'https://pideya.app.n8n.cloud/webhook/pideya-edit';
 const N8N_MENU_TOGGLE = 'https://pideya.app.n8n.cloud/webhook/pideya-menu-toggle';
+const N8N_DISPATCH = 'https://pideya.app.n8n.cloud/webhook/pideya-dispatch';
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 // Safe localStorage wrapper — crashes in private/Samsung browser otherwise
@@ -692,7 +694,10 @@ function updateAll(conn){
   const todayFees=confToday.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
 
   // KPIs
-  document.getElementById('kpiConf').textContent=confToday.length;
+  const confQueueToday=confToday.filter(o=>o.Status==='Confirmed');
+  const enviadasToday=allOrders.filter(o=>o.Status==='Enviado'&&toDateStr(o.Timestamp)===today);
+  document.getElementById('kpiConf').textContent=confQueueToday.length;
+  document.getElementById('kpiEnviadas').textContent=enviadasToday.length;
   document.getElementById('kpiZelle').textContent=zel.length;
   document.getElementById('kpiConn').textContent=conn;
   document.getElementById('kpiRev').textContent='$'+todayRev.toFixed(2);
@@ -746,6 +751,7 @@ function card(o, type, compact){
         +'<div class="card-btns">'
           +'<button class="btn-xs '+bticket+'" onclick="openTicketByIdx('+idx+')">🖨️ Imprimir Ticket</button>'
           +'<button class="btn-xs bx-b" onclick="openMaps('+idx+')">🗺️</button>'
+          +(type==='c'?'<button class="btn-xs" style="background:#DCFCE7;color:#166534;border:1px solid #86EFAC" onclick="markDispatched('+idx+')">🛵 Enviado</button>':'')
           +'<button class="btn-xs" style="background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE" onclick="openEdit('+idx+')">✏️</button>'
         +'</div>'
       +'</div>'
@@ -1042,6 +1048,50 @@ function saveSettings(){
 }
 
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTicket(); closeEdit(); } });
+
+// ── DISPATCH ORDER ────────────────────────────────────────────────────────
+function cardDispatched(o){
+  const time=o.Timestamp?new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}):'—';
+  return '<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:10px 12px;margin-bottom:8px;opacity:.75;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+    +'<div>'
+      +'<div style="font-size:.72rem;font-weight:700;color:#166534;">🛵 ENVIADA · '+time+'</div>'
+      +'<div style="font-size:.85rem;font-weight:700;color:#111827;margin-top:2px;">'+escH(o.Name||'—')+'</div>'
+      +'<div style="font-size:.7rem;color:#6B7280;">📍 '+escH(o.Address||'—')+'</div>'
+    +'</div>'
+    +'<div style="font-size:.9rem;font-weight:800;color:#166534;">$'+parseFloat(o.Total||0).toFixed(2)+'</div>'
+    +'</div>'
+    +'</div>';
+}
+
+async function markDispatched(idx){
+  const o = allOrders[idx];
+  if(!o) return;
+  const name = o.Name||'el cliente';
+  const estTime = prompt('⏱️ Tiempo estimado de entrega (minutos):', '20-30');
+  if(estTime===null) return; // cancelled
+  if(!confirm('¿Marcar orden #'+(o['Order ID']||'—')+' de '+name+' como ENVIADA?\n\nSe notificará al cliente por WhatsApp.')) return;
+
+  try{
+    const r = await fetch(N8N_DISPATCH,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        orderId: o['Order ID'],
+        phone: (o.Phone||'').replace(/^whatsapp:/i,''),
+        name: o.Name||'',
+        address: o.Address||'',
+        total: o.Total||0,
+        estTime: estTime||'20-30'
+      })
+    });
+    if(r.ok){
+      o.Status='Enviado';
+      // Refresh display
+      setTimeout(loadAll, 800);
+    } else { throw new Error('Error '+r.status); }
+  }catch(e){ alert('Error al marcar como enviada: '+e.message); }
+}
 </script>
 </body>
 </html>

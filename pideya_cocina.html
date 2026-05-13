@@ -309,7 +309,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
     <div class="sec-head">
       <div class="sec-title"><div class="sec-dot dot-g"></div>Órdenes Confirmadas — Preparar ahora<span class="sec-cnt" id="cnt-cocina">0</span></div>
     </div>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">🖨️ Haz clic en <strong style="color:var(--green)">Imprimir Ticket</strong> en cada orden para imprimir el recibo de cocina con el código QR de navegación.</p>
+    <p style="font-size:.78rem;color:#4B5563;margin-bottom:16px;">🖨️ Haz clic en <strong style="color:#166534">Imprimir Ticket</strong> para imprimir el recibo con QR. &nbsp;✅ Solo se muestran órdenes de <strong>hoy</strong> con pago confirmado.</p>
     <div id="list-cocina"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
   </div>
 
@@ -628,8 +628,12 @@ function updateAll(conn){
   const today=new Date().toISOString().slice(0,10);
   const confToday=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today);
   const conf=allOrders.filter(o=>o.Status==='Confirmed').reverse();
-  const sevenDaysAgo=new Date(Date.now()-7*24*60*60*1000).toISOString().slice(0,10);
-  const confRecent=conf.filter(o=>toDateStr(o.Timestamp)>=sevenDaysAgo);
+  // Cocina only shows TODAY's confirmed orders
+  // "Confirmed" = truly paid (via Stripe webhook or PAGO Zelle command)
+  // Historical pre-webhook orders are excluded to prevent preparing unpaid orders
+  const confRecent=conf.filter(o=>toDateStr(o.Timestamp)===today);
+  // Also get Stripe-Pending orders for awareness
+  const stripePending=allOrders.filter(o=>o.Status==='Stripe-Pending').reverse();
   const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
   const todayRev=confToday.reduce((s,o)=>s+parseFloat(o.Total||0),0);
   const todayFees=confToday.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Gestión de Órdenes</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--card:#FFFFFF;--border:#DDE3EA;--text:#1F2937;--muted:#6B7280;
+  --green:#15803d;--green-l:#DCFCE7;--green-b:#86EFAC;
+  --blue:#1e40af;--blue-l:#EEF2FF;--blue-b:#C7D2FE;
+  --amber:#92400e;--amber-l:#FEF3C7;--amber-b:#FCD34D;
+  --red:#b91c1c;--red-l:#FEE2E2;--red-b:#FECACA;
+  --purple:#6d28d9;--purple-l:#F5F3FF;--purple-b:#DDD6FE;
+  --stripe:#4338ca;--sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}
+.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}
+.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.2);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;}
+.btn{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:#15803d;color:#fff;}
+.btn-primary:hover{background:#166534;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:#94A3B8;}
+.btn-sm{padding:5px 10px;font-size:.68rem;}
+.btn-amber{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);}
+.btn-red{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);}
+.btn-green{background:var(--green-l);color:var(--green);border:1px solid var(--green-b);}
+.btn-blue{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-b);}
+
+.content{padding:20px 28px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin-bottom:18px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:13px 14px;cursor:pointer;transition:.15s;}
+.stat:hover{border-color:#94A3B8;}
+.stat.active-stat{border-color:#22C55E;background:var(--green-l);}
+.stat-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:4px;}
+.stat-val{font-size:1.4rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.stat-sub{font-size:.6rem;color:var(--muted);margin-top:2px;}
+
+/* FILTER BAR */
+.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.search-wrap{flex:1;min-width:220px;position:relative;}
+.search-wrap input{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:8px 12px 8px 34px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;}
+.search-wrap input:focus{border-color:#94A3B8;}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;}
+select.flt{background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:7px 10px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.78rem;outline:none;cursor:pointer;}
+input[type="date"].flt{background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:7px 10px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.78rem;outline:none;}
+.filter-label{font-size:.72rem;color:var(--muted);font-weight:600;white-space:nowrap;}
+
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-head-bar{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;}
+.table-count{font-size:.78rem;font-weight:700;color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;background:#F8FAFC;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--text);}
+thead th.sort-asc::after{content:' ↑';}
+thead th.sort-desc::after{content:' ↓';}
+tbody tr{border-bottom:1px solid #F1F5F9;transition:.12s;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#F8FAFC;}
+td{padding:11px 16px;font-size:.8rem;vertical-align:middle;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;}
+.amount{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);}
+
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:700;}
+.b-confirmed{background:var(--green-l);color:var(--green);border:1px solid var(--green-b);}
+.b-enviado{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-b);}
+.b-zelle{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);}
+.b-stripe{background:var(--purple-l);color:var(--purple);border:1px solid var(--purple-b);}
+.b-cancelled{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:6px;padding:14px 18px;border-top:1px solid var(--border);justify-content:center;}
+.page-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.page-btn:hover{border-color:#94A3B8;}
+.page-btn.active{border-color:#22C55E;background:var(--green-l);color:var(--green);}
+.page-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:640px;position:relative;}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--card);border-radius:16px 16px 0 0;z-index:1;}
+.modal-title{font-size:1rem;font-weight:800;}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;}
+.modal-body{padding:24px;}
+
+/* ORDER DETAIL */
+.detail-section{margin-bottom:20px;}
+.detail-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.detail-item{background:var(--bg);border-radius:9px;padding:10px 12px;}
+.detail-item .lbl{font-size:.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.detail-item .val{font-size:.85rem;font-weight:600;}
+.items-list{background:var(--bg);border-radius:9px;padding:12px;}
+.item-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #E5E7EB;font-size:.8rem;}
+.item-row:last-child{border-bottom:none;}
+.totals-block{background:var(--bg);border-radius:9px;padding:12px;margin-top:10px;}
+.total-row{display:flex;justify-content:space-between;font-size:.8rem;padding:4px 0;}
+.total-row.final{font-weight:800;font-size:.9rem;border-top:1px solid var(--border);margin-top:6px;padding-top:8px;}
+.modal-actions{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:2.4rem;margin-bottom:12px;}
+
+@media(max-width:900px){
+  .sidebar{width:58px;}.sidebar .logo-text,.nav-item span:not(.icon){display:none;}.nav-item{justify-content:center;}
+  .main{margin-left:58px;}.stats{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">📋</div>
+    <div class="lock-title">Gestión de Órdenes</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text"><h1>PIDEYA</h1><p>Órdenes</p></div>
+  </div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" class="nav-item"><span class="icon">🍳</span><span>Cocina</span></a>
+    <a href="pideya_reports.html" class="nav-item"><span class="icon">📈</span><span>Reportes</span></a>
+    <a href="pideya_dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="pideya_clientes.html" class="nav-item"><span class="icon">👥</span><span>Clientes</span></a>
+    <a href="pideya_estadisticas.html" class="nav-item"><span class="icon">📉</span><span>Estadísticas</span></a>
+    <a href="pideya_alertas.html" class="nav-item"><span class="icon">🚨</span><span>Alertas</span></a>
+    <div class="nav-item active"><span class="icon">📋</span><span>Órdenes</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">📋 Gestión de Órdenes</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-primary" onclick="loadOrders()">⟳ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STAT CARDS (clickable filters) -->
+    <div class="stats" id="statsRow">
+      <div class="stat active-stat" onclick="setStatusFilter('',this)" id="sf-all">
+        <div class="stat-label">Todas</div><div class="stat-val" id="sv-all">—</div>
+      </div>
+      <div class="stat" onclick="setStatusFilter('Confirmed',this)" id="sf-confirmed">
+        <div class="stat-label">✅ Confirmadas</div><div class="stat-val" style="color:var(--green);" id="sv-confirmed">—</div>
+      </div>
+      <div class="stat" onclick="setStatusFilter('Enviado',this)" id="sf-enviado">
+        <div class="stat-label">🛵 Enviadas</div><div class="stat-val" style="color:var(--blue);" id="sv-enviado">—</div>
+      </div>
+      <div class="stat" onclick="setStatusFilter('Zelle-Pending',this)" id="sf-zp">
+        <div class="stat-label">💸 Zelle Pend.</div><div class="stat-val" style="color:var(--amber);" id="sv-zp">—</div>
+      </div>
+      <div class="stat" onclick="setStatusFilter('Stripe-Pending',this)" id="sf-sp">
+        <div class="stat-label">💳 Stripe Pend.</div><div class="stat-val" style="color:var(--purple);" id="sv-sp">—</div>
+      </div>
+      <div class="stat" onclick="setStatusFilter('',this,'rev')" id="sf-rev">
+        <div class="stat-label">💰 Ingresos</div><div class="stat-val" style="color:var(--green);font-size:1rem;" id="sv-rev">—</div>
+        <div class="stat-sub" id="sv-revsub"></div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="si">🔍</span>
+        <input type="text" id="searchInput" placeholder="Buscar por #orden, cliente, teléfono, dirección..." oninput="applyFilters()">
+      </div>
+      <span class="filter-label">Estado:</span>
+      <select class="flt" id="fStatus" onchange="applyFilters()">
+        <option value="">Todos los estados</option>
+        <option value="Confirmed">✅ Confirmado</option>
+        <option value="Enviado">🛵 Enviado</option>
+        <option value="Zelle-Pending">💸 Zelle Pendiente</option>
+        <option value="Stripe-Pending">💳 Stripe Pendiente</option>
+      </select>
+      <span class="filter-label">Pago:</span>
+      <select class="flt" id="fPayment" onchange="applyFilters()">
+        <option value="">Todos</option>
+        <option value="stripe">💳 Tarjeta</option>
+        <option value="zelle">💸 Zelle</option>
+      </select>
+      <span class="filter-label">Desde:</span>
+      <input type="date" class="flt" id="fFrom" onchange="applyFilters()">
+      <span class="filter-label">Hasta:</span>
+      <input type="date" class="flt" id="fTo" onchange="applyFilters()">
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Limpiar</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-head-bar">
+        <span class="table-count" id="tableCount">Cargando...</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:.72rem;color:var(--muted);">Página <strong id="pageLabel">—</strong></span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('id')">Orden #</th>
+              <th onclick="sortBy('ts')">Fecha/Hora</th>
+              <th>Cliente</th>
+              <th>Teléfono</th>
+              <th>Items</th>
+              <th onclick="sortBy('total')">Total</th>
+              <th>Método</th>
+              <th onclick="sortBy('status')">Estado</th>
+              <th>Dirección</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody">
+            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">⏳ Cargando órdenes...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalOrderId">Detalle de Orden</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID='1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const N8N_DISPATCH='https://pideya.app.n8n.cloud/webhook/pideya-dispatch';
+const PASS='pideya2024';
+const SESS='py_ordenes_auth';
+const PAGE_SIZE=25;
+
+let allOrders=[];
+let filtered=[];
+let currentPage=1;
+let sortCol='ts';
+let sortDir='desc';
+let statusFilter='';
+
+// ── AUTH ──────────────────────────────────────────────────────────
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    initDates();
+    loadOrders();
+  }else{
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('lockPwd').value='';
+  }
+}
+if(sessionStorage.getItem(SESS)==='1'){document.getElementById('lock').style.display='none';initDates();loadOrders();}
+
+function initDates(){
+  const now=new Date();
+  const monthAgo=new Date(now);monthAgo.setDate(now.getDate()-30);
+  document.getElementById('fFrom').value=monthAgo.toISOString().split('T')[0];
+  document.getElementById('fTo').value=now.toISOString().split('T')[0];
+}
+
+// ── DATA ──────────────────────────────────────────────────────────
+function parseCSV(line){
+  const r=[];let c='',q=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){q=!q;}else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}
+  r.push(c.trim());return r;
+}
+
+async function loadOrders(){
+  document.getElementById('ordersBody').innerHTML='<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">⏳ Cargando...</td></tr>';
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+    const r=await fetch(url,{mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const csv=await r.text();
+    const lines=csv.split('\n').filter(l=>l.trim());
+    const h=parseCSV(lines[0]);
+    const idx={};h.forEach((v,i)=>idx[v]=i);
+    allOrders=[];
+    for(let i=1;i<lines.length;i++){
+      const v=parseCSV(lines[i]);
+      if(!v[idx['Order ID']]) continue;
+      allOrders.push({
+        id:v[idx['Order ID']]||'',
+        ts:v[idx['Timestamp']]||'',
+        phone:v[idx['Phone']]||'',
+        name:v[idx['Name']]||'',
+        address:v[idx['Address']]||'',
+        items:v[idx['Items']]||'',
+        subtotal:parseFloat(v[idx['Subtotal']]||0),
+        tax:parseFloat(v[idx['Tax']]||0),
+        gestion:parseFloat(v[idx['Gestion']]||0),
+        stripeFee:parseFloat(v[idx['StripeFee']]||0),
+        total:parseFloat(v[idx['Total']]||0),
+        status:(v[idx['Status']]||'').trim(),
+        link:v[idx['StripeLink']]||''
+      });
+    }
+    updateStats();
+    applyFilters();
+  }catch(e){
+    document.getElementById('ordersBody').innerHTML=`<tr><td colspan="9" style="text-align:center;padding:40px;color:#b91c1c;">❌ ${e.message}<br><small style="color:var(--muted)">El Google Sheet debe ser público (Cualquier persona puede ver)</small></td></tr>`;
+  }
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+function updateStats(){
+  const conf=allOrders.filter(o=>o.status==='Confirmed').length;
+  const env=allOrders.filter(o=>o.status==='Enviado').length;
+  const zp=allOrders.filter(o=>o.status==='Zelle-Pending').length;
+  const sp=allOrders.filter(o=>o.status==='Stripe-Pending').length;
+  const rev=allOrders.filter(o=>o.status==='Confirmed'||o.status==='Enviado').reduce((s,o)=>s+o.total,0);
+  const today=new Date().toISOString().split('T')[0];
+  const todayRev=allOrders.filter(o=>(o.status==='Confirmed'||o.status==='Enviado')&&o.ts.startsWith(today)).reduce((s,o)=>s+o.total,0);
+  document.getElementById('sv-all').textContent=allOrders.length;
+  document.getElementById('sv-confirmed').textContent=conf;
+  document.getElementById('sv-enviado').textContent=env;
+  document.getElementById('sv-zp').textContent=zp;
+  document.getElementById('sv-sp').textContent=sp;
+  document.getElementById('sv-rev').textContent='$'+rev.toFixed(0);
+  document.getElementById('sv-revsub').textContent='hoy: $'+todayRev.toFixed(0);
+}
+
+// ── FILTER & SORT ─────────────────────────────────────────────────
+function setStatusFilter(status,el,mode){
+  statusFilter=status;
+  document.querySelectorAll('.stat').forEach(s=>s.classList.remove('active-stat'));
+  el.classList.add('active-stat');
+  document.getElementById('fStatus').value=status;
+  applyFilters();
+}
+
+function clearFilters(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('fStatus').value='';
+  document.getElementById('fPayment').value='';
+  initDates();
+  statusFilter='';
+  document.querySelectorAll('.stat').forEach(s=>s.classList.remove('active-stat'));
+  document.getElementById('sf-all').classList.add('active-stat');
+  applyFilters();
+}
+
+function applyFilters(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const st=document.getElementById('fStatus').value;
+  const pay=document.getElementById('fPayment').value;
+  const from=document.getElementById('fFrom').value;
+  const to=document.getElementById('fTo').value;
+
+  filtered=allOrders.filter(o=>{
+    if(q&&!(o.id.toLowerCase().includes(q)||o.name.toLowerCase().includes(q)||o.phone.includes(q)||o.address.toLowerCase().includes(q)||o.items.toLowerCase().includes(q))) return false;
+    if(st&&o.status!==st) return false;
+    if(pay==='stripe'&&o.stripeFee===0) return false;
+    if(pay==='zelle'&&o.stripeFee>0) return false;
+    if(from&&o.ts&&o.ts.split('T')[0]<from) return false;
+    if(to&&o.ts&&o.ts.split('T')[0]>to) return false;
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a,b)=>{
+    let av=a[sortCol]||'',bv=b[sortCol]||'';
+    if(sortCol==='total'||sortCol==='subtotal'){av=parseFloat(av);bv=parseFloat(bv);}
+    if(av<bv) return sortDir==='asc'?-1:1;
+    if(av>bv) return sortDir==='asc'?1:-1;
+    return 0;
+  });
+
+  currentPage=1;
+  renderTable();
+}
+
+function sortBy(col){
+  if(sortCol===col) sortDir=sortDir==='asc'?'desc':'asc';
+  else{sortCol=col;sortDir='desc';}
+  document.querySelectorAll('thead th').forEach(th=>{th.classList.remove('sort-asc','sort-desc');});
+  applyFilters();
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────
+function fmtDT(ts){
+  if(!ts) return '—';
+  try{const d=new Date(ts);return d.toLocaleString('es-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return ts.slice(0,16).replace('T',' ');}
+}
+
+function statusBadge(status){
+  const map={
+    'Confirmed':'b-confirmed',
+    'Enviado':'b-enviado',
+    'Zelle-Pending':'b-zelle',
+    'Stripe-Pending':'b-stripe',
+  };
+  return `<span class="badge ${map[status]||'b-cancelled'}">${status||'—'}</span>`;
+}
+
+function payMethod(o){
+  return o.stripeFee>0?'<span style="font-size:.7rem;">💳 Tarjeta</span>':'<span style="font-size:.7rem;">💸 Zelle</span>';
+}
+
+function renderTable(){
+  const start=(currentPage-1)*PAGE_SIZE;
+  const page=filtered.slice(start,start+PAGE_SIZE);
+  const tbody=document.getElementById('ordersBody');
+
+  document.getElementById('tableCount').textContent=
+    `${filtered.length} orden${filtered.length!==1?'es':''} encontradas (de ${allOrders.length} total)`;
+
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-icon">📭</div><p>No hay órdenes con estos filtros</p></div></td></tr>';
+    document.getElementById('pagination').innerHTML='';
+    document.getElementById('pageLabel').textContent='—';
+    return;
+  }
+
+  tbody.innerHTML=page.map((o,i)=>{
+    const shortAddr=(o.address||'—').split(',')[0];
+    const shortItems=(o.items||'—').split('|')[0].trim();
+    const itemCount=(o.items||'').split('|').filter(Boolean).length;
+    return `<tr onclick="openOrder(${allOrders.indexOf(o)})">
+      <td class="mono">${escH(o.id)}</td>
+      <td style="font-size:.75rem;color:var(--muted);white-space:nowrap;">${fmtDT(o.ts)}</td>
+      <td><div style="font-weight:600;font-size:.82rem;">${escH(o.name||'—')}</div></td>
+      <td class="mono">+${escH(o.phone)}</td>
+      <td style="max-width:180px;">
+        <div style="font-size:.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escH(o.items)}">${escH(shortItems)}</div>
+        ${itemCount>1?`<div style="font-size:.65rem;color:var(--muted);">+${itemCount-1} más</div>`:''}
+      </td>
+      <td class="amount">$${o.total.toFixed(2)}</td>
+      <td>${payMethod(o)}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td style="font-size:.72rem;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escH(o.address)}">${escH(shortAddr)}</td>
+    </tr>`;
+  }).join('');
+
+  renderPagination();
+}
+
+function renderPagination(){
+  const totalPages=Math.ceil(filtered.length/PAGE_SIZE);
+  document.getElementById('pageLabel').textContent=`${currentPage} / ${totalPages}`;
+  const el=document.getElementById('pagination');
+  if(totalPages<=1){el.innerHTML='';return;}
+
+  let html=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for(let p=1;p<=totalPages;p++){
+    if(p===1||p===totalPages||Math.abs(p-currentPage)<=2){
+      html+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    } else if(Math.abs(p-currentPage)===3){
+      html+=`<span style="color:var(--muted);padding:0 4px;">…</span>`;
+    }
+  }
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  el.innerHTML=html;
+}
+
+function goPage(p){
+  const totalPages=Math.ceil(filtered.length/PAGE_SIZE);
+  if(p<1||p>totalPages) return;
+  currentPage=p;
+  renderTable();
+  document.querySelector('.table-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── ORDER DETAIL MODAL ────────────────────────────────────────────
+function openOrder(idx){
+  const o=allOrders[idx];
+  if(!o) return;
+
+  const items=(o.items||'').split('|').map(s=>s.trim()).filter(Boolean);
+  const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address||'')}`;
+
+  document.getElementById('modalOrderId').textContent=`#${o.id}`;
+  document.getElementById('modalBody').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+      ${statusBadge(o.status)}
+      ${payMethod(o)}
+      <span style="font-size:.7rem;color:var(--muted);align-self:center;">${fmtDT(o.ts)}</span>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">Cliente</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="lbl">Nombre</div><div class="val">${escH(o.name||'—')}</div></div>
+        <div class="detail-item"><div class="lbl">Teléfono</div><div class="val mono">+${escH(o.phone)}</div></div>
+        <div class="detail-item" style="grid-column:1/-1;">
+          <div class="lbl">Dirección</div>
+          <div class="val">${escH(o.address||'—')} <a href="${mapsUrl}" target="_blank" style="font-size:.7rem;color:var(--blue);text-decoration:none;margin-left:6px;">🗺️ Ver mapa</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-title">Pedido</div>
+      <div class="items-list">
+        ${items.length?items.map(it=>`<div class="item-row"><span>${escH(it.replace(/\s*-\s*\$[\d.]+$/,''))}</span><span class="mono" style="color:var(--green);">${it.match(/\$[\d.]+$/)?.[0]||''}</span></div>`).join(''):`<div class="item-row"><span style="color:var(--muted);">${escH(o.items||'—')}</span></div>`}
+      </div>
+      <div class="totals-block">
+        <div class="total-row"><span style="color:var(--muted);">Subtotal</span><span class="mono">$${o.subtotal.toFixed(2)}</span></div>
+        <div class="total-row"><span style="color:var(--muted);">Tax NJ (6.625%)</span><span class="mono">$${o.tax.toFixed(2)}</span></div>
+        <div class="total-row"><span style="color:var(--muted);">Gestión</span><span class="mono">$${o.gestion.toFixed(2)}</span></div>
+        ${o.stripeFee>0?`<div class="total-row"><span style="color:var(--muted);">Stripe (3.5%)</span><span class="mono">$${o.stripeFee.toFixed(2)}</span></div>`:''}
+        <div class="total-row final"><span>TOTAL</span><span class="amount" style="font-size:.95rem;">$${o.total.toFixed(2)}</span></div>
+      </div>
+    </div>
+
+    ${o.link&&o.link!=='Zelle'?`<div class="detail-section"><div class="detail-title">Pago</div><div class="detail-item"><div class="lbl">Link Stripe</div><div class="val"><a href="${escH(o.link)}" target="_blank" style="color:var(--blue);font-size:.78rem;">Ver en Stripe →</a></div></div></div>`:''}
+  `;
+
+  // Actions based on status
+  const acts=[];
+  if(o.status==='Confirmed'){
+    acts.push(`<button class="btn btn-green" onclick="markDispatched('${o.id}','${escH(o.name)}','${o.phone}')">🛵 Marcar Enviado</button>`);
+  }
+  if(o.status==='Zelle-Pending'){
+    acts.push(`<button class="btn btn-amber" onclick="showPagoInstructions('${o.id}')">✅ Confirmar PAGO</button>`);
+  }
+  acts.push(`<a href="pideya_kitchen_ticket.html?order=${o.id}&name=${encodeURIComponent(o.name)}&phone=${encodeURIComponent(o.phone)}&address=${encodeURIComponent(o.address)}&items=${encodeURIComponent(o.items.replace(/\s*\|\s*/g,'|'))}&subtotal=${o.subtotal.toFixed(2)}&tax=${o.tax.toFixed(2)}&gestion=${o.gestion.toFixed(2)}&stripefee=${o.stripeFee.toFixed(2)}&total=${o.total.toFixed(2)}" target="_blank" class="btn btn-outline">🖨️ Imprimir Ticket</a>`);
+  acts.push(`<a href="https://wa.me/${o.phone}" target="_blank" class="btn btn-outline">💬 WhatsApp</a>`);
+  acts.push(`<a href="${mapsUrl}" target="_blank" class="btn btn-outline">🗺️ Mapa</a>`);
+
+  document.getElementById('modalActions').innerHTML=acts.join('');
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function showPagoInstructions(orderId){
+  alert(`Para confirmar el pago Zelle de la orden ${orderId}:\n\nEscribe en WhatsApp del bot:\nPAGO ${orderId}\n\nEl sistema confirmará automáticamente.`);
+}
+
+async function markDispatched(orderId,name,phone){
+  const mins=prompt(`¿En cuántos minutos llegará el pedido de ${name}?`,'30');
+  if(!mins) return;
+  try{
+    const r=await fetch(N8N_DISPATCH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId,phone,estimatedMinutes:parseInt(mins)||30})});
+    if(r.ok){alert('✅ Marcado como enviado. El cliente fue notificado.');closeModal();loadOrders();}
+    else alert('Error al marcar como enviado: '+r.status);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function closeModal(){document.getElementById('orderModal').classList.remove('open');}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+function exportCSV(){
+  const headers=['Orden ID','Fecha','Cliente','Teléfono','Dirección','Items','Subtotal','Tax','Gestión','Stripe Fee','Total','Estado','Pago','Link'];
+  const rows=filtered.map(o=>[
+    o.id,o.ts,o.name,'+'+o.phone,o.address,o.items.replace(/\|/g,' / '),
+    o.subtotal.toFixed(2),o.tax.toFixed(2),o.gestion.toFixed(2),o.stripeFee.toFixed(2),o.total.toFixed(2),
+    o.status,o.stripeFee>0?'Tarjeta':'Zelle',o.link||''
+  ]);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`PIDEYA_Ordenes_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+function escH(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+</script>
+</body>
+</html>

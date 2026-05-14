@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Alertas</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--card:#FFFFFF;--border:#DDE3EA;--text:#1F2937;--muted:#6B7280;
+  --green:#15803d;--green-l:#DCFCE7;--green-b:#86EFAC;
+  --red:#b91c1c;--red-l:#FEE2E2;--red-b:#FECACA;
+  --amber:#92400e;--amber-l:#FEF3C7;--amber-b:#FCD34D;
+  --blue:#1e40af;--blue-l:#EEF2FF;--blue-b:#C7D2FE;
+  --purple:#6d28d9;--purple-l:#F5F3FF;--purple-b:#DDD6FE;
+  --sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}
+.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}
+.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(239,68,68,.15);color:#F87171;border:1px solid rgba(239,68,68,.25);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+.alert-badge{background:#EF4444;color:#fff;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:10px;margin-left:auto;}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;display:flex;align-items:center;gap:10px;}
+.pulse{width:10px;height:10px;border-radius:50%;background:#EF4444;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.3);}}
+.refresh-info{font-size:.72rem;color:var(--muted);}
+.btn{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.content{padding:24px 28px;}
+
+/* SUMMARY ROW */
+.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;border:2px solid transparent;}
+.sum-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.sum-card.critical{background:var(--red-l);border-color:var(--red-b);}
+.sum-card.warning{background:var(--amber-l);border-color:var(--amber-b);}
+.sum-card.info{background:var(--blue-l);border-color:var(--blue-b);}
+.sum-card.ok{background:var(--green-l);border-color:var(--green-b);}
+.sum-icon{font-size:1.5rem;flex-shrink:0;}
+.sum-count{font-size:1.6rem;font-weight:900;font-family:'JetBrains Mono',monospace;line-height:1;}
+.sum-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* ALERT SECTION */
+.alert-section{margin-bottom:20px;}
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.section-icon{font-size:1.1rem;}
+.section-title{font-size:.88rem;font-weight:800;}
+.section-count{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+.count-red{background:var(--red-l);color:var(--red);}
+.count-amber{background:var(--amber-l);color:var(--amber);}
+.count-blue{background:var(--blue-l);color:var(--blue);}
+.count-green{background:var(--green-l);color:var(--green);}
+
+/* ALERT CARD */
+.alert-card{background:var(--card);border-radius:12px;border-left:4px solid;padding:16px 18px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.alert-card.critical{border-color:#DC2626;}
+.alert-card.warning{border-color:#D97706;}
+.alert-card.info{border-color:#2563EB;}
+.alert-card.ok{border-color:#16A34A;}
+.alert-icon{font-size:1.4rem;flex-shrink:0;margin-top:2px;}
+.alert-content{flex:1;}
+.alert-title{font-size:.88rem;font-weight:800;margin-bottom:3px;}
+.alert-desc{font-size:.78rem;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+.alert-meta{display:flex;gap:12px;flex-wrap:wrap;}
+.meta-chip{font-size:.68rem;font-family:'JetBrains Mono',monospace;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:var(--text);}
+.alert-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.act-btn{padding:5px 12px;border-radius:7px;font-size:.72rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;}
+.act-red{background:var(--red-l);color:var(--red);}
+.act-amber{background:var(--amber-l);color:var(--amber);}
+.act-blue{background:var(--blue-l);color:var(--blue);}
+.act-green{background:var(--green-l);color:var(--green);}
+.act-gray{background:#F1F5F9;color:var(--muted);}
+.alert-time{font-size:.65rem;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+
+/* EMPTY / LOADING */
+.section-empty{background:var(--card);border-radius:12px;padding:20px;text-align:center;color:var(--muted);font-size:.82rem;border:1px dashed var(--border);}
+.loading-msg{text-align:center;padding:60px 20px;color:var(--muted);}
+
+/* SYSTEM STATUS */
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.status-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.status-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #F1F5F9;font-size:.78rem;}
+.status-row:last-child{border-bottom:none;}
+.dot-ok{width:8px;height:8px;border-radius:50%;background:#22C55E;display:inline-block;margin-right:5px;}
+.dot-warn{width:8px;height:8px;border-radius:50%;background:#F59E0B;display:inline-block;margin-right:5px;animation:pulse 2s infinite;}
+.dot-err{width:8px;height:8px;border-radius:50%;background:#EF4444;display:inline-block;margin-right:5px;animation:pulse 1s infinite;}
+
+@media(max-width:900px){
+  .sidebar{width:58px;}.sidebar .logo-text,.nav-item span:not(.icon){display:none;}.nav-item{justify-content:center;}
+  .main{margin-left:58px;}.summary{grid-template-columns:repeat(2,1fr);}.status-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">🚨</div>
+    <div class="lock-title">Centro de Alertas</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text"><h1>PIDEYA</h1><p>Alertas</p></div>
+  </div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" class="nav-item"><span class="icon">🍳</span><span>Cocina</span></a>
+    <a href="pideya_reports.html" class="nav-item"><span class="icon">📈</span><span>Reportes</span></a>
+    <a href="pideya_dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="pideya_clientes.html" class="nav-item"><span class="icon">👥</span><span>Clientes</span></a>
+    <a href="pideya_estadisticas.html" class="nav-item"><span class="icon">📉</span><span>Estadísticas</span></a>
+    <div class="nav-item active"><span class="icon">🚨</span><span>Alertas</span><span class="alert-badge" id="navBadge">0</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">
+      <div class="pulse" id="livePulse"></div>
+      🚨 Centro de Alertas
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="refresh-info" id="lastRefresh">Actualizando...</span>
+      <button class="btn btn-outline" onclick="loadAndAnalyze()">⟳ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <div class="loading-msg">⏳ Analizando órdenes...</div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID='1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const PASS='pideya2024';
+const SESS='py_alertas_auth';
+
+let refreshTimer=null;
+
+// ── AUTH ───────────────────────────────────────────────────────────
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    startMonitoring();
+  }else{
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('lockPwd').value='';
+  }
+}
+if(sessionStorage.getItem(SESS)==='1'){document.getElementById('lock').style.display='none';startMonitoring();}
+
+function startMonitoring(){
+  loadAndAnalyze();
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer=setInterval(loadAndAnalyze,60000); // refresh every 60s
+}
+
+// ── DATA ───────────────────────────────────────────────────────────
+function parseCSV(line){
+  const r=[];let c='',q=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){q=!q;}else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}
+  r.push(c.trim());return r;
+}
+
+async function loadAndAnalyze(){
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+    const r=await fetch(url,{mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const csv=await r.text();
+    const lines=csv.split('\n').filter(l=>l.trim());
+    const h=parseCSV(lines[0]);
+    const idx={};h.forEach((v,i)=>idx[v]=i);
+    const orders=[];
+    for(let i=1;i<lines.length;i++){
+      const v=parseCSV(lines[i]);
+      if(!v[idx['Order ID']]) continue;
+      orders.push({
+        id:v[idx['Order ID']]||'',
+        ts:v[idx['Timestamp']]||'',
+        phone:v[idx['Phone']]||'',
+        name:v[idx['Name']]||'',
+        address:v[idx['Address']]||'',
+        items:v[idx['Items']]||'',
+        total:parseFloat(v[idx['Total']]||0),
+        stripeFee:parseFloat(v[idx['StripeFee']]||0),
+        status:(v[idx['Status']]||'').trim()
+      });
+    }
+    document.getElementById('lastRefresh').textContent='Actualizado: '+new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'});
+    render(analyzeAlerts(orders));
+  }catch(e){
+    document.getElementById('mainContent').innerHTML=`<div class="loading-msg">❌ Error: ${e.message}<br><small style="color:var(--muted)">Asegúrate de que el Google Sheet sea público</small></div>`;
+  }
+}
+
+// ── ANALYSIS ───────────────────────────────────────────────────────
+function minsAgo(ts){
+  if(!ts) return 9999;
+  try{return (Date.now()-new Date(ts).getTime())/60000;}catch(e){return 9999;}
+}
+function fmtAge(ts){
+  const m=minsAgo(ts);
+  if(m<60) return Math.round(m)+'min';
+  if(m<1440) return Math.round(m/60)+'h '+Math.round(m%60)+'min';
+  return Math.round(m/1440)+'d';
+}
+function fmtTime(ts){
+  if(!ts) return '—';
+  try{return new Date(ts).toLocaleString('es-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return ts;}
+}
+function isToday(ts){
+  if(!ts) return false;
+  const today=new Date().toISOString().split('T')[0];
+  return ts.startsWith(today);
+}
+
+function analyzeAlerts(orders){
+  const now=Date.now();
+  const todayOrders=orders.filter(o=>isToday(o.ts));
+  const alerts={critical:[],warning:[],info:[],ok:[]};
+
+  // ── 1. STUCK ZELLE PENDING (>30 min)
+  orders.filter(o=>o.status==='Zelle-Pending').forEach(o=>{
+    const age=minsAgo(o.ts);
+    if(age>120){
+      alerts.critical.push({type:'stuck_zelle_long',order:o,age,
+        title:'Orden Zelle abandonada ('+fmtAge(o.ts)+')',
+        desc:`La orden #${o.id} de ${o.name||o.phone} lleva más de 2 horas en estado Zelle-Pendiente sin comprobante. Posiblemente el cliente abandonó el pedido.`,
+        icon:'💸',actions:[{label:'Ver en panel',cls:'act-blue'},{label:'Cancelar orden',cls:'act-red'}]});
+    } else if(age>30){
+      alerts.warning.push({type:'stuck_zelle',order:o,age,
+        title:'Zelle pendiente hace '+fmtAge(o.ts),
+        desc:`#${o.id} — ${o.name||o.phone} — $${o.total.toFixed(2)}. El cliente aún no ha enviado el comprobante. Considera contactarlo.`,
+        icon:'⏳',actions:[{label:'Ver en panel',cls:'act-blue'}]});
+    }
+  });
+
+  // ── 2. STUCK STRIPE PENDING (>20 min — payment link maybe expired)
+  orders.filter(o=>o.status==='Stripe-Pending').forEach(o=>{
+    const age=minsAgo(o.ts);
+    if(age>60){
+      alerts.warning.push({type:'stuck_stripe_long',order:o,age,
+        title:'Pago Stripe expirado ('+fmtAge(o.ts)+')',
+        desc:`#${o.id} — ${o.name||o.phone} — $${o.total.toFixed(2)}. El link de pago puede haber expirado. Stripe Sessions expiran en 24h pero el cliente no completó el pago.`,
+        icon:'💳',actions:[{label:'Ver en panel',cls:'act-blue'}]});
+    } else if(age>20){
+      alerts.info.push({type:'stuck_stripe',order:o,age,
+        title:'Stripe pendiente hace '+fmtAge(o.ts),
+        desc:`#${o.id} — ${o.name||o.phone}. El cliente recibió el link pero no ha pagado aún.`,
+        icon:'⏱️',actions:[{label:'Ver en panel',cls:'act-blue'}]});
+    }
+  });
+
+  // ── 3. CONFIRMED BUT NOT DISPATCHED >60 min
+  orders.filter(o=>o.status==='Confirmed').forEach(o=>{
+    const age=minsAgo(o.ts);
+    if(age>90){
+      alerts.critical.push({type:'not_dispatched_long',order:o,age,
+        title:'Orden confirmada sin enviar ('+fmtAge(o.ts)+')',
+        desc:`#${o.id} — ${o.name||o.phone} — $${o.total.toFixed(2)}. Esta orden fue pagada y confirmada hace más de 90 minutos pero no se marcó como Enviada. ¿Ya se entregó?`,
+        icon:'🚨',actions:[{label:'Marcar enviada',cls:'act-green'},{label:'Ver en panel',cls:'act-blue'}]});
+    } else if(age>60){
+      alerts.warning.push({type:'not_dispatched',order:o,age,
+        title:'Orden demorada en cocina ('+fmtAge(o.ts)+')',
+        desc:`#${o.id} — ${o.name||o.phone}. Confirmada hace más de 1 hora sin marcar como enviada.`,
+        icon:'⏰',actions:[{label:'Ver en panel',cls:'act-blue'}]});
+    }
+  });
+
+  // ── 4. HIGH VALUE ORDERS (>$80 unconfirmed)
+  orders.filter(o=>o.total>=80&&(o.status==='Zelle-Pending'||o.status==='Stripe-Pending')).forEach(o=>{
+    if(!alerts.warning.find(a=>a.order&&a.order.id===o.id)&&!alerts.critical.find(a=>a.order&&a.order.id===o.id)){
+      alerts.info.push({type:'high_value',order:o,age:minsAgo(o.ts),
+        title:'Orden de alto valor pendiente',
+        desc:`#${o.id} — $${o.total.toFixed(2)} — ${o.name||o.phone}. Orden de alto valor aún sin confirmar pago. Prioridad de seguimiento.`,
+        icon:'💰',actions:[{label:'Contactar cliente',cls:'act-amber'},{label:'Ver en panel',cls:'act-blue'}]});
+    }
+  });
+
+  // ── 5. DUPLICATE ORDERS (same phone, >1 order today)
+  const phoneMap={};
+  todayOrders.forEach(o=>{ if(!phoneMap[o.phone]) phoneMap[o.phone]=[]; phoneMap[o.phone].push(o); });
+  Object.entries(phoneMap).forEach(([phone,ords])=>{
+    if(ords.length>=3){
+      alerts.warning.push({type:'duplicate_orders',order:null,
+        title:`Cliente con ${ords.length} órdenes hoy`,
+        desc:`El teléfono +${phone} tiene ${ords.length} órdenes registradas hoy. Total acumulado: $${ords.reduce((s,o)=>s+o.total,0).toFixed(2)}. Puede ser un cliente VIP o una anomalía.`,
+        icon:'🔁',actions:[{label:'Ver cliente',cls:'act-blue'}],phone});
+    }
+  });
+
+  // ── 6. NO ORDERS TODAY (after 12pm)
+  const hourNow=new Date().toLocaleString('en-US',{timeZone:'America/New_York',hour:'numeric',hour12:false});
+  if(parseInt(hourNow)>=12&&todayOrders.length===0){
+    alerts.critical.push({type:'no_orders',order:null,
+      title:'Sin órdenes hoy después del mediodía',
+      desc:`Son las ${hourNow}:00 y no se ha recibido ninguna orden hoy. Verifica que el bot esté activo y el restaurante esté marcado como abierto.`,
+      icon:'😶',actions:[{label:'Abrir panel cocina',cls:'act-green'}]});
+  }
+
+  // ── 7. RECENT CONFIRMED (last 30 min) — good news
+  const recentOk=orders.filter(o=>(o.status==='Confirmed'||o.status==='Enviado')&&minsAgo(o.ts)<=30);
+  recentOk.forEach(o=>{
+    alerts.ok.push({type:'confirmed',order:o,age:minsAgo(o.ts),
+      title:'Pago confirmado — '+fmtAge(o.ts)+' atrás',
+      desc:`#${o.id} — ${o.name||o.phone} — $${o.total.toFixed(2)} — ${o.status==='Enviado'?'Enviada ✅':'Preparando 🍳'}`,
+      icon:'✅',actions:[]});
+  });
+
+  return {alerts, todayOrders, orders};
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────
+function render({alerts,todayOrders,orders}){
+  const critCount=alerts.critical.length;
+  const warnCount=alerts.warning.length;
+  const infoCount=alerts.info.length;
+  const okCount=alerts.ok.length;
+  const totalAlerts=critCount+warnCount+infoCount;
+
+  // Update nav badge
+  const nb=document.getElementById('navBadge');
+  nb.textContent=totalAlerts;
+  nb.style.display=totalAlerts>0?'inline':'none';
+
+  // Pulse color
+  const pulse=document.getElementById('livePulse');
+  pulse.style.background=critCount>0?'#EF4444':warnCount>0?'#F59E0B':'#22C55E';
+
+  const conf=orders.filter(o=>o.status==='Confirmed'||o.status==='Enviado').length;
+  const rev=orders.filter(o=>isToday(o.ts)&&(o.status==='Confirmed'||o.status==='Enviado')).reduce((s,o)=>s+o.total,0);
+
+  let html=`
+    <div class="summary">
+      <div class="sum-card critical" onclick="scrollTo(0,document.getElementById('sec-critical').offsetTop-80)">
+        <div class="sum-icon">🔴</div>
+        <div><div class="sum-count" style="color:var(--red);">${critCount}</div><div class="sum-label" style="color:var(--red);">Críticas</div></div>
+      </div>
+      <div class="sum-card warning" onclick="scrollTo(0,document.getElementById('sec-warning').offsetTop-80)">
+        <div class="sum-icon">🟡</div>
+        <div><div class="sum-count" style="color:var(--amber);">${warnCount}</div><div class="sum-label" style="color:var(--amber);">Advertencias</div></div>
+      </div>
+      <div class="sum-card info" onclick="scrollTo(0,document.getElementById('sec-info').offsetTop-80)">
+        <div class="sum-icon">🔵</div>
+        <div><div class="sum-count" style="color:var(--blue);">${infoCount}</div><div class="sum-label" style="color:var(--blue);">Informativas</div></div>
+      </div>
+      <div class="sum-card ok">
+        <div class="sum-icon">✅</div>
+        <div><div class="sum-count" style="color:var(--green);">${okCount}</div><div class="sum-label" style="color:var(--green);">Recientes OK</div></div>
+      </div>
+      <div class="sum-card info">
+        <div class="sum-icon">📦</div>
+        <div><div class="sum-count" style="color:var(--blue);">${todayOrders.length}</div><div class="sum-label" style="color:var(--blue);">Órdenes Hoy</div></div>
+      </div>
+    </div>
+
+    <!-- SYSTEM STATUS -->
+    <div class="status-grid" style="margin-bottom:22px;">
+      <div class="status-card">
+        <div style="font-size:.78rem;font-weight:800;margin-bottom:10px;">🤖 Bot WhatsApp</div>
+        <div class="status-row"><span><span class="dot-ok"></span>Webhook activo</span><span style="font-size:.7rem;color:var(--muted);">pideya-bot</span></div>
+        <div class="status-row"><span><span class="dot-ok"></span>WasenderAPI</span><span style="font-size:.7rem;color:var(--muted);">Conectado</span></div>
+        <div class="status-row"><span><span class="${todayOrders.length>0?'dot-ok':'dot-warn'}"></span>Órdenes hoy</span><span style="font-size:.7rem;font-weight:700;color:${todayOrders.length>0?'var(--green)':'var(--amber)'};">${todayOrders.length}</span></div>
+      </div>
+      <div class="status-card">
+        <div style="font-size:.78rem;font-weight:800;margin-bottom:10px;">💳 Pagos</div>
+        <div class="status-row"><span><span class="dot-ok"></span>Stripe</span><span style="font-size:.7rem;color:var(--muted);">Activo</span></div>
+        <div class="status-row"><span><span class="dot-ok"></span>Zelle</span><span style="font-size:.7rem;color:var(--muted);">Manual</span></div>
+        <div class="status-row"><span><span class="dot-ok"></span>Pendientes</span><span style="font-size:.7rem;font-weight:700;color:${(alerts.critical.length+alerts.warning.length)>0?'var(--amber)':'var(--green)'};">${orders.filter(o=>o.status.includes('Pending')).length}</span></div>
+      </div>
+      <div class="status-card">
+        <div style="font-size:.78rem;font-weight:800;margin-bottom:10px;">📊 Hoy</div>
+        <div class="status-row"><span>Órdenes confirmadas</span><span style="font-size:.7rem;font-weight:700;color:var(--green);">${conf}</span></div>
+        <div class="status-row"><span>Ingresos del día</span><span style="font-size:.7rem;font-weight:700;color:var(--green);">$${rev.toFixed(2)}</span></div>
+        <div class="status-row"><span>Ticket promedio</span><span style="font-size:.7rem;font-weight:700;color:var(--blue);">$${conf>0?(rev/conf).toFixed(2):'—'}</span></div>
+      </div>
+    </div>
+  `;
+
+  // CRITICAL ALERTS
+  html+=`<div class="alert-section" id="sec-critical">
+    <div class="section-head">
+      <span class="section-icon">🔴</span>
+      <span class="section-title">Alertas Críticas</span>
+      <span class="section-count count-red">${critCount}</span>
+    </div>`;
+  if(critCount===0){
+    html+=`<div class="section-empty">✅ Sin alertas críticas en este momento</div>`;
+  } else {
+    alerts.critical.forEach(a=>{html+=renderAlertCard(a,'critical');});
+  }
+  html+=`</div>`;
+
+  // WARNING ALERTS
+  html+=`<div class="alert-section" id="sec-warning">
+    <div class="section-head">
+      <span class="section-icon">🟡</span>
+      <span class="section-title">Advertencias</span>
+      <span class="section-count count-amber">${warnCount}</span>
+    </div>`;
+  if(warnCount===0){
+    html+=`<div class="section-empty">✅ Sin advertencias en este momento</div>`;
+  } else {
+    alerts.warning.forEach(a=>{html+=renderAlertCard(a,'warning');});
+  }
+  html+=`</div>`;
+
+  // INFO ALERTS
+  html+=`<div class="alert-section" id="sec-info">
+    <div class="section-head">
+      <span class="section-icon">🔵</span>
+      <span class="section-title">Informativas</span>
+      <span class="section-count count-blue">${infoCount}</span>
+    </div>`;
+  if(infoCount===0){
+    html+=`<div class="section-empty">Sin alertas informativas</div>`;
+  } else {
+    alerts.info.forEach(a=>{html+=renderAlertCard(a,'info');});
+  }
+  html+=`</div>`;
+
+  // RECENT OK
+  if(alerts.ok.length>0){
+    html+=`<div class="alert-section">
+      <div class="section-head">
+        <span class="section-icon">✅</span>
+        <span class="section-title">Confirmaciones Recientes (últimos 30 min)</span>
+        <span class="section-count count-green">${alerts.ok.length}</span>
+      </div>`;
+    alerts.ok.forEach(a=>{html+=renderAlertCard(a,'ok');});
+    html+=`</div>`;
+  }
+
+  // ALL PENDING ORDERS TABLE
+  const pending=orders.filter(o=>o.status==='Zelle-Pending'||o.status==='Stripe-Pending');
+  if(pending.length>0){
+    html+=`<div class="alert-section" style="margin-top:8px;">
+      <div class="section-head"><span class="section-icon">📋</span><span class="section-title">Todas las Órdenes Pendientes (${pending.length})</span></div>
+      <div style="background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
+          <thead><tr style="background:#F8FAFC;border-bottom:1px solid var(--border);">
+            <th style="padding:10px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;">Orden</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;">Cliente</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;">Total</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;">Estado</th>
+            <th style="padding:10px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;">Antigüedad</th>
+          </tr></thead>
+          <tbody>
+            ${pending.sort((a,b)=>a.ts.localeCompare(b.ts)).map(o=>`
+              <tr style="border-bottom:1px solid #F1F5F9;">
+                <td style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:.72rem;">${o.id}</td>
+                <td style="padding:10px 14px;"><div style="font-weight:600;">${escH(o.name||'—')}</div><div style="font-size:.68rem;color:var(--muted);">+${o.phone}</div></td>
+                <td style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);">$${o.total.toFixed(2)}</td>
+                <td style="padding:10px 14px;"><span style="font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:12px;background:${o.status==='Zelle-Pending'?'#FEF3C7':'#F5F3FF'};color:${o.status==='Zelle-Pending'?'#92400e':'#6d28d9'};">${o.status}</span></td>
+                <td style="padding:10px 14px;font-size:.75rem;color:${minsAgo(o.ts)>60?'var(--red)':minsAgo(o.ts)>30?'var(--amber)':'var(--muted)'};">${fmtAge(o.ts)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('mainContent').innerHTML=html;
+}
+
+function renderAlertCard(a,level){
+  const timeStr=a.order?fmtTime(a.order.ts):'';
+  const metas=[];
+  if(a.order){
+    metas.push(`#${a.order.id}`);
+    if(a.order.phone) metas.push(`+${a.order.phone}`);
+    if(a.order.total) metas.push(`$${a.order.total.toFixed(2)}`);
+    if(a.age) metas.push(fmtAge(a.order.ts)+' atrás');
+  }
+  if(a.phone&&!a.order) metas.push(`+${a.phone}`);
+
+  return `<div class="alert-card ${level}">
+    <div class="alert-icon">${a.icon}</div>
+    <div class="alert-content">
+      <div class="alert-title">${escH(a.title)}</div>
+      <div class="alert-desc">${escH(a.desc)}</div>
+      ${metas.length?`<div class="alert-meta">${metas.map(m=>`<span class="meta-chip">${escH(m)}</span>`).join('')}</div>`:''}
+      ${a.actions&&a.actions.length?`<div class="alert-actions">
+        ${a.actions.map(act=>`<button class="act-btn ${act.cls}" onclick="handleAction('${act.label}',${JSON.stringify(a.order?.id||'')})">${act.label}</button>`).join('')}
+      </div>`:''}
+    </div>
+    ${timeStr?`<div class="alert-time">${timeStr}</div>`:''}
+  </div>`;
+}
+
+function handleAction(action,orderId){
+  if(action==='Ver en panel'||action==='Marcar enviada'){
+    window.open('pideya_cocina.html','_blank');
+  } else if(action==='Abrir panel cocina'){
+    window.open('pideya_cocina.html','_blank');
+  } else if(action==='Ver cliente'){
+    window.open('pideya_clientes.html','_blank');
+  } else if(action==='Cancelar orden'){
+    if(confirm('¿Estás seguro de que deseas cancelar esta orden?\n\nEsto NO borra el registro — deberás cambiar el estado manualmente en Google Sheets.')) {
+      alert('Para cancelar: ve al panel de cocina y cambia el estado de la orden en Google Sheets.');
+    }
+  }
+}
+
+function escH(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+</script>
+</body>
+</html>

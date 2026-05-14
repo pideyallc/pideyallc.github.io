@@ -9,8 +9,6 @@
 :root{--green:#25D366;--dark:#0a0f0d;--mid:#1a2620;--card:#111a15;--border:#1e2e24;--text:#e8f0eb;--muted:#6b8a74;--accent:#3dff8a;--yellow:#ffd166;--blue:#66b2ff;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'IBM Plex Sans',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;}
-
-/* Password Screen */
 .password-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .password-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;width:320px;}
 .password-logo{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--accent);letter-spacing:2px;margin-bottom:8px;}
@@ -20,7 +18,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--dark);color:var(--t
 .password-btn{width:100%;padding:12px;background:var(--green);color:#000;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
 .password-btn:hover{background:var(--accent);}
 .password-error{color:#ff5252;font-size:12px;margin-top:10px;display:none;}
-
 .header{background:var(--mid);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
 .logo{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;color:var(--accent);letter-spacing:2px;}
 .logo span{color:var(--muted);font-weight:400;}
@@ -62,21 +59,9 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .refresh-btn{padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'IBM Plex Sans',sans-serif;}
 .refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
 .footer{padding:20px 32px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-@media print{
-  body{background:white;color:#111;}
-  .header{background:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  th{background:#f0f0f0;color:#444!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  td{color:#111!important;border-color:#eee!important;}
-  .td-green,.td-accent{color:#111!important;}
-  .td-muted{color:#666!important;}
-  .refresh-btn{display:none;}
-  .password-screen{display:none!important;}
-}
 </style>
 </head>
 <body>
-
-<!-- Password Screen -->
 <div class="password-screen" id="password-screen">
   <div class="password-box">
     <div class="password-logo">PIDEYA LLC</div>
@@ -86,7 +71,6 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <div class="password-error" id="pwd-error">Contraseña incorrecta. Intenta de nuevo.</div>
   </div>
 </div>
-
 <div class="header">
   <div>
     <div class="logo">PIDEYA <span>LLC</span></div>
@@ -97,40 +81,27 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <button class="refresh-btn" onclick="window.print()">🖨️ Imprimir</button>
   </div>
 </div>
-
 <div class="main">
   <div class="summary-grid" id="summary-cards"><div class="loading">Cargando...</div></div>
   <div class="section-title">Ultimas Ordenes</div>
   <div class="table-wrap" id="orders-table"><div class="loading">Cargando ordenes...</div></div>
 </div>
-
 <div class="footer">
   <span>PIDEYA LLC — El Conuco Restaurante | 715 Summit Ave, Union City, NJ 07087</span>
   <span id="last-update"></span>
 </div>
-
 <script>
-var SHEET_ID = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
-var CORRECT_PASSWORD = 'pideya2024';
-var SESSION_KEY = 'pideya_dashboard_auth';
-var allOrders = [];
-
-function checkPwd() {
-  var input = document.getElementById('pwd-input').value;
-  if (input === CORRECT_PASSWORD) {
-    sessionStorage.setItem(SESSION_KEY, '1');
-    document.getElementById('password-screen').style.display = 'none';
-    loadData();
-  } else {
-    document.getElementById('pwd-error').style.display = 'block';
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('pwd-input').focus();
-  }
+var SHEET_ID='1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+var CORRECT_PASSWORD='pideya2024';
+var SESSION_KEY='pideya_dashboard_auth';
+var allOrders=[];
+function checkPwd(){
+  var input=document.getElementById('pwd-input').value;
+  if(input===CORRECT_PASSWORD){sessionStorage.setItem(SESSION_KEY,'1');document.getElementById('password-screen').style.display='none';loadData();}
+  else{document.getElementById('pwd-error').style.display='block';document.getElementById('pwd-input').value='';document.getElementById('pwd-input').focus();}
 }
-
 function fmt(n){var v=parseFloat(String(n).replace(/[^0-9.\-]/g,''));return isNaN(v)?'$0.00':'$'+v.toFixed(2);}
 function toNum(n){var v=parseFloat(String(n).replace(/[^0-9.\-]/g,''));return isNaN(v)?0:v;}
-
 async function fetchOrders(){
   try{
     var url='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid=0';
@@ -144,69 +115,35 @@ async function fetchOrders(){
     var rows=[];
     for(var i=1;i<lines.length;i++){var vals=parseCSVLine(lines[i]);var obj={};headers.forEach(function(h,j){obj[h]=vals[j]||'';});if(obj['Order ID'])rows.push(obj);}
     return rows;
-  }catch(e){return [];}
+  }catch(e){return[];}
 }
-
 async function loadData(){
   document.getElementById('summary-cards').innerHTML='<div class="loading">Cargando...</div>';
   document.getElementById('orders-table').innerHTML='<div class="loading">Cargando ordenes...</div>';
   allOrders=await fetchOrders();
-
-  // Sort by latest first
   allOrders.sort(function(a,b){return new Date(b['Timestamp'])-new Date(a['Timestamp']);});
-
-  // Today's orders
   var today=new Date().toISOString().split('T')[0];
   var todayOrders=allOrders.filter(function(o){return o['Timestamp']&&o['Timestamp'].startsWith(today);});
-
   var totalRevenue=0,todayRevenue=0;
   allOrders.forEach(function(o){totalRevenue+=toNum(o['Total']);});
   todayOrders.forEach(function(o){todayRevenue+=toNum(o['Total']);});
-
-  // Summary cards
-  document.getElementById('summary-cards').innerHTML=
-    card('green','Ordenes Hoy',todayOrders.length,'Pedidos confirmados hoy')+
-    card('accent','Ventas Hoy',fmt(todayRevenue),'Ingresos del dia de hoy')+
-    card('yellow','Total Ordenes',allOrders.length,'Todos los pedidos historicos')+
-    card('blue','Total Recaudado',fmt(totalRevenue),'Ingresos totales historicos');
-
-  // Orders table — show last 50
+  document.getElementById('summary-cards').innerHTML=card('green','Ordenes Hoy',todayOrders.length,'Pedidos confirmados hoy')+card('accent','Ventas Hoy',fmt(todayRevenue),'Ingresos del dia de hoy')+card('yellow','Total Ordenes',allOrders.length,'Todos los pedidos historicos')+card('blue','Total Recaudado',fmt(totalRevenue),'Ingresos totales historicos');
   var recent=allOrders.slice(0,50);
-  if(!recent.length){
-    document.getElementById('orders-table').innerHTML='<div class="empty">No hay ordenes registradas aun.</div>';
-  }else{
+  if(!recent.length){document.getElementById('orders-table').innerHTML='<div class="empty">No hay ordenes registradas aun.</div>';}
+  else{
     var rows=recent.map(function(o){
       var d=o['Timestamp']?new Date(o['Timestamp']):null;
       var ds=d?d.toLocaleString('es-US',{timeZone:'America/New_York',dateStyle:'short',timeStyle:'short'}):'---';
-      return '<tr>'+
-        '<td class="td-mono td-muted">'+(o['Order ID']||'---')+'</td>'+
-        '<td class="td-muted">'+ds+'</td>'+
-        '<td>'+(o['Name']||'---')+'</td>'+
-        '<td class="td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(o['Items']||'---')+'</td>'+
-        '<td class="td-green">'+fmt(o['Subtotal'])+'</td>'+
-        '<td class="td-muted">'+fmt(o['Tax'])+'</td>'+
-        '<td class="td-accent">'+fmt(o['Total'])+'</td>'+
-        '<td><span class="badge badge-green">'+(o['Status']||'Confirmed')+'</span></td>'+
-        '</tr>';
+      return '<tr><td class="td-mono td-muted">'+(o['Order ID']||'---')+'</td><td class="td-muted">'+ds+'</td><td>'+(o['Name']||'---')+'</td><td class="td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(o['Items']||'---')+'</td><td class="td-green">'+fmt(o['Subtotal'])+'</td><td class="td-muted">'+fmt(o['Tax'])+'</td><td class="td-accent">'+fmt(o['Total'])+'</td><td><span class="badge badge-green">'+(o['Status']||'Confirmed')+'</span></td></tr>';
     });
-    document.getElementById('orders-table').innerHTML=
-      '<table><thead><tr><th>Orden #</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Subtotal</th><th>Tax NJ</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
+    document.getElementById('orders-table').innerHTML='<table><thead><tr><th>Orden #</th><th>Fecha</th><th>Cliente</th><th>Items</th><th>Subtotal</th><th>Tax NJ</th><th>Total</th><th>Estado</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
   }
-
   document.getElementById('last-update').textContent='Actualizado: '+new Date().toLocaleString('es-US',{timeZone:'America/New_York',timeStyle:'short'});
 }
-
-function card(color,label,value,sub){
-  return '<div class="summary-card '+color+'"><div class="card-label">'+label+'</div><div class="card-value '+color+'">'+value+'</div><div class="card-sub">'+sub+'</div></div>';
-}
-
-window.onload = function() {
-  if (sessionStorage.getItem(SESSION_KEY) === '1') {
-    document.getElementById('password-screen').style.display = 'none';
-    loadData();
-  } else {
-    document.getElementById('pwd-input').focus();
-  }
+function card(color,label,value,sub){return '<div class="summary-card '+color+'"><div class="card-label">'+label+'</div><div class="card-value '+color+'">'+value+'</div><div class="card-sub">'+sub+'</div></div>';}
+window.onload=function(){
+  if(sessionStorage.getItem(SESSION_KEY)==='1'){document.getElementById('password-screen').style.display='none';loadData();}
+  else{document.getElementById('pwd-input').focus();}
 };
 </script>
 </body>

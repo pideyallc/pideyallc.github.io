@@ -420,7 +420,58 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
     </div>
 
     <div class="setting-group">
-      <h3>ℹ️ Información del sistema</h3>
+      <h3>🚗 Radio de Entrega</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">Radio máximo (millas)</div><div class="setting-desc">Distancia máxima para delivery desde el restaurante</div></div>
+        <div class="setting-control">
+          <select id="sDeliveryRadius">
+            <option value="3">3 millas</option>
+            <option value="5" selected>5 millas</option>
+            <option value="7">7 millas</option>
+            <option value="10">10 millas</option>
+            <option value="15">15 millas</option>
+            <option value="20">20 millas</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Costo de delivery</div><div class="setting-desc">Cargo de envío al cliente (0 = gratis)</div></div>
+        <div class="setting-control">
+          <select id="sDeliveryCost">
+            <option value="0">Gratis</option>
+            <option value="2">$2.00</option>
+            <option value="3">$3.00</option>
+            <option value="4">$4.00</option>
+            <option value="5">$5.00</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:.72rem;color:#166534;">
+        📍 Radio actual: <strong id="radiusDisplay">5 millas</strong> desde 715 Summit Ave, Union City, NJ 07087.<br>
+        La validación de entrega usa la lista de ZIPs configurada en el bot. Guarda y usa el código del tab <strong>Horario</strong> para aplicar cambios al bot.
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>🖨️ Impresión Automática</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">Auto-imprimir al confirmar pago</div><div class="setting-desc">Abre el ticket automáticamente cuando Stripe o Zelle confirma el pago</div></div>
+        <div class="setting-control">
+          <select id="sAutoPrint"><option value="yes">Activado</option><option value="no">Desactivado</option></select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Imprimir también órdenes Zelle</div><div class="setting-desc">Al marcar PAGO [ID], imprime el ticket de inmediato</div></div>
+        <div class="setting-control">
+          <select id="sAutoPrintZelle"><option value="yes">Activado</option><option value="no">Desactivado</option></select>
+        </div>
+      </div>
+      <div style="margin-top:10px;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:10px 12px;font-size:.72rem;color:#3730A3;">
+        💡 El ticket se abre en una nueva ventana lista para imprimir. Asegúrate de que el navegador tenga permiso para abrir ventanas emergentes.
+      </div>
+    </div>
+
+
       <div class="setting-row"><div class="setting-label">Restaurante</div><div style="font-size:.82rem;color:var(--muted)">El Conuco Restaurante</div></div>
       <div class="setting-row"><div class="setting-label">Dirección</div><div style="font-size:.82rem;color:var(--muted)">715 Summit Ave, Union City, NJ 07087</div></div>
       <div class="setting-row"><div class="setting-label">WhatsApp Bot</div><div style="font-size:.82rem;color:var(--green)">+1 (201) 772-7540</div></div>
@@ -845,6 +896,7 @@ async function loadAll(){
       }
     }
     checkNewOrders(allOrders);
+    checkAndAutoPrint(allOrders);
     updateAll(conn);
   }catch(e){
     document.getElementById('list-cocina').innerHTML=`<div class="err-msg">❌ Error cargando datos.<br><small>${e.message}</small><br><br>Asegúrate de que el Google Sheet está compartido como <em>"Cualquier persona con el enlace puede ver"</em>.</div>`;
@@ -1207,6 +1259,15 @@ function loadSettings(){
   document.getElementById('sBellVol').value=S.vol;
   document.getElementById('sVolVal').textContent=Math.round(S.vol*100)+'%';
   document.getElementById('sRefresh').value=S.refreshMs;
+  const radius=lsGet('py_radius','5');
+  const el=document.getElementById('sDeliveryRadius');
+  if(el) el.value=radius;
+  const rd=document.getElementById('radiusDisplay');
+  if(rd) rd.textContent=radius+' millas';
+  const ap=document.getElementById('sAutoPrint');
+  if(ap) ap.value=lsGet('py_autoprint','yes');
+  const apz=document.getElementById('sAutoPrintZelle');
+  if(apz) apz.value=lsGet('py_autoprint_zelle','yes');
 }
 function saveSettings(){
   S.bellOn=document.getElementById('sBellOn').value==='yes';
@@ -1217,10 +1278,52 @@ function saveSettings(){
   lsSet('py_tones',S.tones);
   lsSet('py_vol',S.vol);
   lsSet('py_ref',S.refreshMs);
+  const el=document.getElementById('sDeliveryRadius');
+  if(el){ lsSet('py_radius',el.value); const rd=document.getElementById('radiusDisplay'); if(rd) rd.textContent=el.value+' millas'; }
+  const ap=document.getElementById('sAutoPrint');
+  if(ap) lsSet('py_autoprint',ap.value);
+  const apz=document.getElementById('sAutoPrintZelle');
+  if(apz) lsSet('py_autoprint_zelle',apz.value);
   if(refreshTimer) clearInterval(refreshTimer);
   refreshTimer=setInterval(loadAll,S.refreshMs);
   alert('✅ Ajustes guardados correctamente.');
 }
+
+// ── AUTO PRINT ─────────────────────────────────────────────────────────────
+const _printedOrders = new Set(JSON.parse(lsGet('py_printed','[]')));
+function checkAndAutoPrint(orders){
+  const autoPrint = lsGet('py_autoprint','yes')==='yes';
+  const autoPrintZelle = lsGet('py_autoprint_zelle','yes')==='yes';
+  if(!autoPrint && !autoPrintZelle) return;
+  orders.forEach(o=>{
+    const id = o['Order ID'];
+    if(!id || _printedOrders.has(id)) return;
+    const status = (o.Status||'').trim();
+    const isStripeConfirmed = status==='Confirmed' && parseFloat(o.StripeFee||0)>0;
+    const isZelleConfirmed = status==='Confirmed' && parseFloat(o.StripeFee||0)===0;
+    if((isStripeConfirmed && autoPrint)||(isZelleConfirmed && autoPrintZelle)){
+      _printedOrders.add(id);
+      lsSet('py_printed', JSON.stringify([..._printedOrders].slice(-100)));
+      // Build ticket URL and auto-open for printing
+      const tUrl='https://pideyanj-ai.github.io/pideya_kitchen_ticket.html?order='+id
+        +'&name='+encodeURIComponent(o.Name||'')
+        +'&phone='+encodeURIComponent(o.Phone||'')
+        +'&address='+encodeURIComponent(o.Address||'')
+        +'&items='+encodeURIComponent((o.Items||'').replace(/\s*\|\s*/g,'|'))
+        +'&subtotal='+(parseFloat(o.Subtotal||0).toFixed(2))
+        +'&tax='+(parseFloat(o.Tax||0).toFixed(2))
+        +'&gestion='+(parseFloat(o.Gestion||0).toFixed(2))
+        +'&stripefee='+(parseFloat(o.StripeFee||0).toFixed(2))
+        +'&total='+(parseFloat(o.Total||0).toFixed(2));
+      setTimeout(()=>{
+        const pw=window.open(tUrl,'_blank');
+        if(pw) setTimeout(()=>{ try{ pw.print(); }catch(e){} },1200);
+      }, 500);
+    }
+  });
+}
+
+
 
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeTicket(); closeEdit(); } });
 

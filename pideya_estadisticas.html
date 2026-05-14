@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Estadísticas</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--card:#FFFFFF;--border:#DDE3EA;--text:#1F2937;
+  --muted:#6B7280;--green:#15803d;--green-l:#DCFCE7;
+  --blue:#1e40af;--blue-l:#EEF2FF;
+  --purple:#6d28d9;--purple-l:#F5F3FF;
+  --amber:#92400e;--amber-l:#FEF3C7;
+  --red:#b91c1c;--red-l:#FEE2E2;
+  --stripe:#4338ca;--sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}
+.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}
+.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.2);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+.period-btn{padding:6px 14px;border-radius:8px;font-size:.75rem;font-weight:700;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:.15s;}
+.period-btn.active{border-color:#22C55E;background:var(--green-l);color:var(--green);}
+.btn{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.content{padding:24px 28px;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+.stat-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.stat-label{font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;margin-bottom:5px;}
+.stat-val{font-size:1.8rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.stat-sub{font-size:.68rem;color:var(--muted);margin-top:3px;}
+.stat-trend{font-size:.7rem;font-weight:700;margin-top:4px;}
+.stat-trend.up{color:var(--green);}
+.stat-trend.dn{color:var(--red);}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px;}
+.grid21{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.card-title{font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+
+/* BAR CHART */
+.bar-chart{display:flex;flex-direction:column;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-label{font-size:.72rem;color:var(--text);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;}
+.bar-track{flex:1;background:#F1F5F9;border-radius:6px;height:10px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.bar-val{font-size:.7rem;font-family:'JetBrains Mono',monospace;color:var(--muted);width:48px;text-align:right;flex-shrink:0;}
+
+/* HOUR HEATMAP */
+.heatmap{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-top:6px;}
+.heat-cell{height:28px;border-radius:4px;background:#F1F5F9;position:relative;cursor:pointer;transition:.15s;}
+.heat-cell:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:#1E293B;color:#fff;font-size:.62rem;padding:3px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;z-index:10;}
+.heat-labels{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;margin-top:3px;}
+.heat-lbl{font-size:.6rem;color:var(--muted);text-align:center;}
+
+/* DONUT */
+.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0;}
+svg.donut{transform:rotate(-90deg);}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.donut-center .dv{font-size:1.3rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.donut-center .dl{font-size:.6rem;color:var(--muted);}
+.legend{flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center;}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:.78rem;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.legend-label{flex:1;color:var(--text);font-weight:500;}
+.legend-val{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);}
+
+/* DAY BARS */
+.day-bars{display:flex;gap:6px;align-items:flex-end;height:100px;}
+.day-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.day-bar{width:100%;border-radius:5px 5px 0 0;background:var(--blue-l);transition:height .5s;}
+.day-bar.today{background:#3B82F6;}
+.day-lbl{font-size:.6rem;color:var(--muted);}
+.day-val{font-size:.62rem;font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:600;}
+
+/* WEEK CHART */
+.week-chart{display:flex;gap:4px;align-items:flex-end;height:80px;margin-top:8px;}
+.wk-bar{flex:1;border-radius:4px 4px 0 0;background:var(--green-l);border:1.5px solid var(--green-border, #86EFAC);min-width:8px;transition:height .5s;position:relative;cursor:pointer;}
+.wk-bar:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:#1E293B;color:#fff;font-size:.6rem;padding:3px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;z-index:10;}
+.wk-bar.current{background:var(--green-l);border-color:var(--green);}
+
+/* TABLE MINI */
+.mini-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.mini-table th{text-align:left;padding:8px 10px;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);}
+.mini-table td{padding:9px 10px;border-bottom:1px solid #F1F5F9;}
+.mini-table tr:last-child td{border-bottom:none;}
+.mini-table tr:hover td{background:#F8FAFC;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;}
+.amount{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);}
+
+/* RANK badge */
+.rank{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:.6rem;font-weight:800;}
+.rank1{background:#FDE047;color:#713F12;}
+.rank2{background:#E2E8F0;color:#374151;}
+.rank3{background:#FED7AA;color:#7C2D12;}
+.rankN{background:#F1F5F9;color:var(--muted);}
+
+.loading-card{display:flex;align-items:center;justify-content:center;height:120px;color:var(--muted);font-size:.82rem;}
+
+@media(max-width:900px){
+  .sidebar{width:58px;}.sidebar .logo-text,.nav-item span:not(.icon){display:none;}.nav-item{justify-content:center;}
+  .main{margin-left:58px;}.stats{grid-template-columns:repeat(2,1fr);}
+  .grid2,.grid3,.grid21{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">📊</div>
+    <div class="lock-title">Estadísticas</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text"><h1>PIDEYA</h1><p>Estadísticas</p></div>
+  </div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" class="nav-item"><span class="icon">🍳</span><span>Cocina</span></a>
+    <a href="pideya_reports.html" class="nav-item"><span class="icon">📈</span><span>Reportes</span></a>
+    <a href="pideya_dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="pideya_clientes.html" class="nav-item"><span class="icon">👥</span><span>Clientes</span></a>
+    <div class="nav-item active"><span class="icon">📉</span><span>Estadísticas</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">📉 Estadísticas y Análisis</div>
+    <div class="topbar-right">
+      <button class="period-btn active" id="pb7" onclick="setPeriod(7,this)">7 días</button>
+      <button class="period-btn" id="pb30" onclick="setPeriod(30,this)">30 días</button>
+      <button class="period-btn" id="pb90" onclick="setPeriod(90,this)">90 días</button>
+      <button class="period-btn" id="pbAll" onclick="setPeriod(9999,this)">Todo</button>
+      <button class="btn btn-outline" onclick="loadData()" style="margin-left:8px;">⟳</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPI ROW -->
+    <div class="stats" id="kpiRow">
+      <div class="stat"><div class="stat-bar" style="background:#22C55E;"></div><div class="stat-label">Órdenes (período)</div><div class="stat-val" id="kOrders" style="color:var(--green);">—</div><div class="stat-sub" id="kOrdersSub">cargando...</div></div>
+      <div class="stat"><div class="stat-bar" style="background:#3B82F6;"></div><div class="stat-label">Ingresos</div><div class="stat-val" id="kRev" style="color:var(--blue);font-size:1.4rem;">—</div><div class="stat-trend up" id="kRevTrend"></div></div>
+      <div class="stat"><div class="stat-bar" style="background:#A855F7;"></div><div class="stat-label">Ticket Promedio</div><div class="stat-val" id="kAvg" style="color:var(--purple);font-size:1.4rem;">—</div><div class="stat-sub">por orden confirmada</div></div>
+      <div class="stat"><div class="stat-bar" style="background:#F59E0B;"></div><div class="stat-label">Hora Pico</div><div class="stat-val" id="kPeak" style="color:var(--amber);font-size:1.4rem;">—</div><div class="stat-sub" id="kPeakSub">mayor volumen</div></div>
+    </div>
+
+    <!-- ROW 1: Revenue by day + Payment split -->
+    <div class="grid21">
+      <div class="card">
+        <div class="card-title">📅 Ventas por Día de Semana</div>
+        <div class="day-bars" id="dayBars"><div class="loading-card">Cargando...</div></div>
+        <div style="display:flex;gap:4px;margin-top:6px;" id="dayLabels"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💳 Métodos de Pago</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:8px;">
+          <div class="donut-wrap" id="donutWrap"><div class="loading-card" style="height:auto;">⏳</div></div>
+          <div class="legend" id="payLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Peak hours heatmap -->
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-title">⏰ Horas de Mayor Venta</div>
+      <div class="heatmap" id="hourHeatmap"></div>
+      <div class="heat-labels" id="hourLabels"></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:.68rem;color:var(--muted);">
+        <span>Sin órdenes</span>
+        <div style="display:flex;gap:3px;align-items:center;">
+          <div style="width:12px;height:12px;border-radius:3px;background:#BFDBFE;"></div>
+          <div style="width:12px;height:12px;border-radius:3px;background:#60A5FA;"></div>
+          <div style="width:12px;height:12px;border-radius:3px;background:#2563EB;"></div>
+          <div style="width:12px;height:12px;border-radius:3px;background:#1E3A8A;"></div>
+        </div>
+        <span>Más activo</span>
+      </div>
+    </div>
+
+    <!-- ROW 3: Top products + Weekly trend -->
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">🍽️ Platos Más Pedidos</div>
+        <div class="bar-chart" id="topProducts"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Tendencia Semanal <span style="font-size:.65rem;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">últimas 8 semanas</span></div>
+        <div class="week-chart" id="weekTrend"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:.6rem;color:var(--muted);" id="weekLabels"></div>
+      </div>
+    </div>
+
+    <!-- ROW 4: Order statuses + Top neighborhoods -->
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">📦 Estado de Órdenes</div>
+        <div id="statusBars" class="bar-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📍 Zonas de Entrega más Activas</div>
+        <div id="topZones" class="bar-chart"></div>
+      </div>
+    </div>
+
+    <!-- ROW 5: Full product table -->
+    <div class="card" style="margin-top:18px;">
+      <div class="card-title">📋 Detalle de Productos Vendidos</div>
+      <table class="mini-table">
+        <thead><tr><th>#</th><th>Producto</th><th>Unidades</th><th>Ingresos</th><th>% del Total</th></tr></thead>
+        <tbody id="productTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID='1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const PASS='pideya2024';
+const SESS='py_stats_auth';
+
+let allOrders=[];
+let periodDays=7;
+
+// ── AUTH ───────────────────────────────────────────────────────────
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    loadData();
+  }else{
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('lockPwd').value='';
+  }
+}
+if(sessionStorage.getItem(SESS)==='1'){document.getElementById('lock').style.display='none';loadData();}
+
+function setPeriod(d,el){
+  periodDays=d;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+
+// ── DATA ───────────────────────────────────────────────────────────
+function parseCSV(line){
+  const r=[]; let c='',q=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){q=!q;}else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}
+  r.push(c.trim()); return r;
+}
+
+async function loadData(){
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+    const r=await fetch(url,{mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const csv=await r.text();
+    const lines=csv.split('\n').filter(l=>l.trim());
+    if(lines.length<2) throw new Error('Sin datos');
+    const h=parseCSV(lines[0]);
+    const idx={};h.forEach((v,i)=>idx[v]=i);
+    allOrders=[];
+    for(let i=1;i<lines.length;i++){
+      const v=parseCSV(lines[i]);
+      if(!v[idx['Order ID']]) continue;
+      allOrders.push({
+        id:v[idx['Order ID']]||'',
+        ts:v[idx['Timestamp']]||'',
+        name:v[idx['Name']]||'',
+        address:v[idx['Address']]||'',
+        items:v[idx['Items']]||'',
+        subtotal:parseFloat(v[idx['Subtotal']]||0),
+        tax:parseFloat(v[idx['Tax']]||0),
+        total:parseFloat(v[idx['Total']]||0),
+        stripeFee:parseFloat(v[idx['StripeFee']]||0),
+        status:(v[idx['Status']]||'').trim()
+      });
+    }
+    renderAll();
+  }catch(e){
+    document.getElementById('kOrders').textContent='ERR';
+    document.getElementById('kOrdersSub').textContent=e.message;
+  }
+}
+
+// ── FILTER BY PERIOD ──────────────────────────────────────────────
+function filteredOrders(){
+  if(periodDays>=9000) return allOrders;
+  const cutoff=new Date();
+  cutoff.setDate(cutoff.getDate()-periodDays);
+  const cs=cutoff.toISOString();
+  return allOrders.filter(o=>o.ts>=cs);
+}
+
+function confirmedOrders(orders){
+  return orders.filter(o=>o.status==='Confirmed'||o.status==='Enviado');
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────
+function renderAll(){
+  const orders=filteredOrders();
+  const conf=confirmedOrders(orders);
+  renderKPIs(orders,conf);
+  renderDayBars(conf);
+  renderPaymentDonut(conf);
+  renderHeatmap(conf);
+  renderTopProducts(conf);
+  renderWeekTrend();
+  renderStatusBars(orders);
+  renderTopZones(conf);
+  renderProductTable(conf);
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────
+function renderKPIs(orders,conf){
+  const rev=conf.reduce((s,o)=>s+o.total,0);
+  const avg=conf.length?rev/conf.length:0;
+
+  // Hour with most orders
+  const hourCounts=Array(24).fill(0);
+  conf.forEach(o=>{ const h=getEasternHour(o.ts); if(h>=0) hourCounts[h]++; });
+  const peakH=hourCounts.indexOf(Math.max(...hourCounts));
+  const fmtH=h=>h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm';
+
+  // Compare vs previous period
+  let prevRev=0;
+  if(periodDays<9000){
+    const now=new Date();
+    const cut1=new Date(now); cut1.setDate(cut1.getDate()-periodDays);
+    const cut2=new Date(now); cut2.setDate(cut2.getDate()-periodDays*2);
+    const c1=cut1.toISOString(), c2=cut2.toISOString();
+    prevRev=confirmedOrders(allOrders.filter(o=>o.ts>=c2&&o.ts<c1)).reduce((s,o)=>s+o.total,0);
+  }
+  const pctChg=prevRev>0?((rev-prevRev)/prevRev*100):0;
+
+  document.getElementById('kOrders').textContent=orders.length;
+  document.getElementById('kOrdersSub').textContent=conf.length+' confirmadas / '+(orders.length-conf.length)+' pendientes';
+  document.getElementById('kRev').textContent='$'+rev.toFixed(2);
+  document.getElementById('kRevTrend').textContent=prevRev>0?(pctChg>=0?'▲ +'+pctChg.toFixed(1)+'% vs período anterior':'▼ '+pctChg.toFixed(1)+'% vs período anterior'):'';
+  document.getElementById('kRevTrend').className='stat-trend '+(pctChg>=0?'up':'dn');
+  document.getElementById('kAvg').textContent='$'+avg.toFixed(2);
+  document.getElementById('kPeak').textContent=fmtH(peakH);
+  document.getElementById('kPeakSub').textContent=hourCounts[peakH]+' órdenes a esa hora';
+}
+
+// ── DAY OF WEEK BARS ──────────────────────────────────────────────
+function renderDayBars(conf){
+  const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const vals=Array(7).fill(0);
+  conf.forEach(o=>{const d=getEasternDay(o.ts);if(d>=0)vals[d]+=o.total;});
+  const max=Math.max(...vals,1);
+  const todayDow=new Date().getDay();
+
+  const barsEl=document.getElementById('dayBars');
+  barsEl.innerHTML='';
+  vals.forEach((v,i)=>{
+    const col=document.createElement('div');
+    col.className='day-col';
+    const pct=Math.max(v/max*100,v>0?8:0);
+    col.innerHTML=`
+      <div class="day-val">${v>0?'$'+v.toFixed(0):''}</div>
+      <div class="day-bar${i===todayDow?' today':''}" style="height:${pct}%;background:${i===todayDow?'#3B82F6':'#BFDBFE'};"></div>
+      <div class="day-lbl">${days[i]}</div>
+    `;
+    barsEl.appendChild(col);
+  });
+}
+
+// ── PAYMENT DONUT ─────────────────────────────────────────────────
+function renderPaymentDonut(conf){
+  const stripe=conf.filter(o=>o.stripeFee>0);
+  const zelle=conf.filter(o=>o.stripeFee===0);
+  const total=conf.length||1;
+  const sp=stripe.length/total*100;
+  const zp=zelle.length/total*100;
+
+  const r=42, cx=60, cy=60, circ=2*Math.PI*r;
+  const s1=sp/100*circ, s2=zp/100*circ;
+
+  document.getElementById('donutWrap').innerHTML=`
+    <svg width="120" height="120" class="donut" viewBox="0 0 120 120">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#F1F5F9" stroke-width="14"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#4338CA" stroke-width="14"
+        stroke-dasharray="${s1} ${circ-s1}" stroke-dashoffset="0"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#22C55E" stroke-width="14"
+        stroke-dasharray="${s2} ${circ-s2}" stroke-dashoffset="${-s1}" opacity=".85"/>
+    </svg>
+    <div class="donut-center">
+      <div class="dv">${conf.length}</div>
+      <div class="dl">órdenes</div>
+    </div>
+  `;
+
+  const stripeRev=stripe.reduce((s,o)=>s+o.total,0);
+  const zelleRev=zelle.reduce((s,o)=>s+o.total,0);
+
+  document.getElementById('payLegend').innerHTML=`
+    <div class="legend-row"><div class="legend-dot" style="background:#4338CA;"></div><div class="legend-label">💳 Tarjeta</div><div class="legend-val">${stripe.length} · $${stripeRev.toFixed(0)}</div></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#22C55E;"></div><div class="legend-label">💸 Zelle</div><div class="legend-val">${zelle.length} · $${zelleRev.toFixed(0)}</div></div>
+    <div class="legend-row" style="margin-top:4px;border-top:1px solid var(--border);padding-top:8px;">
+      <div class="legend-label" style="font-size:.7rem;color:var(--muted);">Stripe (3.5% fee)</div>
+      <div class="legend-val" style="color:var(--red);">-$${(stripeRev*0.035).toFixed(2)}</div>
+    </div>
+  `;
+}
+
+// ── HOUR HEATMAP ──────────────────────────────────────────────────
+function renderHeatmap(conf){
+  const counts=Array(24).fill(0);
+  conf.forEach(o=>{const h=getEasternHour(o.ts);if(h>=0)counts[h]++;});
+  const max=Math.max(...counts,1);
+  const colors=['#F1F5F9','#BFDBFE','#60A5FA','#2563EB','#1E3A8A'];
+
+  const hm=document.getElementById('hourHeatmap');
+  const hl=document.getElementById('hourLabels');
+  hm.innerHTML=''; hl.innerHTML='';
+
+  counts.forEach((c,h)=>{
+    const pct=c/max;
+    const ci=pct===0?0:pct<.25?1:pct<.5?2:pct<.75?3:4;
+    const cell=document.createElement('div');
+    cell.className='heat-cell';
+    cell.style.background=colors[ci];
+    cell.setAttribute('data-tip',h+':00 — '+c+' órdenes');
+    hm.appendChild(cell);
+
+    const lbl=document.createElement('div');
+    lbl.className='heat-lbl';
+    lbl.textContent=h%3===0?h+'h':'';
+    hl.appendChild(lbl);
+  });
+}
+
+// ── TOP PRODUCTS ──────────────────────────────────────────────────
+function parseItems(itemsStr){
+  const parts=(itemsStr||'').split('|').map(s=>s.trim()).filter(Boolean);
+  const res=[];
+  parts.forEach(p=>{
+    const m=p.match(/^(\d+)x\s+(.+?)\s+-\s+\$[\d.]+$/);
+    if(m) res.push({qty:parseInt(m[1]),name:m[2].trim()});
+    else{const m2=p.match(/^(.+?)\s+-\s+\$[\d.]+$/);if(m2) res.push({qty:1,name:m2[1].trim()});}
+  });
+  return res;
+}
+
+function renderTopProducts(conf){
+  const map={};
+  conf.forEach(o=>{
+    parseItems(o.items).forEach(({qty,name})=>{
+      if(!map[name]) map[name]={qty:0,rev:0};
+      map[name].qty+=qty;
+    });
+  });
+  // Also count revenue from items
+  conf.forEach(o=>{
+    const its=parseItems(o.items);
+    const total=its.reduce((s,i)=>s+i.qty,0)||1;
+    its.forEach(({qty,name})=>{
+      if(map[name]) map[name].rev+=o.total*(qty/total);
+    });
+  });
+
+  const sorted=Object.entries(map).sort((a,b)=>b[1].qty-a[1].qty).slice(0,10);
+  const maxQ=sorted[0]?.[1].qty||1;
+
+  const el=document.getElementById('topProducts');
+  if(!sorted.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:.78rem;">Sin datos en este período</div>';return;}
+
+  el.innerHTML=sorted.map(([name,{qty}],i)=>`
+    <div class="bar-row">
+      <div class="bar-label" title="${escH(name)}">${escH(name.length>18?name.slice(0,18)+'…':name)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${qty/maxQ*100}%;background:${i<3?'#22C55E':'#86EFAC'};"></div></div>
+      <div class="bar-val">${qty}</div>
+    </div>
+  `).join('');
+}
+
+// ── WEEKLY TREND ──────────────────────────────────────────────────
+function renderWeekTrend(){
+  const weeks=8;
+  const now=new Date();
+  const wkData=[];
+  for(let w=weeks-1;w>=0;w--){
+    const start=new Date(now);start.setDate(now.getDate()-w*7-7);
+    const end=new Date(now);end.setDate(now.getDate()-w*7);
+    const s=start.toISOString(),e=end.toISOString();
+    const wOrders=confirmedOrders(allOrders.filter(o=>o.ts>=s&&o.ts<e));
+    const rev=wOrders.reduce((s2,o)=>s2+o.total,0);
+    const label='S-'+w;
+    wkData.push({rev,count:wOrders.length,label:w===0?'Esta sem':`-${w}sem`,isCurrent:w===0});
+  }
+  const maxR=Math.max(...wkData.map(w=>w.rev),1);
+  const el=document.getElementById('weekTrend');
+  const ll=document.getElementById('weekLabels');
+  el.innerHTML=wkData.map(w=>`
+    <div class="wk-bar${w.isCurrent?' current':''}"
+      style="height:${Math.max(w.rev/maxR*100,w.rev>0?8:3)}%"
+      data-tip="${w.label}: ${w.count} órdenes · $${w.rev.toFixed(0)}">
+    </div>
+  `).join('');
+  ll.innerHTML=wkData.map((w,i)=>`<span>${i===0||i===wkData.length-1||i===4?w.label:''}</span>`).join('');
+}
+
+// ── STATUS BARS ───────────────────────────────────────────────────
+function renderStatusBars(orders){
+  const map={};
+  orders.forEach(o=>{const s=o.status||'Unknown';map[s]=(map[s]||0)+1;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const total=orders.length||1;
+  const colors={'Confirmed':'#22C55E','Enviado':'#3B82F6','Zelle-Pending':'#F59E0B','Stripe-Pending':'#A855F7','default':'#E5E7EB'};
+  const el=document.getElementById('statusBars');
+  el.innerHTML=sorted.map(([status,count])=>`
+    <div class="bar-row">
+      <div class="bar-label">${escH(status)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${count/total*100}%;background:${colors[status]||colors.default};"></div></div>
+      <div class="bar-val">${count}</div>
+    </div>
+  `).join('');
+}
+
+// ── TOP ZONES ─────────────────────────────────────────────────────
+function renderTopZones(conf){
+  const map={};
+  conf.forEach(o=>{
+    const city=(o.address||'').split(',').slice(-2,-1)[0]?.trim()||'Desconocido';
+    map[city]=(map[city]||0)+1;
+  });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max=sorted[0]?.[1]||1;
+  const el=document.getElementById('topZones');
+  el.innerHTML=sorted.map(([city,count])=>`
+    <div class="bar-row">
+      <div class="bar-label">${escH(city.length>20?city.slice(0,20)+'…':city)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${count/max*100}%;background:#60A5FA;"></div></div>
+      <div class="bar-val">${count}</div>
+    </div>
+  `).join('');
+}
+
+// ── PRODUCT TABLE ─────────────────────────────────────────────────
+function renderProductTable(conf){
+  const map={};
+  conf.forEach(o=>{
+    const its=parseItems(o.items);
+    const tot=its.reduce((s,i)=>s+i.qty,0)||1;
+    its.forEach(({qty,name})=>{
+      if(!map[name]) map[name]={qty:0,rev:0};
+      map[name].qty+=qty;
+      map[name].rev+=o.total*(qty/tot);
+    });
+  });
+  const sorted=Object.entries(map).sort((a,b)=>b[1].qty-a[1].qty);
+  const totalRev=sorted.reduce((s,[,v])=>s+v.rev,0)||1;
+  const el=document.getElementById('productTable');
+  if(!sorted.length){el.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Sin datos en este período</td></tr>';return;}
+  el.innerHTML=sorted.map(([name,{qty,rev}],i)=>{
+    const rankCls=i===0?'rank1':i===1?'rank2':i===2?'rank3':'rankN';
+    const pct=(rev/totalRev*100).toFixed(1);
+    return `<tr>
+      <td><span class="rank ${rankCls}">${i+1}</span></td>
+      <td style="font-weight:600;">${escH(name)}</td>
+      <td class="mono">${qty}</td>
+      <td class="amount">$${rev.toFixed(2)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;background:#F1F5F9;border-radius:4px;height:6px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:#22C55E;border-radius:4px;"></div>
+          </div>
+          <span style="font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);width:36px;">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function getEasternHour(ts){
+  if(!ts) return -1;
+  try{const d=new Date(ts);const utc=d.getTime();const et=new Date(utc+(-4)*3600000);return et.getUTCHours();}catch(e){return -1;}
+}
+function getEasternDay(ts){
+  if(!ts) return -1;
+  try{const d=new Date(ts);const utc=d.getTime();const et=new Date(utc+(-4)*3600000);return et.getUTCDay();}catch(e){return -1;}
+}
+function escH(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+</script>
+</body>
+</html>

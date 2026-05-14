@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Configuración</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--card:#FFFFFF;--border:#DDE3EA;--text:#1F2937;--muted:#6B7280;
+  --green:#15803d;--green-l:#DCFCE7;--green-b:#86EFAC;
+  --blue:#1e40af;--blue-l:#EEF2FF;--blue-b:#C7D2FE;
+  --amber:#92400e;--amber-l:#FEF3C7;--amber-b:#FCD34D;
+  --red:#b91c1c;--red-l:#FEE2E2;--red-b:#FECACA;
+  --purple:#6d28d9;--purple-l:#F5F3FF;--purple-b:#DDD6FE;
+  --sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}
+.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}
+.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.2);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;}
+.btn{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:#15803d;color:#fff;}
+.btn-primary:hover{background:#166534;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:#94A3B8;}
+.btn-blue{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-b);}
+.btn-amber{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);}
+.btn-red{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);}
+.btn-sm{padding:5px 10px;font-size:.68rem;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:220px 1fr;gap:0;min-height:calc(100vh - 57px);}
+.config-nav{background:var(--card);border-right:1px solid var(--border);padding:16px 12px;position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto;}
+.config-nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--muted);transition:.15s;margin-bottom:2px;}
+.config-nav-item:hover{background:var(--bg);color:var(--text);}
+.config-nav-item.active{background:var(--green-l);color:var(--green);font-weight:700;}
+.config-nav-item .cni{font-size:1rem;}
+.config-nav-section{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;padding:10px 12px 4px;margin-top:8px;}
+
+.config-content{padding:28px;overflow-y:auto;}
+.config-section{display:none;}
+.config-section.active{display:block;}
+
+/* SECTION */
+.sec-header{margin-bottom:24px;}
+.sec-title{font-size:1.05rem;font-weight:900;margin-bottom:4px;}
+.sec-desc{font-size:.78rem;color:var(--muted);}
+
+/* CARD */
+.cfg-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+.cfg-card-head{padding:14px 18px;border-bottom:1px solid var(--border);background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;}
+.cfg-card-title{font-size:.82rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+.cfg-card-body{padding:20px 18px;}
+
+/* FIELD */
+.field{margin-bottom:16px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.field label{display:block;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:9px 12px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;transition:.15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#94A3B8;background:#fff;}
+.field textarea{resize:vertical;min-height:70px;}
+.field-note{font-size:.65rem;color:var(--muted);margin-top:4px;line-height:1.4;}
+.field input[type="password"]{letter-spacing:2px;}
+
+/* TOGGLE */
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F1F5F9;}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info .tl{font-size:.82rem;font-weight:600;}
+.toggle-info .td{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.toggle{width:42px;height:24px;border-radius:12px;background:#E2E8F0;position:relative;cursor:pointer;transition:.2s;flex-shrink:0;}
+.toggle.on{background:#22C55E;}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.on::after{left:21px;}
+
+/* AGENT CARDS */
+.agent-list{display:flex;flex-direction:column;gap:10px;}
+.agent-card{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.agent-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.agent-info{flex:1;}
+.agent-info .an{font-size:.85rem;font-weight:700;}
+.agent-info .ap{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);}
+.agent-actions{display:flex;gap:6px;}
+
+/* ZIP EDITOR */
+.zip-wrap{background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:12px;}
+.zip-grid{display:flex;flex-wrap:wrap;gap:5px;max-height:160px;overflow-y:auto;}
+.zip-chip{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:.65rem;font-family:'JetBrains Mono',monospace;color:var(--text);cursor:pointer;transition:.12s;}
+.zip-chip:hover{border-color:var(--red-b);background:var(--red-l);color:var(--red);}
+.zip-chip.removed{text-decoration:line-through;opacity:.4;}
+
+/* CODE BLOCK */
+.code-block{background:#1E293B;border-radius:10px;padding:14px 16px;position:relative;margin-top:10px;}
+.code-block pre{color:#4ADE80;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.6;white-space:pre-wrap;word-break:break-all;}
+.code-copy{position:absolute;top:10px;right:10px;background:#334155;color:#94A3B8;border:none;border-radius:6px;padding:4px 10px;font-size:.65rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+.code-copy:hover{background:#475569;color:#fff;}
+
+/* STATUS INDICATOR */
+.status-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:.8rem;}
+.status-row:last-child{border-bottom:none;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-g{background:#22C55E;}.dot-a{background:#F59E0B;animation:blink 1.5s infinite;}
+.dot-r{background:#EF4444;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* SAVE BAR */
+.save-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;z-index:20;}
+.save-msg{font-size:.78rem;color:var(--green);font-weight:600;display:none;}
+
+@media(max-width:1100px){.layout{grid-template-columns:1fr;}.config-nav{display:none;}}
+@media(max-width:900px){.sidebar{width:58px;}.sidebar .logo-text,.nav-item span:not(.icon){display:none;}.nav-item{justify-content:center;}.main{margin-left:58px;}.field-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">⚙️</div>
+    <div class="lock-title">Configuración General</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text"><h1>PIDEYA</h1><p>Configuración</p></div>
+  </div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" class="nav-item"><span class="icon">🍳</span><span>Cocina</span></a>
+    <a href="pideya_reports.html" class="nav-item"><span class="icon">📈</span><span>Reportes</span></a>
+    <a href="pideya_dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="pideya_clientes.html" class="nav-item"><span class="icon">👥</span><span>Clientes</span></a>
+    <a href="pideya_estadisticas.html" class="nav-item"><span class="icon">📉</span><span>Estadísticas</span></a>
+    <a href="pideya_alertas.html" class="nav-item"><span class="icon">🚨</span><span>Alertas</span></a>
+    <a href="pideya_ordenes.html" class="nav-item"><span class="icon">📋</span><span>Órdenes</span></a>
+    <a href="pideya_facturacion.html" class="nav-item"><span class="icon">🧾</span><span>Facturación</span></a>
+    <div class="nav-item active"><span class="icon">⚙️</span><span>Configuración</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">⚙️ Configuración General</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue" onclick="generateN8NCode()">📋 Generar código n8n</button>
+      <button class="btn btn-primary" onclick="saveAll()">💾 Guardar Todo</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: Config nav -->
+    <div class="config-nav">
+      <div class="config-nav-section">Restaurante</div>
+      <div class="config-nav-item active" onclick="showSection('restaurant')"><span class="cni">🏪</span> Info del Restaurante</div>
+      <div class="config-nav-item" onclick="showSection('horario')"><span class="cni">🕐</span> Horario</div>
+      <div class="config-nav-item" onclick="showSection('delivery')"><span class="cni">🛵</span> Delivery</div>
+
+      <div class="config-nav-section">Bot WhatsApp</div>
+      <div class="config-nav-item" onclick="showSection('bot')"><span class="cni">🤖</span> Configuración del Bot</div>
+      <div class="config-nav-item" onclick="showSection('agentes')"><span class="cni">👤</span> Agentes</div>
+      <div class="config-nav-item" onclick="showSection('mensajes')"><span class="cni">💬</span> Mensajes</div>
+
+      <div class="config-nav-section">Pagos</div>
+      <div class="config-nav-item" onclick="showSection('stripe')"><span class="cni">💳</span> Stripe</div>
+      <div class="config-nav-item" onclick="showSection('zelle')"><span class="cni">💸</span> Zelle</div>
+      <div class="config-nav-item" onclick="showSection('tarifas')"><span class="cni">💰</span> Tarifas y Cargos</div>
+
+      <div class="config-nav-section">Sistema</div>
+      <div class="config-nav-item" onclick="showSection('integraciones')"><span class="cni">🔗</span> Integraciones</div>
+      <div class="config-nav-item" onclick="showSection('n8n')"><span class="cni">📋</span> Código n8n</div>
+      <div class="config-nav-item" onclick="showSection('estado')"><span class="cni">📡</span> Estado del Sistema</div>
+    </div>
+
+    <!-- RIGHT: Config content -->
+    <div class="config-content">
+
+      <!-- ── RESTAURANT INFO ── -->
+      <div class="config-section active" id="sec-restaurant">
+        <div class="sec-header">
+          <div class="sec-title">🏪 Información del Restaurante</div>
+          <div class="sec-desc">Datos básicos que el bot usa para responder y validar pedidos</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🏪 Datos del Negocio</div></div>
+          <div class="cfg-card-body">
+            <div class="field-row">
+              <div class="field"><label>Nombre del Restaurante</label><input type="text" id="restName" value="El Conuco Restaurante"></div>
+              <div class="field"><label>WhatsApp del Bot</label><input type="text" id="restPhone" value="+1 (201) 772-7540"></div>
+            </div>
+            <div class="field"><label>Dirección Completa</label><input type="text" id="restAddr" value="715 Summit Ave, Union City, NJ 07087"></div>
+            <div class="field-row">
+              <div class="field"><label>Ciudad</label><input type="text" id="restCity" value="Union City"></div>
+              <div class="field"><label>Estado</label><input type="text" id="restState" value="New Jersey"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>ZIP del Restaurante</label><input type="text" id="restZip" value="07087"></div>
+              <div class="field"><label>Email de Contacto</label><input type="email" id="restEmail" value="pideya.nj@gmail.com"></div>
+            </div>
+            <div class="field"><label>Sitio Web</label><input type="text" id="restSite" value="https://pideyanj-ai.github.io"></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🔑 PIDEYA LLC</div></div>
+          <div class="cfg-card-body">
+            <div class="field-row">
+              <div class="field"><label>Nombre de la Plataforma</label><input type="text" id="platName" value="PIDEYA LLC"></div>
+              <div class="field"><label>Comisión PIDEYA (%)</label><input type="number" id="platComm" value="15" min="0" max="100"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Dirección PIDEYA</label><input type="text" id="platAddr" value="70 County Ave, Secaucus, NJ 07094"></div>
+              <div class="field"><label>Email PIDEYA</label><input type="email" id="platEmail" value="pideya.nj@gmail.com"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HORARIO ── -->
+      <div class="config-section" id="sec-horario">
+        <div class="sec-header">
+          <div class="sec-title">🕐 Horario de Atención</div>
+          <div class="sec-desc">El bot mostrará "cerrado" fuera de este horario. Genera el código para pegar en n8n.</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head">
+            <div class="cfg-card-title">📅 Horario por Día</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="setAllHours(9,21,40)">Normal</button>
+              <button class="btn btn-primary btn-sm" onclick="setAllHours(0,23,59)">24h</button>
+              <button class="btn btn-red btn-sm" onclick="setAllHours(0,0,0)">Cerrar</button>
+            </div>
+          </div>
+          <div class="cfg-card-body">
+            <div id="horarioEditor" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">📋 Código generado para n8n</div></div>
+          <div class="cfg-card-body">
+            <p style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">Copia este código y reemplaza la sección <code style="background:var(--bg);padding:1px 5px;border-radius:4px;font-size:.7rem;">hours:{...}</code> en el nodo Build Response de n8n.</p>
+            <div class="code-block">
+              <button class="code-copy" onclick="copyCode('horarioCode')">📋 Copiar</button>
+              <pre id="horarioCode">// Haz cambios arriba y verás el código aquí</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DELIVERY ── -->
+      <div class="config-section" id="sec-delivery">
+        <div class="sec-header">
+          <div class="sec-title">🛵 Configuración de Delivery</div>
+          <div class="sec-desc">Zonas de entrega, costos y parámetros de validación de direcciones</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">📍 Zona de Entrega</div></div>
+          <div class="cfg-card-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Radio de Entrega (millas)</label>
+                <select id="delivRadius">
+                  <option value="3">3 millas</option>
+                  <option value="5" selected>5 millas</option>
+                  <option value="7">7 millas</option>
+                  <option value="10">10 millas</option>
+                  <option value="15">15 millas</option>
+                  <option value="20">20 millas</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Costo de Delivery</label>
+                <select id="delivCost">
+                  <option value="0" selected>Gratis ($0.00)</option>
+                  <option value="2">$2.00</option>
+                  <option value="3">$3.00</option>
+                  <option value="4">$4.00</option>
+                  <option value="5">$5.00</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Tiempo Estimado de Entrega</label>
+              <select id="delivTime">
+                <option value="20-30">20-30 min</option>
+                <option value="30-45" selected>30-45 min</option>
+                <option value="45-60">45-60 min</option>
+                <option value="60-90">60-90 min</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Pedido Mínimo para Delivery</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="number" id="minOrder" value="0" min="0" step="1" style="width:120px;">
+                <span style="font-size:.78rem;color:var(--muted);">($0 = sin mínimo)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head">
+            <div class="cfg-card-title">📮 ZIPs de Entrega Permitidos</div>
+            <span style="font-size:.68rem;color:var(--muted);">Click en un ZIP para removerlo</span>
+          </div>
+          <div class="cfg-card-body">
+            <div class="zip-wrap">
+              <div class="zip-grid" id="zipGrid"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <input type="text" id="newZip" placeholder="07094" maxlength="5" style="width:100px;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:7px 10px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:.82rem;outline:none;">
+              <button class="btn btn-primary btn-sm" onclick="addZip()">+ Agregar ZIP</button>
+              <button class="btn btn-outline btn-sm" onclick="resetZips()">↩ Restablecer</button>
+            </div>
+            <div class="field-note">Actualmente <span id="zipCount">0</span> ZIPs configurados. El bot rechaza pedidos fuera de esta lista.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BOT CONFIG ── -->
+      <div class="config-section" id="sec-bot">
+        <div class="sec-header">
+          <div class="sec-title">🤖 Configuración del Bot</div>
+          <div class="sec-desc">Parámetros generales del bot de WhatsApp</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🤖 Comportamiento del Bot</div></div>
+          <div class="cfg-card-body">
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Bot activo</div><div class="td">El bot responde mensajes de WhatsApp</div></div>
+              <div class="toggle on" id="tBotActive" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Modo solo lectura</div><div class="td">El bot responde pero no acepta pedidos</div></div>
+              <div class="toggle" id="tReadOnly" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Suscripciones activas</div><div class="td">Clientes pueden suscribirse al menú diario</div></div>
+              <div class="toggle on" id="tSubs" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Búsqueda de platos por nombre</div><div class="td">Clientes pueden buscar platos escribiendo su nombre</div></div>
+              <div class="toggle on" id="tSearch" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Notas especiales en platos</div><div class="td">Clientes pueden agregar instrucciones especiales</div></div>
+              <div class="toggle on" id="tNotes" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🔑 WasenderAPI</div></div>
+          <div class="cfg-card-body">
+            <div class="field">
+              <label>Bearer Token</label>
+              <input type="password" id="wasenderToken" value="49d70cf399c1982a325feb81a265eaaaf41f7605b5ae8ed9236b2976bbbb632c">
+              <div class="field-note">Token de autenticación para enviar mensajes de WhatsApp via WasenderAPI</div>
+            </div>
+            <div class="field">
+              <label>Teléfono del Restaurante (sin +)</label>
+              <input type="text" id="restPhoneBot" value="12017727540" style="font-family:'JetBrains Mono',monospace;">
+              <div class="field-note">Número interno del restaurante que recibe notificaciones de órdenes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AGENTES ── -->
+      <div class="config-section" id="sec-agentes">
+        <div class="sec-header">
+          <div class="sec-title">👤 Agentes</div>
+          <div class="sec-desc">Teléfonos que reciben notificaciones de órdenes y pueden confirmar pagos Zelle</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head">
+            <div class="cfg-card-title">👥 Lista de Agentes</div>
+            <button class="btn btn-primary btn-sm" onclick="addAgent()">+ Agregar</button>
+          </div>
+          <div class="cfg-card-body">
+            <div class="agent-list" id="agentList"></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">📋 Código de Agentes para n8n</div></div>
+          <div class="cfg-card-body">
+            <p style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">Reemplaza la línea <code style="background:var(--bg);padding:1px 5px;border-radius:4px;font-size:.7rem;">const AGENTS=[...]</code> en Build Response</p>
+            <div class="code-block">
+              <button class="code-copy" onclick="copyCode('agentsCode')">📋 Copiar</button>
+              <pre id="agentsCode"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MENSAJES ── -->
+      <div class="config-section" id="sec-mensajes">
+        <div class="sec-header">
+          <div class="sec-title">💬 Mensajes del Bot</div>
+          <div class="sec-desc">Personaliza los mensajes que el bot envía a los clientes</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">👋 Bienvenida</div></div>
+          <div class="cfg-card-body">
+            <div class="field">
+              <label>Mensaje de bienvenida (restaurante abierto)</label>
+              <textarea id="msgWelcome">Bienvenido a PIDEYA! 🍽️
+
+*El Conuco Restaurante*
+
+*1* — Ver menú y hacer pedido
+*3* — Hablar con un agente
+
+📩 Escribe *SUSCRIBIR* para el menú diario</textarea>
+            </div>
+            <div class="field">
+              <label>Mensaje de restaurante cerrado</label>
+              <textarea id="msgClosed">Hola 👋
+
+*El Conuco Restaurante* está *cerrado* ahora.
+
+Horario:
+🕒 Lun-Sab: 9:00am - 9:40pm
+🕒 Dom: 9:00am - 9:00pm
+
+¡Abrimos pronto! 😊</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">✅ Confirmaciones</div></div>
+          <div class="cfg-card-body">
+            <div class="field">
+              <label>Mensaje de pedido enviado (al despachar)</label>
+              <textarea id="msgDispatched">🛵 *¡Tu pedido está en camino!*
+
+🧾 Orden: {orderId}
+⏰ Tiempo estimado: {minutes} minutos
+
+¡Gracias por usar PIDEYA! 🍽️</textarea>
+              <div class="field-note">Variables disponibles: {orderId}, {minutes}, {name}</div>
+            </div>
+            <div class="field">
+              <label>Mensaje de pago Zelle confirmado</label>
+              <textarea id="msgZelleConfirmed">✅ *¡Tu pago fue confirmado!*
+
+🧾 Orden: {orderId}
+
+Tu pedido está siendo preparado ahora mismo. Tiempo estimado: 20-30 min 🚀
+
+¡Gracias por usar PIDEYA! 🍽️</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STRIPE ── -->
+      <div class="config-section" id="sec-stripe">
+        <div class="sec-header">
+          <div class="sec-title">💳 Configuración de Stripe</div>
+          <div class="sec-desc">Claves de API para procesar pagos con tarjeta, Google Pay y Apple Pay</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🔑 Claves de API</div></div>
+          <div class="cfg-card-body">
+            <div class="field">
+              <label>Secret Key (sk_live_...)</label>
+              <input type="password" id="stripeSk" value="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">
+              <div class="field-note">⚠️ Nunca compartas esta clave. Solo se usa en n8n, no en el frontend.</div>
+            </div>
+            <div class="field">
+              <label>Webhook Endpoint en Stripe</label>
+              <input type="text" id="stripeWebhook" value="https://pideya.app.n8n.cloud/webhook/stripe-pideya" readonly style="background:#F8FAFC;color:var(--muted);">
+              <div class="field-note">Este es el endpoint que debes registrar en tu dashboard de Stripe → Webhooks</div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">⚙️ Configuración de Pagos</div></div>
+          <div class="cfg-card-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Fee de Stripe (%)</label>
+                <input type="number" id="stripeFee" value="3.5" step="0.1" min="0">
+                <div class="field-note">Porcentaje que se suma al total del cliente</div>
+              </div>
+              <div class="field">
+                <label>Moneda</label>
+                <select id="stripeCurrency">
+                  <option value="usd" selected>USD — Dólar americano</option>
+                  <option value="eur">EUR — Euro</option>
+                </select>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Pagos con tarjeta activos</div><div class="td">Permitir pagos vía Stripe</div></div>
+              <div class="toggle on" id="tStripeActive" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Google Pay / Apple Pay</div><div class="td">Mostrar estas opciones al cliente</div></div>
+              <div class="toggle on" id="tWallets" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ZELLE ── -->
+      <div class="config-section" id="sec-zelle">
+        <div class="sec-header">
+          <div class="sec-title">💸 Configuración de Zelle</div>
+          <div class="sec-desc">Datos de Zelle que el bot muestra al cliente para realizar el pago</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">💸 Datos de Zelle</div></div>
+          <div class="cfg-card-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Número / Email Zelle</label>
+                <input type="text" id="zelleInfo" value="+1 (201) 772-7540">
+              </div>
+              <div class="field">
+                <label>Nombre en Zelle</label>
+                <input type="text" id="zelleName" value="PideYa LLC">
+              </div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Zelle activo</div><div class="td">Permitir pagos vía Zelle</div></div>
+              <div class="toggle on" id="tZelleActive" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><div class="tl">Requerir comprobante</div><div class="td">El bot pide screenshot del comprobante antes de confirmar</div></div>
+              <div class="toggle on" id="tZelleProof" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TARIFAS ── -->
+      <div class="config-section" id="sec-tarifas">
+        <div class="sec-header">
+          <div class="sec-title">💰 Tarifas y Cargos</div>
+          <div class="sec-desc">Gestión, impuestos y otros cargos que se aplican a cada orden</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">💰 Estructura de Precios</div></div>
+          <div class="cfg-card-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Cargo de Gestión PIDEYA ($)</label>
+                <input type="number" id="gestionFee" value="2.00" step="0.50" min="0">
+                <div class="field-note">Se cobra por cada orden procesada</div>
+              </div>
+              <div class="field">
+                <label>Tax Rate NJ (%)</label>
+                <input type="number" id="taxRate" value="6.625" step="0.001" min="0">
+                <div class="field-note">Sales tax del estado de New Jersey</div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Fee de Stripe (%)</label>
+              <input type="number" id="stripeRate" value="3.5" step="0.1" min="0">
+              <div class="field-note">Solo se aplica a pagos con tarjeta. Se suma al total del cliente.</div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">📋 Código de Tarifas para n8n</div></div>
+          <div class="cfg-card-body">
+            <div class="code-block">
+              <button class="code-copy" onclick="copyCode('tarifasCode')">📋 Copiar</button>
+              <pre id="tarifasCode"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INTEGRACIONES ── -->
+      <div class="config-section" id="sec-integraciones">
+        <div class="sec-header">
+          <div class="sec-title">🔗 Integraciones</div>
+          <div class="sec-desc">Conexiones con servicios externos</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🔗 Google Sheets</div></div>
+          <div class="cfg-card-body">
+            <div class="field">
+              <label>Spreadsheet ID</label>
+              <input type="text" id="sheetId" value="1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4" style="font-family:'JetBrains Mono',monospace;font-size:.75rem;">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Hoja de Órdenes</label>
+                <input type="text" id="sheetOrders" value="Sheet1">
+              </div>
+              <div class="field">
+                <label>Hoja de Sesiones</label>
+                <input type="text" id="sheetSessions" value="Sheet2">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Hoja de Menú</label>
+                <input type="text" id="sheetMenu" value="Menu">
+              </div>
+              <div class="field">
+                <label>Hoja de Suscriptores</label>
+                <input type="text" id="sheetSubs" value="Subscribers">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">⚙️ n8n</div></div>
+          <div class="cfg-card-body">
+            <div class="field">
+              <label>URL del Workflow Principal</label>
+              <input type="text" id="n8nUrl" value="https://pideya.app.n8n.cloud" style="font-family:'JetBrains Mono',monospace;font-size:.75rem;">
+            </div>
+            <div class="field">
+              <label>Workflow ID Principal</label>
+              <input type="text" id="n8nWfId" value="XzARp0picIqNHiXL" style="font-family:'JetBrains Mono',monospace;font-size:.75rem;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── N8N CODE ── -->
+      <div class="config-section" id="sec-n8n">
+        <div class="sec-header">
+          <div class="sec-title">📋 Código Completo para n8n</div>
+          <div class="sec-desc">Genera el bloque de constantes completo del nodo Build Response basado en tu configuración actual</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head">
+            <div class="cfg-card-title">📋 Constantes del Build Response</div>
+            <button class="btn btn-primary btn-sm" onclick="generateN8NCode()">🔄 Regenerar</button>
+          </div>
+          <div class="cfg-card-body">
+            <p style="font-size:.75rem;color:var(--muted);margin-bottom:12px;">
+              Copia este bloque completo y reemplaza las primeras líneas de constantes en el nodo <strong>Build Response</strong> de n8n (desde <code style="background:var(--bg);padding:1px 5px;border-radius:4px;">const SITE=...</code> hasta <code style="background:var(--bg);padding:1px 5px;border-radius:4px;">const RESTAURANT={...}</code>).
+            </p>
+            <div class="code-block" style="max-height:400px;overflow-y:auto;">
+              <button class="code-copy" onclick="copyCode('fullN8NCode')">📋 Copiar Todo</button>
+              <pre id="fullN8NCode" style="white-space:pre-wrap;">// Haz click en "Regenerar" para generar el código</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ESTADO ── -->
+      <div class="config-section" id="sec-estado">
+        <div class="sec-header">
+          <div class="sec-title">📡 Estado del Sistema</div>
+          <div class="sec-desc">Verificación en tiempo real del estado de todos los componentes</div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head">
+            <div class="cfg-card-title">🔎 Verificar Estado</div>
+            <button class="btn btn-primary btn-sm" onclick="checkStatus()">⟳ Verificar</button>
+          </div>
+          <div class="cfg-card-body" id="statusBody">
+            <div class="status-row"><span><span class="dot dot-g" style="display:inline-block;margin-right:8px;"></span>n8n Workflow</span><span style="font-size:.75rem;color:var(--green);">Activo — XzARp0picIqNHiXL</span></div>
+            <div class="status-row"><span><span class="dot dot-g" style="display:inline-block;margin-right:8px;"></span>Google Sheets</span><span style="font-size:.75rem;color:var(--green);">Conectado</span></div>
+            <div class="status-row"><span><span class="dot dot-g" style="display:inline-block;margin-right:8px;"></span>WasenderAPI</span><span style="font-size:.75rem;color:var(--green);">WhatsApp activo</span></div>
+            <div class="status-row"><span><span class="dot dot-g" style="display:inline-block;margin-right:8px;"></span>Stripe Webhook</span><span style="font-size:.75rem;color:var(--green);">pideya-stripe registrado</span></div>
+            <div class="status-row"><span><span class="dot dot-g" style="display:inline-block;margin-right:8px;"></span>GitHub Pages</span><span style="font-size:.75rem;color:var(--green);">pideyanj-ai.github.io activo</span></div>
+            <div id="sheetStatus"></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-head"><div class="cfg-card-title">🔗 Accesos Rápidos</div></div>
+          <div class="cfg-card-body" style="display:flex;flex-wrap:wrap;gap:8px;">
+            <a href="https://pideya.app.n8n.cloud" target="_blank" class="btn btn-outline">⚙️ n8n</a>
+            <a href="https://dashboard.stripe.com" target="_blank" class="btn btn-outline">💳 Stripe</a>
+            <a href="https://docs.google.com/spreadsheets/d/1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4" target="_blank" class="btn btn-outline">📊 Google Sheets</a>
+            <a href="https://github.com/pideyanj-ai/pideyanj-ai.github.io" target="_blank" class="btn btn-outline">🐙 GitHub</a>
+            <a href="https://wa.me/12017727540" target="_blank" class="btn btn-outline">💬 WhatsApp Bot</a>
+            <a href="pideya_cocina.html" class="btn btn-primary">🍳 Panel Cocina</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <span class="save-msg" id="saveMsg">✅ Configuración guardada localmente</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-blue" onclick="generateN8NCode();showSection('n8n')">📋 Ver código n8n</button>
+          <button class="btn btn-primary" onclick="saveAll()">💾 Guardar Todo</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const PASS='pideya2024';
+const SESS='py_config_auth';
+const LS='py_config';
+
+// ── DEFAULT DATA ──────────────────────────────────────────────────
+const DEFAULT_AGENTS=[
+  {name:'Agente 1',phone:'12013251318'},
+  {name:'Agente 2',phone:'13478887141'},
+  {name:'Agente 3',phone:'19145728053'}
+];
+const DEFAULT_HOURS={
+  0:{open:9,close:21,closeMin:0,label:'Domingo'},
+  1:{open:9,close:21,closeMin:40,label:'Lunes'},
+  2:{open:9,close:21,closeMin:40,label:'Martes'},
+  3:{open:9,close:21,closeMin:40,label:'Miércoles'},
+  4:{open:9,close:21,closeMin:40,label:'Jueves'},
+  5:{open:9,close:21,closeMin:40,label:'Viernes'},
+  6:{open:9,close:21,closeMin:40,label:'Sábado'}
+};
+const DEFAULT_ZIPS=['07002','07003','07004','07006','07008','07009','07010','07011','07012','07013','07014','07015','07016','07017','07018','07019','07020','07021','07022','07023','07024','07026','07027','07028','07029','07030','07031','07032','07033','07034','07035','07036','07039','07040','07041','07042','07043','07044','07045','07046','07047','07050','07052','07055','07057','07058','07060','07061','07062','07063','07064','07065','07066','07067','07068','07069','07070','07071','07072','07073','07074','07075','07076','07077','07078','07079','07080','07081','07082','07083','07086','07087','07088','07090','07091','07092','07093','07094','07095','07096','07097','07099','07302','07303','07304','07305','07306','07307','07308','07309','07310','07311','07395','07399'];
+
+let agents=[...DEFAULT_AGENTS];
+let hours=JSON.parse(JSON.stringify(DEFAULT_HOURS));
+let zips=[...DEFAULT_ZIPS];
+
+// ── AUTH ──────────────────────────────────────────────────────────
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    initAll();
+  }else{document.getElementById('lockErr').style.display='block';document.getElementById('lockPwd').value='';}
+}
+if(sessionStorage.getItem(SESS)==='1'){document.getElementById('lock').style.display='none';initAll();}
+
+// ── INIT ──────────────────────────────────────────────────────────
+function initAll(){
+  loadSaved();
+  renderHorario();
+  renderAgents();
+  renderZips();
+  updateTarifasCode();
+  updateAgentsCode();
+}
+
+function loadSaved(){
+  try{
+    const s=JSON.parse(localStorage.getItem(LS)||'{}');
+    if(s.agents) agents=s.agents;
+    if(s.hours) hours=s.hours;
+    if(s.zips) zips=s.zips;
+    // Restore field values
+    Object.entries(s.fields||{}).forEach(([id,val])=>{
+      const el=document.getElementById(id);
+      if(el) el.value=val;
+    });
+    // Restore toggles
+    Object.entries(s.toggles||{}).forEach(([id,on])=>{
+      const el=document.getElementById(id);
+      if(el){el.classList.toggle('on',on);}
+    });
+  }catch(e){}
+}
+
+function saveAll(){
+  const fields={};
+  ['restName','restPhone','restAddr','restCity','restState','restZip','restEmail','restSite',
+   'platName','platComm','platAddr','platEmail','wasenderToken','restPhoneBot','zelleInfo',
+   'zelleName','gestionFee','taxRate','stripeRate','stripeFee','stripeCurrency','sheetId',
+   'sheetOrders','sheetSessions','sheetMenu','sheetSubs','n8nUrl','n8nWfId',
+   'delivRadius','delivCost','delivTime','minOrder','stripeSk','stripeWebhook'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) fields[id]=el.value;
+  });
+  const toggleIds=['tBotActive','tReadOnly','tSubs','tSearch','tNotes','tStripeActive','tWallets','tZelleActive','tZelleProof'];
+  const toggles={};
+  toggleIds.forEach(id=>{const el=document.getElementById(id);if(el)toggles[id]=el.classList.contains('on');});
+
+  // Save hours from form
+  for(let d=0;d<7;d++){
+    const oh=document.getElementById('h_open_'+d);
+    const ch=document.getElementById('h_close_'+d);
+    const cm=document.getElementById('h_closemin_'+d);
+    if(oh){hours[d].open=parseInt(oh.value);hours[d].close=parseInt(ch.value);hours[d].closeMin=parseInt(cm.value);}
+  }
+
+  localStorage.setItem(LS,JSON.stringify({fields,toggles,agents,hours,zips}));
+  const msg=document.getElementById('saveMsg');
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',3000);
+}
+
+// ── SECTION NAV ──────────────────────────────────────────────────
+function showSection(id){
+  document.querySelectorAll('.config-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.config-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id)?.classList.add('active');
+  document.querySelectorAll('.config-nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')?.includes("'"+id+"'")) n.classList.add('active');
+  });
+  if(id==='n8n') generateN8NCode();
+  if(id==='agentes') updateAgentsCode();
+  if(id==='tarifas') updateTarifasCode();
+}
+
+// ── HORARIO ──────────────────────────────────────────────────────
+function renderHorario(){
+  const el=document.getElementById('horarioEditor');
+  el.innerHTML=Object.entries(hours).map(([d,h])=>`
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="width:85px;font-weight:700;font-size:.82rem;">${h.label}</div>
+      <label style="font-size:.72rem;color:var(--muted);">Abre:</label>
+      <select id="h_open_${d}" onchange="updateHorarioCode()" style="background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:5px 8px;font-family:'Outfit',sans-serif;font-size:.8rem;outline:none;">
+        ${Array.from({length:24},(_,i)=>`<option value="${i}"${h.open===i?' selected':''}>${String(i).padStart(2,'0')}:00</option>`).join('')}
+      </select>
+      <label style="font-size:.72rem;color:var(--muted);">Cierra:</label>
+      <select id="h_close_${d}" onchange="updateHorarioCode()" style="background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:5px 8px;font-family:'Outfit',sans-serif;font-size:.8rem;outline:none;">
+        ${Array.from({length:24},(_,i)=>`<option value="${i}"${h.close===i?' selected':''}>${String(i).padStart(2,'0')}:00</option>`).join('')}
+      </select>
+      <select id="h_closemin_${d}" onchange="updateHorarioCode()" style="background:var(--bg);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:5px 8px;font-family:'Outfit',sans-serif;font-size:.8rem;outline:none;">
+        <option value="0"${h.closeMin===0?' selected':''}>:00</option>
+        <option value="15"${h.closeMin===15?' selected':''}>:15</option>
+        <option value="30"${h.closeMin===30?' selected':''}>:30</option>
+        <option value="40"${h.closeMin===40?' selected':''}>:40</option>
+        <option value="45"${h.closeMin===45?' selected':''}>:45</option>
+      </select>
+    </div>
+  `).join('');
+  updateHorarioCode();
+}
+
+function setAllHours(open,close,closeMin){
+  for(let d=0;d<7;d++){
+    const oh=document.getElementById('h_open_'+d);
+    const ch=document.getElementById('h_close_'+d);
+    const cm=document.getElementById('h_closemin_'+d);
+    if(oh){oh.value=open;ch.value=close;cm.value=closeMin;}
+  }
+  updateHorarioCode();
+}
+
+function updateHorarioCode(){
+  const parts=[];
+  for(let d=0;d<7;d++){
+    const open=document.getElementById('h_open_'+d)?.value||9;
+    const close=document.getElementById('h_close_'+d)?.value||21;
+    const closeMin=document.getElementById('h_closemin_'+d)?.value||0;
+    parts.push(`${d}:{open:${open},close:${close},closeMin:${closeMin}}`);
+  }
+  document.getElementById('horarioCode').textContent='hours:{'+parts.join(',')+'}';
+}
+
+// ── AGENTS ───────────────────────────────────────────────────────
+function renderAgents(){
+  const colors=['#15803d','#1e40af','#6d28d9','#b91c1c','#92400e'];
+  document.getElementById('agentList').innerHTML=agents.map((a,i)=>`
+    <div class="agent-card">
+      <div class="agent-avatar" style="background:${colors[i%colors.length]}20;font-size:1.3rem;">👤</div>
+      <div class="agent-info">
+        <div class="an">${escH(a.name)}</div>
+        <div class="ap">+${escH(a.phone)}</div>
+      </div>
+      <div class="agent-actions">
+        <button class="btn btn-outline btn-sm" onclick="editAgent(${i})">✏️</button>
+        <button class="btn btn-red btn-sm" onclick="removeAgent(${i})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+  updateAgentsCode();
+}
+
+function addAgent(){
+  const name=prompt('Nombre del agente:','Agente '+(agents.length+1));
+  if(!name) return;
+  const phone=prompt('Teléfono (sin + ni espacios):','');
+  if(!phone) return;
+  agents.push({name,phone:phone.replace(/\D/g,'')});
+  renderAgents();
+}
+
+function editAgent(i){
+  const name=prompt('Nombre:',agents[i].name);
+  if(name===null) return;
+  const phone=prompt('Teléfono:',agents[i].phone);
+  if(phone===null) return;
+  agents[i]={name,phone:phone.replace(/\D/g,'')};
+  renderAgents();
+}
+
+function removeAgent(i){
+  if(!confirm('¿Eliminar a '+agents[i].name+'?')) return;
+  agents.splice(i,1);
+  renderAgents();
+}
+
+function updateAgentsCode(){
+  const code='const AGENTS='+JSON.stringify(agents.map(a=>({name:a.name,phone:a.phone})))+';';
+  document.getElementById('agentsCode').textContent=code;
+}
+
+// ── ZIPS ─────────────────────────────────────────────────────────
+function renderZips(){
+  document.getElementById('zipGrid').innerHTML=zips.map((z,i)=>
+    `<div class="zip-chip" onclick="toggleZip(${i})" id="zc_${i}">${z}</div>`
+  ).join('');
+  document.getElementById('zipCount').textContent=zips.length;
+}
+
+function toggleZip(i){
+  zips.splice(i,1);
+  renderZips();
+}
+
+function addZip(){
+  const z=document.getElementById('newZip').value.trim();
+  if(z.length!==5||!/^\d+$/.test(z)){alert('ZIP debe ser 5 dígitos');return;}
+  if(zips.includes(z)){alert('ZIP ya existe');return;}
+  zips.push(z);
+  zips.sort();
+  document.getElementById('newZip').value='';
+  renderZips();
+}
+
+function resetZips(){
+  if(!confirm('¿Restablecer la lista de ZIPs al valor predeterminado?')) return;
+  zips=[...DEFAULT_ZIPS];
+  renderZips();
+}
+
+// ── TARIFAS CODE ──────────────────────────────────────────────────
+function updateTarifasCode(){
+  const g=document.getElementById('gestionFee')?.value||2;
+  const t=document.getElementById('taxRate')?.value||6.625;
+  const s=document.getElementById('stripeRate')?.value||3.5;
+  document.getElementById('tarifasCode').textContent=
+    `const GESTION_FEE=${parseFloat(g).toFixed(2)},TAX_RATE=${parseFloat(t)/100},STRIPE_FEE_RATE=${parseFloat(s)/100};`;
+}
+document.addEventListener('input',e=>{
+  if(['gestionFee','taxRate','stripeRate'].includes(e.target.id)) updateTarifasCode();
+});
+
+// ── N8N FULL CODE ─────────────────────────────────────────────────
+function generateN8NCode(){
+  // Collect hours from form
+  const hourParts=[];
+  for(let d=0;d<7;d++){
+    const open=document.getElementById('h_open_'+d)?.value||DEFAULT_HOURS[d].open;
+    const close=document.getElementById('h_close_'+d)?.value||DEFAULT_HOURS[d].close;
+    const closeMin=document.getElementById('h_closemin_'+d)?.value||DEFAULT_HOURS[d].closeMin;
+    hourParts.push(`${d}:{open:${open},close:${close},closeMin:${closeMin}}`);
+  }
+
+  const site=document.getElementById('restSite')?.value||'https://pideyanj-ai.github.io';
+  const g=parseFloat(document.getElementById('gestionFee')?.value||2).toFixed(2);
+  const t=parseFloat(document.getElementById('taxRate')?.value||6.625)/100;
+  const s=parseFloat(document.getElementById('stripeRate')?.value||3.5)/100;
+  const rPhone=document.getElementById('restPhoneBot')?.value||'12017727540';
+  const zelleInfo=document.getElementById('zelleInfo')?.value||'+1 (201) 772-7540';
+  const restName=document.getElementById('restName')?.value||'El Conuco Restaurante';
+  const restAddr=document.getElementById('restAddr')?.value||'715 Summit Ave, Union City, NJ 07087';
+  const wasender=document.getElementById('wasenderToken')?.value||'';
+  const zipArr=JSON.stringify(zips);
+  const agentsArr=JSON.stringify(agents.map(a=>({name:a.name,phone:a.phone})));
+
+  const code=`// ── AUTO-GENERADO DESDE PANEL DE CONFIGURACIÓN ──────────────
+const SITE='${site}';
+const MENU_URL=SITE+'/pideya_menu.html';
+const TICKET_URL=SITE+'/pideya_kitchen_ticket.html';
+const GESTION_FEE=${g},TAX_RATE=${t.toFixed(5)},STRIPE_FEE_RATE=${s.toFixed(3)};
+const AGENTS=${agentsArr};
+const RESTAURANT_PHONE='${rPhone}';
+const ZELLE_INFO='${zelleInfo}';
+const ALLOWED_ZIPS=${zipArr};
+const RESTAURANT={name:'${restName}',address:'${restAddr}',hours:{${hourParts.join(',')}}};
+// ── FIN CONFIGURACIÓN ────────────────────────────────────────`;
+
+  document.getElementById('fullN8NCode').textContent=code;
+}
+
+// ── STATUS CHECK ─────────────────────────────────────────────────
+async function checkStatus(){
+  const sheetId=document.getElementById('sheetId')?.value;
+  const el=document.getElementById('sheetStatus');
+  el.innerHTML='<div class="status-row"><span><span class="dot dot-a" style="display:inline-block;margin-right:8px;"></span>Google Sheets</span><span style="font-size:.75rem;color:var(--amber);">Verificando...</span></div>';
+  try{
+    const r=await fetch(`https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`,{mode:'cors'});
+    if(r.ok){
+      const csv=await r.text();
+      const rows=csv.split('\n').filter(l=>l.trim()).length-1;
+      el.innerHTML=`<div class="status-row"><span><span class="dot dot-g" style="display:inline-block;margin-right:8px;"></span>Google Sheets</span><span style="font-size:.75rem;color:var(--green);">✅ Activo — ${rows} órdenes</span></div>`;
+    }else throw new Error('HTTP '+r.status);
+  }catch(e){
+    el.innerHTML=`<div class="status-row"><span><span class="dot dot-r" style="display:inline-block;margin-right:8px;"></span>Google Sheets</span><span style="font-size:.75rem;color:var(--red);">❌ ${e.message} — Verifica permisos</span></div>`;
+  }
+}
+
+// ── COPY CODE ────────────────────────────────────────────────────
+function copyCode(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    const btns=document.querySelectorAll('.code-copy');
+    btns.forEach(b=>{if(b.getAttribute('onclick')?.includes(id)){b.textContent='✅ Copiado!';setTimeout(()=>b.textContent='📋 Copiar',2000);}});
+  }).catch(()=>{
+    const r=document.createRange();r.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    document.execCommand('copy');
+  });
+}
+
+function escH(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+</script>
+</body>
+</html>

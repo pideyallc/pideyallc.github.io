@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Gestión de Clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8; --card:#FFFFFF; --border:#DDE3EA; --text:#1F2937;
+  --muted:#6B7280; --green:#15803d; --green-light:#DCFCE7; --green-border:#86EFAC;
+  --amber:#92400e; --amber-light:#FEF3C7; --amber-border:#FCD34D;
+  --blue:#1e40af; --blue-light:#EEF2FF; --blue-border:#C7D2FE;
+  --red:#b91c1c; --red-light:#FEE2E2; --red-border:#FECACA;
+  --purple:#6d28d9; --purple-light:#F5F3FF; --purple-border:#DDD6FE;
+  --sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* ── LOCK ── */
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}
+.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+
+/* ── LAYOUT ── */
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}
+.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.2);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;color:var(--text);}
+.topbar-actions{display:flex;gap:8px;align-items:center;}
+.content{padding:24px 28px;}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:9px;font-size:.78rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:#15803d;color:#fff;}
+.btn-primary:hover{background:#166534;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:#94A3B8;}
+.btn-sm{padding:5px 12px;font-size:.72rem;}
+
+/* ── STATS ROW ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.stat.g::before{background:#22C55E;}
+.stat.b::before{background:#3B82F6;}
+.stat.p::before{background:#A855F7;}
+.stat.a::before{background:#F59E0B;}
+.stat.r::before{background:#EF4444;}
+.stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.stat-val{font-size:1.85rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.stat-val.green{color:var(--green);}
+.stat-val.blue{color:var(--blue);}
+.stat-val.purple{color:var(--purple);}
+.stat-val.amber{color:var(--amber);}
+.stat-sub{font-size:.65rem;color:var(--muted);margin-top:3px;}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.search-wrap{flex:1;min-width:200px;position:relative;}
+.search-wrap input{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:8px 12px 8px 34px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;}
+.search-wrap input:focus{border-color:#94A3B8;}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{padding:6px 12px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);transition:.15s;}
+.chip.active{border-color:#22C55E;background:var(--green-light);color:var(--green);}
+.chip:hover{border-color:#94A3B8;}
+.sort-select{background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:7px 10px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.78rem;outline:none;}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:11px 16px;text-align:left;font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);background:#F8FAFC;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+thead th.sortable{cursor:pointer;}
+thead th.sortable:hover{color:var(--text);}
+tbody tr{border-bottom:1px solid #F1F5F9;transition:.12s;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#F8FAFC;}
+td{padding:12px 16px;font-size:.82rem;vertical-align:middle;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.75rem;}
+.amount{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.64rem;font-weight:700;letter-spacing:.03em;}
+.badge-vip{background:#FEF9C3;color:#854D0E;border:1px solid #FDE047;}
+.badge-freq{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-border);}
+.badge-new{background:var(--green-light);color:var(--green);border:1px solid var(--green-border);}
+.badge-inactive{background:#F1F5F9;color:var(--muted);border:1px solid var(--border);}
+
+/* ── CUSTOMER MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-head{padding:22px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-size:1rem;font-weight:800;}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;}
+.modal-body{padding:24px;}
+.cust-profile{display:flex;align-items:center;gap:16px;margin-bottom:22px;}
+.cust-avatar{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;flex-shrink:0;}
+.cust-meta h2{font-size:1.05rem;font-weight:800;margin-bottom:3px;}
+.cust-meta p{font-size:.78rem;color:var(--muted);}
+.stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+.stat-mini{background:var(--bg);border-radius:10px;padding:12px;text-align:center;}
+.stat-mini .v{font-size:1.2rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.stat-mini .l{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+.order-history h3{font-size:.82rem;font-weight:700;margin-bottom:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.order-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:9px;margin-bottom:6px;font-size:.78rem;}
+.order-row .o-id{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);}
+.order-row .o-total{font-weight:700;color:var(--green);}
+.order-row .o-status{font-size:.65rem;font-weight:700;}
+
+/* ── EMPTY / LOADING ── */
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:2.5rem;margin-bottom:12px;}
+.loading-row td{text-align:center;padding:40px;color:var(--muted);}
+
+@media(max-width:900px){
+  .sidebar{width:58px;}
+  .sidebar .logo-text,.nav-item span:not(.icon){display:none;}
+  .nav-item{justify-content:center;padding:10px;}
+  .main{margin-left:58px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">👥</div>
+    <div class="lock-title">Gestión de Clientes</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text"><h1>PIDEYA</h1><p>Panel de Gestión</p></div>
+  </div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" style="text-decoration:none;"><div class="nav-item"><span class="icon">🍳</span><span>Cocina</span></div></a>
+    <a href="pideya_reports.html" style="text-decoration:none;"><div class="nav-item"><span class="icon">📈</span><span>Reportes</span></div></a>
+    <a href="pideya_dashboard.html" style="text-decoration:none;"><div class="nav-item"><span class="icon">📊</span><span>Dashboard</span></div></a>
+    <div class="nav-item active"><span class="icon">👥</span><span>Clientes</span></div>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">👥 Gestión de Clientes</div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="loadCustomers()">⟳ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat g"><div class="stat-label">Total Clientes</div><div class="stat-val green" id="stTotal">—</div><div class="stat-sub">registrados</div></div>
+      <div class="stat b"><div class="stat-label">Clientes Frecuentes</div><div class="stat-val blue" id="stFreq">—</div><div class="stat-sub">3+ órdenes</div></div>
+      <div class="stat p"><div class="stat-label">VIP</div><div class="stat-val purple" id="stVip">—</div><div class="stat-sub">$50+ gastados</div></div>
+      <div class="stat a"><div class="stat-label">Nuevos (hoy)</div><div class="stat-val amber" id="stNew">—</div><div class="stat-sub">primer pedido hoy</div></div>
+      <div class="stat r"><div class="stat-label">Ingresos de Clientes</div><div class="stat-val green" id="stRev" style="font-size:1.3rem;">—</div><div class="stat-sub">total acumulado</div></div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Buscar por nombre, teléfono o dirección..." oninput="applyFilters()">
+      </div>
+      <div class="filter-chips">
+        <div class="chip active" data-filter="all" onclick="setFilter(this,'all')">Todos</div>
+        <div class="chip" data-filter="vip" onclick="setFilter(this,'vip')">⭐ VIP</div>
+        <div class="chip" data-filter="freq" onclick="setFilter(this,'freq')">🔁 Frecuentes</div>
+        <div class="chip" data-filter="new" onclick="setFilter(this,'new')">🆕 Nuevos</div>
+        <div class="chip" data-filter="zelle" onclick="setFilter(this,'zelle')">💸 Zelle</div>
+        <div class="chip" data-filter="stripe" onclick="setFilter(this,'stripe')">💳 Tarjeta</div>
+      </div>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="orders_desc">Más órdenes</option>
+        <option value="spent_desc">Mayor gasto</option>
+        <option value="last_desc">Más recientes</option>
+        <option value="name_asc">Nombre A-Z</option>
+      </select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Segmento</th>
+            <th class="sortable" onclick="setSortCol('orders')">Órdenes ↕</th>
+            <th class="sortable" onclick="setSortCol('spent')">Total Gastado ↕</th>
+            <th>Método Fav.</th>
+            <th>Última Orden</th>
+            <th>Dirección</th>
+          </tr>
+        </thead>
+        <tbody id="customersBody">
+          <tr><td class="loading-row" colspan="8">⏳ Cargando clientes...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tableFooter" style="text-align:right;font-size:.72rem;color:var(--muted);padding:8px 4px;"></div>
+  </div>
+</div>
+
+<!-- CUSTOMER DETAIL MODAL -->
+<div class="modal-overlay" id="custModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Detalle del Cliente</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = '1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const PASS = 'pideya2024';
+const SESS = 'py_clientes_auth';
+const TODAY = new Date().toISOString().split('T')[0];
+
+let allCustomers = [];
+let activeFilter = 'all';
+
+// ── AUTH ─────────────────────────────────────────────────────────
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    loadCustomers();
+  } else {
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('lockPwd').value='';
+  }
+}
+document.getElementById('lockPwd').addEventListener('keydown',e=>{ if(e.key==='Enter') unlock(); });
+if(sessionStorage.getItem(SESS)==='1'){
+  document.getElementById('lock').style.display='none';
+  loadCustomers();
+}
+
+// ── DATA ──────────────────────────────────────────────────────────
+function parseCSVLine(line){
+  const r=[]; let c='', q=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){q=!q;}
+    else if(ch===','&&!q){r.push(c.trim());c='';}
+    else c+=ch;
+  }
+  r.push(c.trim()); return r;
+}
+
+async function loadCustomers(){
+  document.getElementById('customersBody').innerHTML='<tr><td class="loading-row" colspan="8">⏳ Cargando datos...</td></tr>';
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+    const r=await fetch(url,{mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const csv=await r.text();
+    const lines=csv.split('\n').filter(l=>l.trim());
+    if(lines.length<2) throw new Error('Sin datos');
+    const headers=parseCSVLine(lines[0]);
+    const idx={};
+    headers.forEach((h,i)=>idx[h]=i);
+
+    const orders=[];
+    for(let i=1;i<lines.length;i++){
+      const v=parseCSVLine(lines[i]);
+      if(!v[idx['Order ID']]) continue;
+      orders.push({
+        id:v[idx['Order ID']]||'',
+        ts:v[idx['Timestamp']]||'',
+        phone:v[idx['Phone']]||'',
+        name:v[idx['Name']]||'',
+        address:v[idx['Address']]||'',
+        items:v[idx['Items']]||'',
+        subtotal:parseFloat(v[idx['Subtotal']]||0),
+        tax:parseFloat(v[idx['Tax']]||0),
+        gestion:parseFloat(v[idx['Gestion']]||0),
+        stripeFee:parseFloat(v[idx['StripeFee']]||0),
+        total:parseFloat(v[idx['Total']]||0),
+        status:v[idx['Status']]||'',
+        link:v[idx['StripeLink']]||''
+      });
+    }
+
+    // Group by phone
+    const map={};
+    orders.forEach(o=>{
+      const key=o.phone||'unknown';
+      if(!map[key]){
+        map[key]={
+          phone:o.phone,
+          name:o.name||'Sin nombre',
+          address:o.address,
+          orders:[],
+          totalSpent:0,
+          zelleCount:0,
+          stripeCount:0,
+          firstOrder:'',
+          lastOrder:''
+        };
+      }
+      const c=map[key];
+      c.orders.push(o);
+      if(o.status==='Confirmed'||o.status==='Enviado') c.totalSpent+=o.total;
+      if(o.stripeFee>0) c.stripeCount++; else c.zelleCount++;
+      if(!c.firstOrder||o.ts<c.firstOrder) c.firstOrder=o.ts;
+      if(!c.lastOrder||o.ts>c.lastOrder){ c.lastOrder=o.ts; c.name=o.name||c.name; c.address=o.address||c.address; }
+    });
+
+    allCustomers=Object.values(map).filter(c=>c.phone);
+    updateStats();
+    applyFilters();
+  }catch(e){
+    document.getElementById('customersBody').innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:#b91c1c;">❌ Error: ${e.message}<br><small style="color:var(--muted)">Asegúrate de que el Google Sheet sea público (Cualquier persona puede ver)</small></td></tr>`;
+  }
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+function updateStats(){
+  const total=allCustomers.length;
+  const freq=allCustomers.filter(c=>c.orders.length>=3).length;
+  const vip=allCustomers.filter(c=>c.totalSpent>=50).length;
+  const newToday=allCustomers.filter(c=>c.firstOrder&&c.firstOrder.startsWith(TODAY)).length;
+  const rev=allCustomers.reduce((s,c)=>s+c.totalSpent,0);
+  document.getElementById('stTotal').textContent=total;
+  document.getElementById('stFreq').textContent=freq;
+  document.getElementById('stVip').textContent=vip;
+  document.getElementById('stNew').textContent=newToday;
+  document.getElementById('stRev').textContent='$'+rev.toFixed(2);
+}
+
+// ── FILTERS & SORT ────────────────────────────────────────────────
+function setFilter(el,f){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter=f;
+  applyFilters();
+}
+
+function setSortCol(col){
+  const sel=document.getElementById('sortSelect');
+  sel.value=col+'_desc';
+  applyFilters();
+}
+
+function applyFilters(){
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
+  const sort=document.getElementById('sortSelect').value;
+
+  let list=[...allCustomers];
+
+  // Search
+  if(q) list=list.filter(c=>
+    (c.name||'').toLowerCase().includes(q)||
+    (c.phone||'').includes(q)||
+    (c.address||'').toLowerCase().includes(q)
+  );
+
+  // Filter
+  if(activeFilter==='vip') list=list.filter(c=>c.totalSpent>=50);
+  else if(activeFilter==='freq') list=list.filter(c=>c.orders.length>=3);
+  else if(activeFilter==='new') list=list.filter(c=>c.firstOrder&&c.firstOrder.startsWith(TODAY));
+  else if(activeFilter==='zelle') list=list.filter(c=>c.zelleCount>c.stripeCount);
+  else if(activeFilter==='stripe') list=list.filter(c=>c.stripeCount>=c.zelleCount&&c.stripeCount>0);
+
+  // Sort
+  if(sort==='orders_desc') list.sort((a,b)=>b.orders.length-a.orders.length);
+  else if(sort==='spent_desc') list.sort((a,b)=>b.totalSpent-a.totalSpent);
+  else if(sort==='last_desc') list.sort((a,b)=>(b.lastOrder||'').localeCompare(a.lastOrder||''));
+  else if(sort==='name_asc') list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+  renderTable(list);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────
+function segment(c){
+  if(c.totalSpent>=50) return {label:'⭐ VIP',cls:'badge-vip'};
+  if(c.orders.length>=3) return {label:'🔁 Frecuente',cls:'badge-freq'};
+  if(c.firstOrder&&c.firstOrder.startsWith(TODAY)) return {label:'🆕 Nuevo',cls:'badge-new'};
+  return {label:'Regular',cls:'badge-inactive'};
+}
+
+function favMethod(c){
+  if(c.zelleCount===0&&c.stripeCount===0) return '—';
+  if(c.zelleCount>c.stripeCount) return '💸 Zelle';
+  if(c.stripeCount>c.zelleCount) return '💳 Tarjeta';
+  return '💸/💳 Ambos';
+}
+
+function fmtDate(ts){
+  if(!ts) return '—';
+  try{
+    const d=new Date(ts);
+    return d.toLocaleDateString('es-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'});
+  }catch(e){return ts.split('T')[0]||'—';}
+}
+
+function initials(name){
+  const w=(name||'?').trim().split(' ');
+  return (w[0]?.[0]||'?')+(w[1]?.[0]||'');
+}
+
+const COLORS=['#15803d','#1e40af','#6d28d9','#b91c1c','#92400e','#0369a1','#065F46','#7C3AED'];
+function avatarColor(phone){ let h=0; for(const c of (phone||'')) h=(h*31+c.charCodeAt(0))%COLORS.length; return COLORS[Math.abs(h)%COLORS.length]; }
+
+function renderTable(list){
+  const tbody=document.getElementById('customersBody');
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">👤</div><p>No se encontraron clientes</p></div></td></tr>';
+    document.getElementById('tableFooter').textContent='';
+    return;
+  }
+  const seg=c=>segment(c);
+  tbody.innerHTML=list.map((c,i)=>{
+    const s=seg(c);
+    const color=avatarColor(c.phone);
+    const init=initials(c.name);
+    const shortAddr=(c.address||'—').split(',')[0];
+    return `<tr onclick="openCustomer(${allCustomers.indexOf(c)})">
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:34px;height:34px;border-radius:9px;background:${color};display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex-shrink:0;">${init}</div>
+          <div>
+            <div style="font-weight:700;font-size:.85rem;">${escH(c.name)}</div>
+            <div style="font-size:.68rem;color:var(--muted);">${c.orders.length} orden${c.orders.length!==1?'es':''}</div>
+          </div>
+        </div>
+      </td>
+      <td class="mono">+${escH(c.phone)}</td>
+      <td><span class="badge ${s.cls}">${s.label}</span></td>
+      <td style="font-weight:700;font-family:'JetBrains Mono',monospace;">${c.orders.length}</td>
+      <td class="amount">$${c.totalSpent.toFixed(2)}</td>
+      <td style="font-size:.78rem;">${favMethod(c)}</td>
+      <td style="font-size:.78rem;color:var(--muted);">${fmtDate(c.lastOrder)}</td>
+      <td style="font-size:.75rem;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escH(c.address)}">${escH(shortAddr)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableFooter').textContent=`Mostrando ${list.length} de ${allCustomers.length} clientes`;
+}
+
+// ── CUSTOMER DETAIL MODAL ─────────────────────────────────────────
+function openCustomer(idx){
+  const c=allCustomers[idx];
+  if(!c) return;
+  const color=avatarColor(c.phone);
+  const init=initials(c.name);
+  const s=segment(c);
+  const favM=favMethod(c);
+  const confirmedOrders=c.orders.filter(o=>o.status==='Confirmed'||o.status==='Enviado');
+  const pending=c.orders.filter(o=>o.status==='Zelle-Pending'||o.status==='Stripe-Pending').length;
+
+  document.getElementById('modalTitle').textContent='Perfil del Cliente';
+  document.getElementById('modalBody').innerHTML=`
+    <div class="cust-profile">
+      <div class="cust-avatar" style="background:${color};">${init}</div>
+      <div class="cust-meta">
+        <h2>${escH(c.name)} <span class="badge ${s.cls}" style="vertical-align:middle;">${s.label}</span></h2>
+        <p>📱 +${escH(c.phone)}</p>
+        <p>📍 ${escH(c.address||'—')}</p>
+      </div>
+    </div>
+    <div class="stats-mini">
+      <div class="stat-mini"><div class="v">${c.orders.length}</div><div class="l">Órdenes</div></div>
+      <div class="stat-mini"><div class="v" style="color:var(--green);">$${c.totalSpent.toFixed(2)}</div><div class="l">Total Gastado</div></div>
+      <div class="stat-mini"><div class="v" style="color:var(--blue);">$${c.orders.length?( c.totalSpent/Math.max(confirmedOrders.length,1)).toFixed(2):'0.00'}</div><div class="l">Promedio</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Primer Pedido</div>
+        <div style="font-size:.82rem;font-weight:600;">${fmtDate(c.firstOrder)}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Último Pedido</div>
+        <div style="font-size:.82rem;font-weight:600;">${fmtDate(c.lastOrder)}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Método Favorito</div>
+        <div style="font-size:.82rem;font-weight:600;">${favM} (${c.zelleCount}Z / ${c.stripeCount}T)</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div style="font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Pendientes</div>
+        <div style="font-size:.82rem;font-weight:600;color:${pending>0?'var(--amber)':'var(--green)'};">${pending} orden${pending!==1?'es':''}</div>
+      </div>
+    </div>
+    <div class="order-history">
+      <h3>Historial de Órdenes (${c.orders.length})</h3>
+      ${[...c.orders].sort((a,b)=>(b.ts||'').localeCompare(a.ts||'')).slice(0,20).map(o=>`
+        <div class="order-row">
+          <div>
+            <div class="o-id">${o.id}</div>
+            <div style="font-size:.78rem;margin-top:2px;">${fmtDate(o.ts)}</div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);flex:1;padding:0 12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escH((o.items||'').split('|')[0])}</div>
+          <div style="text-align:right;">
+            <div class="o-total">$${o.total.toFixed(2)}</div>
+            <div class="o-status" style="color:${o.status==='Confirmed'||o.status==='Enviado'?'var(--green)':o.status.includes('Pending')?'var(--amber)':'var(--muted)'}">${o.status||'—'}</div>
+          </div>
+        </div>
+      `).join('')}
+      ${c.orders.length>20?`<div style="text-align:center;font-size:.72rem;color:var(--muted);padding:8px;">... y ${c.orders.length-20} más</div>`:''}
+    </div>
+  `;
+  document.getElementById('custModal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('custModal').classList.remove('open');}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+function exportCSV(){
+  const headers=['Nombre','Teléfono','Segmento','Órdenes','Total Gastado','Método Favorito','Primera Orden','Última Orden','Dirección'];
+  const rows=allCustomers.map(c=>{
+    const s=segment(c);
+    return [c.name,'+'+c.phone,s.label.replace(/[⭐🔁🆕]/g,'').trim(),c.orders.length,c.totalSpent.toFixed(2),favMethod(c).replace(/[💸💳🔁]/g,'').trim(),c.firstOrder?.split('T')[0]||'',c.lastOrder?.split('T')[0]||'',c.address||''];
+  });
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`PIDEYA_Clientes_${TODAY}.csv`;
+  a.click();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function escH(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+</script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Facturación</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--card:#FFFFFF;--border:#DDE3EA;--text:#1F2937;--muted:#6B7280;
+  --green:#15803d;--green-l:#DCFCE7;--green-b:#86EFAC;
+  --blue:#1e40af;--blue-l:#EEF2FF;--blue-b:#C7D2FE;
+  --amber:#92400e;--amber-l:#FEF3C7;--amber-b:#FCD34D;
+  --red:#b91c1c;--red-l:#FEE2E2;--red-b:#FECACA;
+  --purple:#6d28d9;--purple-l:#F5F3FF;--purple-b:#DDD6FE;
+  --sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}
+.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}
+.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(34,197,94,.15);color:#22C55E;border:1px solid rgba(34,197,94,.2);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;}
+.btn{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:#15803d;color:#fff;}
+.btn-primary:hover{background:#166534;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:#94A3B8;}
+.btn-purple{background:var(--purple-l);color:var(--purple);border:1px solid var(--purple-b);}
+.btn-sm{padding:5px 10px;font-size:.68rem;}
+.content{padding:24px 28px;}
+
+/* PERIOD SELECTOR */
+.period-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.period-bar h3{font-size:.85rem;font-weight:800;margin-right:4px;}
+select.period-sel{background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:8px 12px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;outline:none;cursor:pointer;}
+
+/* SUMMARY CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:22px;}
+.sum{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 16px;position:relative;overflow:hidden;}
+.sum::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.sum.g::before{background:#22C55E;}.sum.b::before{background:#3B82F6;}
+.sum.p::before{background:#A855F7;}.sum.a::before{background:#F59E0B;}
+.sum.r::before{background:#EF4444;}
+.sum-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;margin-bottom:5px;}
+.sum-val{font-size:1.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.sum-val.green{color:var(--green);}.sum-val.blue{color:var(--blue);}
+.sum-val.purple{color:var(--purple);}.sum-val.amber{color:var(--amber);}
+.sum-val.red{color:var(--red);}
+.sum-sub{font-size:.62rem;color:var(--muted);margin-top:3px;}
+
+/* LAYOUT */
+.grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;}
+.card-title{font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.card-body{padding:18px;}
+
+/* MONTHLY TABLE */
+table{width:100%;border-collapse:collapse;font-size:.8rem;}
+thead th{padding:10px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);background:#F8FAFC;}
+tbody tr{border-bottom:1px solid #F1F5F9;transition:.12s;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#F8FAFC;}
+td{padding:11px 14px;vertical-align:middle;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;}
+.amount{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);}
+.badge{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:700;}
+.b-paid{background:var(--green-l);color:var(--green);border:1px solid var(--green-b);}
+.b-pending{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);}
+.b-current{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-b);}
+
+/* BREAKDOWN */
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F1F5F9;font-size:.82rem;}
+.breakdown-row:last-child{border-bottom:none;}
+.breakdown-row.total{font-weight:800;font-size:.9rem;border-top:2px solid var(--border);margin-top:4px;padding-top:12px;}
+.breakdown-row.highlight{background:var(--green-l);padding:9px 12px;border-radius:8px;margin:6px 0;border-bottom:none;}
+
+/* PROGRESS BAR */
+.prog-wrap{background:#F1F5F9;border-radius:6px;height:8px;overflow:hidden;margin-top:4px;}
+.prog-fill{height:100%;border-radius:6px;transition:width .6s;}
+
+/* MODAL — INVOICE */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:30px 20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:720px;position:relative;}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);}
+.modal-body{padding:0;}
+
+/* INVOICE PRINT STYLES */
+.invoice{padding:40px 44px;font-family:'Outfit',sans-serif;}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;}
+.inv-logo{font-size:1.6rem;font-weight:900;color:#15803d;letter-spacing:-0.5px;}
+.inv-logo span{color:#1E293B;}
+.inv-tagline{font-size:.68rem;color:#6B7280;margin-top:2px;}
+.inv-badge{background:#15803d;color:#fff;font-size:.7rem;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:.05em;}
+.inv-meta{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:30px;background:#F8FAFC;border-radius:12px;padding:18px 20px;}
+.inv-meta-block h4{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#6B7280;font-weight:700;margin-bottom:6px;}
+.inv-meta-block p{font-size:.82rem;font-weight:600;line-height:1.5;}
+.inv-meta-block p.small{font-size:.72rem;color:#6B7280;font-weight:400;}
+.inv-table{width:100%;border-collapse:collapse;margin-bottom:24px;}
+.inv-table thead th{padding:10px 14px;text-align:left;font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;font-weight:700;border-bottom:2px solid #E5E7EB;background:#F8FAFC;}
+.inv-table thead th:last-child{text-align:right;}
+.inv-table tbody td{padding:11px 14px;font-size:.82rem;border-bottom:1px solid #F1F5F9;}
+.inv-table tbody td:last-child{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600;}
+.inv-table tbody tr:last-child td{border-bottom:none;}
+.inv-totals{margin-left:auto;width:280px;margin-bottom:28px;}
+.inv-total-row{display:flex;justify-content:space-between;padding:7px 0;font-size:.82rem;border-bottom:1px solid #F1F5F9;}
+.inv-total-row:last-child{border-bottom:none;font-weight:900;font-size:.95rem;padding-top:10px;margin-top:4px;border-top:2px solid #1E293B;}
+.inv-total-row span:last-child{font-family:'JetBrains Mono',monospace;}
+.inv-total-row.owed span:last-child{color:#15803d;font-size:1.1rem;}
+.inv-footer{border-top:1px solid #E5E7EB;padding-top:18px;display:flex;justify-content:space-between;font-size:.7rem;color:#9CA3AF;}
+.inv-note{background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 14px;font-size:.72rem;color:#92400E;margin-bottom:20px;line-height:1.5;}
+.inv-status-stamp{text-align:center;font-size:2rem;font-weight:900;color:rgba(21,128,61,.15);border:6px solid rgba(21,128,61,.15);border-radius:12px;padding:6px 20px;display:inline-block;transform:rotate(-5deg);position:absolute;top:80px;right:50px;letter-spacing:2px;}
+
+@media print{
+  .sidebar,.topbar,.modal-head button,.modal-actions,#lock{display:none!important;}
+  .modal-overlay{position:static;background:none;padding:0;}
+  .modal{border:none;border-radius:0;max-width:100%;}
+  body{display:block;background:#fff;}
+}
+@media(max-width:900px){
+  .sidebar{width:58px;}.sidebar .logo-text,.nav-item span:not(.icon){display:none;}.nav-item{justify-content:center;}
+  .main{margin-left:58px;}.sum-grid{grid-template-columns:repeat(2,1fr);}.grid2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">🧾</div>
+    <div class="lock-title">Facturación</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍴</div>
+    <div class="logo-text"><h1>PIDEYA</h1><p>Facturación</p></div>
+  </div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" class="nav-item"><span class="icon">🍳</span><span>Cocina</span></a>
+    <a href="pideya_reports.html" class="nav-item"><span class="icon">📈</span><span>Reportes</span></a>
+    <a href="pideya_dashboard.html" class="nav-item"><span class="icon">📊</span><span>Dashboard</span></a>
+    <a href="pideya_clientes.html" class="nav-item"><span class="icon">👥</span><span>Clientes</span></a>
+    <a href="pideya_estadisticas.html" class="nav-item"><span class="icon">📉</span><span>Estadísticas</span></a>
+    <a href="pideya_alertas.html" class="nav-item"><span class="icon">🚨</span><span>Alertas</span></a>
+    <a href="pideya_ordenes.html" class="nav-item"><span class="icon">📋</span><span>Órdenes</span></a>
+    <div class="nav-item active"><span class="icon">🧾</span><span>Facturación</span></div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">🧾 Facturación y Comisiones</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-purple" onclick="openInvoice(currentMonth)">🖨️ Factura Actual</button>
+      <button class="btn btn-primary" onclick="loadData()">⟳ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- PERIOD SELECTOR -->
+    <div class="period-bar">
+      <h3>📅 Restaurante:</h3>
+      <select class="period-sel" id="restSelect">
+        <option value="conuco">El Conuco Restaurante</option>
+      </select>
+      <span style="font-size:.82rem;color:var(--muted);">Comisión:</span>
+      <select class="period-sel" id="commPct" onchange="rebuildMonths()">
+        <option value="15">15%</option>
+        <option value="10">10%</option>
+        <option value="20">20%</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <input type="number" id="commCustom" value="15" min="1" max="100" style="display:none;width:70px;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:7px 10px;border-radius:9px;font-family:'JetBrains Mono',monospace;font-size:.85rem;outline:none;" onchange="rebuildMonths()">
+      <span style="font-size:.72rem;color:var(--muted);">del subtotal de órdenes confirmadas</span>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="sum-grid">
+      <div class="sum g"><div class="sum-label">Ingresos Totales</div><div class="sum-val green" id="svRev">—</div><div class="sum-sub">órdenes confirmadas</div></div>
+      <div class="sum p"><div class="sum-label">Comisión Total</div><div class="sum-val purple" id="svComm">—</div><div class="sum-sub" id="svCommSub">generada</div></div>
+      <div class="sum b"><div class="sum-label">Mes Actual</div><div class="sum-val blue" id="svCurr">—</div><div class="sum-sub">comisión este mes</div></div>
+      <div class="sum a"><div class="sum-label">Gestión Cobrada</div><div class="sum-val amber" id="svGest">—</div><div class="sum-sub">$2 por orden</div></div>
+      <div class="sum g"><div class="sum-label">Neto al Restaurante</div><div class="sum-val green" id="svNet" style="font-size:1.1rem;">—</div><div class="sum-sub">después de comisión</div></div>
+    </div>
+
+    <!-- GRID: monthly history + breakdown -->
+    <div class="grid2">
+      <!-- LEFT: Monthly billing history -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">📅 Historial por Mes</span>
+          <span style="font-size:.7rem;color:var(--muted);">Click para ver factura</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th>Período</th><th>Órdenes</th><th>Ingresos</th><th>Tax NJ</th><th>Comisión</th><th>Gestión</th><th>Estado</th><th></th>
+            </tr></thead>
+            <tbody id="monthlyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: Current month breakdown -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">💰 Desglose del Mes Actual</span></div>
+        <div class="card-body">
+          <div id="currentBreakdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT METHOD BREAKDOWN -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-head"><span class="card-title">💳 Ingresos por Método de Pago (histórico)</span></div>
+      <div class="card-body" id="payBreakdown" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"></div>
+    </div>
+
+    <!-- TOP EARNING DAYS -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📆 Días con Mayor Facturación</span></div>
+      <div class="card-body" id="topDays"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="modal-overlay" id="invModal" onclick="if(event.target===this)closeInv()">
+  <div class="modal">
+    <div class="modal-head">
+      <span style="font-weight:800;font-size:.95rem;" id="invModalTitle">Factura</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button class="modal-close" onclick="closeInv()">✕</button>
+      </div>
+    </div>
+    <div id="invContent"></div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID='1qzvOElYXtlkdBpiqI3_1E3HRQKlnm4JFhYxtZoNT4r4';
+const PASS='pideya2024';
+const SESS='py_fact_auth';
+const REST_NAME='El Conuco Restaurante';
+const REST_ADDR='715 Summit Ave, Union City, NJ 07087';
+const PIDEYA_ADDR='70 County Ave, Secaucus, NJ 07094';
+const PIDEYA_EMAIL='pideya.nj@gmail.com';
+
+let allOrders=[];
+let monthlyData=[];
+let currentMonth='';
+
+function getCommPct(){
+  const sel=document.getElementById('commPct').value;
+  if(sel==='custom') return parseFloat(document.getElementById('commCustom').value)||15;
+  return parseFloat(sel);
+}
+
+// ── AUTH ───────────────────────────────────────────────────────────
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    loadData();
+  }else{document.getElementById('lockErr').style.display='block';document.getElementById('lockPwd').value='';}
+}
+document.getElementById('commPct').addEventListener('change',function(){
+  document.getElementById('commCustom').style.display=this.value==='custom'?'inline-block':'none';
+});
+if(sessionStorage.getItem(SESS)==='1'){document.getElementById('lock').style.display='none';loadData();}
+
+// ── DATA ───────────────────────────────────────────────────────────
+function parseCSV(line){const r=[];let c='',q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){q=!q;}else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}r.push(c.trim());return r;}
+
+async function loadData(){
+  try{
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+    const r=await fetch(url,{mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const csv=await r.text();
+    const lines=csv.split('\n').filter(l=>l.trim());
+    const h=parseCSV(lines[0]);const idx={};h.forEach((v,i)=>idx[v]=i);
+    allOrders=[];
+    for(let i=1;i<lines.length;i++){
+      const v=parseCSV(lines[i]);
+      if(!v[idx['Order ID']]) continue;
+      allOrders.push({
+        id:v[idx['Order ID']]||'',ts:v[idx['Timestamp']]||'',
+        name:v[idx['Name']]||'',phone:v[idx['Phone']]||'',
+        subtotal:parseFloat(v[idx['Subtotal']]||0),tax:parseFloat(v[idx['Tax']]||0),
+        gestion:parseFloat(v[idx['Gestion']]||0),stripeFee:parseFloat(v[idx['StripeFee']]||0),
+        total:parseFloat(v[idx['Total']]||0),status:(v[idx['Status']]||'').trim(),
+        items:v[idx['Items']]||''
+      });
+    }
+    rebuildMonths();
+  }catch(e){
+    document.getElementById('monthlyBody').innerHTML=`<tr><td colspan="8" style="text-align:center;padding:30px;color:#b91c1c;">❌ ${e.message}</td></tr>`;
+  }
+}
+
+function rebuildMonths(){
+  const pct=getCommPct()/100;
+  const confirmed=allOrders.filter(o=>o.status==='Confirmed'||o.status==='Enviado');
+
+  // Group by YYYY-MM
+  const map={};
+  confirmed.forEach(o=>{
+    const key=o.ts?o.ts.slice(0,7):'';
+    if(!key) return;
+    if(!map[key]) map[key]={key,orders:[],subtotal:0,tax:0,gestion:0,stripeFee:0,total:0,commission:0,stripeCount:0,zelleCount:0};
+    const m=map[key];
+    m.orders.push(o);
+    m.subtotal+=o.subtotal;m.tax+=o.tax;m.gestion+=o.gestion;
+    m.stripeFee+=o.stripeFee;m.total+=o.total;
+    m.commission+=o.subtotal*pct;
+    if(o.stripeFee>0) m.stripeCount++; else m.zelleCount++;
+  });
+
+  monthlyData=Object.values(map).sort((a,b)=>b.key.localeCompare(a.key));
+  const now=new Date();
+  currentMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  renderKPIs(confirmed,pct);
+  renderMonthly();
+  renderCurrentBreakdown();
+  renderPayBreakdown(confirmed,pct);
+  renderTopDays(confirmed);
+}
+
+// ── KPIs ───────────────────────────────────────────────────────────
+function renderKPIs(conf,pct){
+  const rev=conf.reduce((s,o)=>s+o.total,0);
+  const comm=conf.reduce((s,o)=>s+o.subtotal*pct,0);
+  const gest=conf.reduce((s,o)=>s+o.gestion,0);
+  const currM=monthlyData.find(m=>m.key===currentMonth);
+  document.getElementById('svRev').textContent='$'+rev.toFixed(2);
+  document.getElementById('svComm').textContent='$'+comm.toFixed(2);
+  document.getElementById('svCommSub').textContent=(getCommPct())+'% comisión';
+  document.getElementById('svCurr').textContent=currM?'$'+currM.commission.toFixed(2):'$0.00';
+  document.getElementById('svGest').textContent='$'+gest.toFixed(2);
+  document.getElementById('svNet').textContent='$'+(rev-comm).toFixed(2);
+}
+
+// ── MONTHLY TABLE ──────────────────────────────────────────────────
+function fmtMonth(key){
+  const [y,m]=key.split('-');
+  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return (months[parseInt(m)-1]||m)+' '+y;
+}
+
+function renderMonthly(){
+  const tbody=document.getElementById('monthlyBody');
+  if(!monthlyData.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Sin datos</td></tr>';return;}
+  tbody.innerHTML=monthlyData.map(m=>{
+    const isCurr=m.key===currentMonth;
+    const badgeCls=isCurr?'b-current':'b-paid';
+    const badgeTxt=isCurr?'📍 Actual':'✅ Cerrado';
+    return `<tr onclick="openInvoice('${m.key}')">
+      <td><strong>${fmtMonth(m.key)}</strong></td>
+      <td class="mono">${m.orders.length}</td>
+      <td class="amount">$${m.total.toFixed(2)}</td>
+      <td class="mono" style="color:var(--amber);">$${m.tax.toFixed(2)}</td>
+      <td class="mono" style="color:var(--purple);font-weight:700;">$${m.commission.toFixed(2)}</td>
+      <td class="mono" style="color:var(--blue);">$${m.gestion.toFixed(2)}</td>
+      <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openInvoice('${m.key}')">🖨️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CURRENT MONTH BREAKDOWN ────────────────────────────────────────
+function renderCurrentBreakdown(){
+  const m=monthlyData.find(md=>md.key===currentMonth);
+  const pct=getCommPct();
+  const el=document.getElementById('currentBreakdown');
+
+  if(!m){el.innerHTML='<p style="color:var(--muted);font-size:.8rem;text-align:center;padding:20px;">Sin órdenes este mes</p>';return;}
+
+  const maxPoss=m.total;
+  const commProg=maxPoss>0?m.commission/maxPoss*100:0;
+
+  el.innerHTML=`
+    <div class="breakdown-row"><span style="color:var(--muted);">Período</span><span style="font-weight:700;">${fmtMonth(m.key)}</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">Órdenes confirmadas</span><span style="font-weight:700;">${m.orders.length}</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">💳 Tarjeta</span><span class="mono">${m.stripeCount} órdenes</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">💸 Zelle</span><span class="mono">${m.zelleCount} órdenes</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">Subtotal bruto</span><span class="mono">$${m.subtotal.toFixed(2)}</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">Tax NJ (6.625%)</span><span class="mono" style="color:var(--amber);">$${m.tax.toFixed(2)}</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">Cargo Stripe</span><span class="mono" style="color:var(--red);">-$${m.stripeFee.toFixed(2)}</span></div>
+    <div class="breakdown-row"><span style="color:var(--muted);">Gestión PIDEYA</span><span class="mono" style="color:var(--blue);">$${m.gestion.toFixed(2)}</span></div>
+    <div class="breakdown-row highlight">
+      <span style="font-weight:800;color:var(--green);">✅ Comisión ${pct}% PIDEYA</span>
+      <span style="font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--green);font-size:1rem;">$${m.commission.toFixed(2)}</span>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;">Comisión / Total cobrado</div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${commProg.toFixed(1)}%;background:#22C55E;"></div></div>
+      <div style="font-size:.65rem;color:var(--muted);margin-top:3px;">${commProg.toFixed(1)}% del total</div>
+    </div>
+    <div class="breakdown-row total" style="margin-top:14px;border-top:2px solid var(--border);padding-top:12px;">
+      <span>Neto al restaurante</span>
+      <span style="font-family:'JetBrains Mono',monospace;color:var(--text);">$${(m.total-m.commission).toFixed(2)}</span>
+    </div>
+  `;
+}
+
+// ── PAYMENT BREAKDOWN ──────────────────────────────────────────────
+function renderPayBreakdown(conf,pct){
+  const stripe=conf.filter(o=>o.stripeFee>0);
+  const zelle=conf.filter(o=>o.stripeFee===0);
+  const stripeRev=stripe.reduce((s,o)=>s+o.total,0);
+  const zelleRev=zelle.reduce((s,o)=>s+o.total,0);
+  const stripeComm=stripe.reduce((s,o)=>s+o.subtotal*pct,0);
+  const zelleComm=zelle.reduce((s,o)=>s+o.subtotal*pct,0);
+  const stripeFeeTotal=stripe.reduce((s,o)=>s+o.stripeFee,0);
+
+  document.getElementById('payBreakdown').innerHTML=`
+    <div>
+      <div style="font-size:.8rem;font-weight:800;margin-bottom:12px;">💳 Tarjeta / Google / Apple Pay</div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Órdenes</span><span class="mono">${stripe.length}</span></div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Total cobrado</span><span class="amount">$${stripeRev.toFixed(2)}</span></div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Fee Stripe (3.5%)</span><span class="mono" style="color:var(--red);">-$${stripeFeeTotal.toFixed(2)}</span></div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Comisión PIDEYA (${getCommPct()}%)</span><span class="mono" style="color:var(--purple);">$${stripeComm.toFixed(2)}</span></div>
+      <div class="breakdown-row" style="font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span>Neto restaurante</span><span class="mono">$${(stripeRev-stripeComm-stripeFeeTotal).toFixed(2)}</span></div>
+    </div>
+    <div>
+      <div style="font-size:.8rem;font-weight:800;margin-bottom:12px;">💸 Zelle</div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Órdenes</span><span class="mono">${zelle.length}</span></div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Total cobrado</span><span class="amount">$${zelleRev.toFixed(2)}</span></div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Fee Stripe</span><span class="mono" style="color:var(--muted);">$0.00</span></div>
+      <div class="breakdown-row"><span style="color:var(--muted);">Comisión PIDEYA (${getCommPct()}%)</span><span class="mono" style="color:var(--purple);">$${zelleComm.toFixed(2)}</span></div>
+      <div class="breakdown-row" style="font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span>Neto restaurante</span><span class="mono">$${(zelleRev-zelleComm).toFixed(2)}</span></div>
+    </div>
+  `;
+}
+
+// ── TOP DAYS ──────────────────────────────────────────────────────
+function renderTopDays(conf){
+  const map={};
+  conf.forEach(o=>{const d=o.ts?o.ts.split('T')[0]:'';if(!d) return;if(!map[d]) map[d]={date:d,total:0,count:0};map[d].total+=o.total;map[d].count++;});
+  const days=Object.values(map).sort((a,b)=>b.total-a.total).slice(0,10);
+  const max=days[0]?.total||1;
+  const el=document.getElementById('topDays');
+  if(!days.length){el.innerHTML='<p style="color:var(--muted);font-size:.8rem;padding:10px;">Sin datos</p>';return;}
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px;">`+days.map((d,i)=>{
+    const dt=new Date(d.date+'T12:00:00');
+    const label=dt.toLocaleDateString('es-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    return `<div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:22px;height:22px;border-radius:50%;background:${i<3?'#FDE047':'#F1F5F9'};display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800;color:${i<3?'#713F12':'var(--muted)'};flex-shrink:0;">${i+1}</div>
+      <div style="width:130px;font-size:.75rem;font-weight:600;">${label}</div>
+      <div style="flex:1;background:#F1F5F9;border-radius:6px;height:9px;overflow:hidden;"><div style="height:100%;width:${d.total/max*100}%;background:${i===0?'#22C55E':i<3?'#86EFAC':'#BBF7D0'};border-radius:6px;"></div></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);font-size:.78rem;width:70px;text-align:right;">$${d.total.toFixed(2)}</div>
+      <div style="font-size:.68rem;color:var(--muted);width:55px;text-align:right;">${d.count} orden${d.count!==1?'es':''}</div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+// ── INVOICE GENERATOR ──────────────────────────────────────────────
+function openInvoice(monthKey){
+  const m=monthlyData.find(md=>md.key===monthKey);
+  if(!m&&monthKey!==currentMonth){alert('Sin datos para ese período.');return;}
+
+  const pct=getCommPct();
+  const data=m||{key:monthKey,orders:[],subtotal:0,tax:0,gestion:0,stripeFee:0,total:0,commission:0,stripeCount:0,zelleCount:0};
+  const invoiceNum='INV-'+monthKey.replace('-','')+'-'+Math.floor(Math.random()*100+1).toString().padStart(3,'0');
+  const isCurrent=monthKey===currentMonth;
+  const issueDate=new Date().toLocaleDateString('es-US',{year:'numeric',month:'long',day:'numeric'});
+  const periodLabel=fmtMonth(monthKey);
+  const netToRest=data.total-data.commission;
+
+  document.getElementById('invModalTitle').textContent=`Factura — ${periodLabel}`;
+  document.getElementById('invContent').innerHTML=`
+    <div class="invoice" style="position:relative;">
+      ${!isCurrent?`<div class="inv-status-stamp">CERRADO</div>`:''}
+
+      <div class="inv-header">
+        <div>
+          <div class="inv-logo">PIDE<span>YA</span></div>
+          <div class="inv-tagline">Plataforma de Pedidos Digitales</div>
+          <div style="font-size:.72rem;color:#6B7280;margin-top:4px;">${PIDEYA_ADDR}<br>${PIDEYA_EMAIL}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:1.3rem;font-weight:900;color:#1E293B;margin-bottom:4px;">FACTURA</div>
+          <div class="inv-badge">${invoiceNum}</div>
+          <div style="font-size:.72rem;color:#6B7280;margin-top:8px;">Emitida: ${issueDate}</div>
+          <div style="font-size:.72rem;color:#6B7280;">Período: ${periodLabel}</div>
+        </div>
+      </div>
+
+      <div class="inv-meta">
+        <div class="inv-meta-block">
+          <h4>Facturado A</h4>
+          <p>${REST_NAME}</p>
+          <p class="small">${REST_ADDR}</p>
+        </div>
+        <div class="inv-meta-block">
+          <h4>Resumen del Período</h4>
+          <p>${data.orders.length} órdenes procesadas</p>
+          <p class="small">${data.stripeCount} tarjeta · ${data.zelleCount} Zelle</p>
+          <p class="small">Comisión: ${pct}% del subtotal</p>
+        </div>
+      </div>
+
+      ${isCurrent?`<div class="inv-note">⚠️ Esta factura corresponde al período en curso y puede cambiar hasta el cierre del mes.</div>`:''}
+
+      <table class="inv-table">
+        <thead><tr>
+          <th style="width:40%;">Concepto</th>
+          <th>Detalle</th>
+          <th style="text-align:right;">Monto</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Ingresos Brutos</strong></td>
+            <td style="color:#6B7280;font-size:.78rem;">${data.orders.length} órdenes confirmadas en ${periodLabel}</td>
+            <td>$${data.total.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><strong>Tax NJ (6.625%)</strong></td>
+            <td style="color:#6B7280;font-size:.78rem;">Sales tax de New Jersey — a declarar ante el estado</td>
+            <td>$${data.tax.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><strong>Cargo de Gestión PIDEYA</strong></td>
+            <td style="color:#6B7280;font-size:.78rem;">$2.00 × ${data.orders.length} órdenes</td>
+            <td>$${data.gestion.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><strong>Fee de Stripe (3.5%)</strong></td>
+            <td style="color:#6B7280;font-size:.78rem;">${data.stripeCount} órdenes con tarjeta</td>
+            <td style="color:#b91c1c;">-$${data.stripeFee.toFixed(2)}</td>
+          </tr>
+          <tr style="background:#F0FDF4;">
+            <td><strong style="color:#15803d;">Comisión PIDEYA (${pct}%)</strong></td>
+            <td style="color:#6B7280;font-size:.78rem;">${pct}% del subtotal de $${data.subtotal.toFixed(2)}</td>
+            <td style="color:#15803d;font-weight:900;">$${data.commission.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="inv-totals">
+        <div class="inv-total-row"><span style="color:#6B7280;">Total facturado a clientes</span><span>$${data.total.toFixed(2)}</span></div>
+        <div class="inv-total-row"><span style="color:#6B7280;">Comisión PIDEYA</span><span style="color:#6d28d9;">$${data.commission.toFixed(2)}</span></div>
+        <div class="inv-total-row"><span style="color:#6B7280;">Gestión PIDEYA</span><span>$${data.gestion.toFixed(2)}</span></div>
+        <div class="inv-total-row owed"><span>💰 Neto al Restaurante</span><span>$${netToRest.toFixed(2)}</span></div>
+      </div>
+
+      <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px 18px;margin-bottom:24px;">
+        <div style="font-size:.78rem;font-weight:800;color:#15803d;margin-bottom:6px;">✅ Comisión adeudada a PIDEYA LLC</div>
+        <div style="font-size:1.4rem;font-weight:900;font-family:'JetBrains Mono',monospace;color:#15803d;">$${(data.commission+data.gestion).toFixed(2)}</div>
+        <div style="font-size:.7rem;color:#6B7280;margin-top:4px;">Comisión ($${data.commission.toFixed(2)}) + Gestión ($${data.gestion.toFixed(2)})</div>
+      </div>
+
+      <div style="background:#EEF2FF;border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:.75rem;color:#3730A3;line-height:1.6;">
+        <strong>Métodos de pago aceptados por PIDEYA LLC:</strong><br>
+        💸 Zelle: +1 (201) 772-7540 (PideYa LLC)<br>
+        💳 Stripe / Transferencia bancaria — contactar al equipo
+      </div>
+
+      <div class="inv-footer">
+        <span>PIDEYA LLC · ${PIDEYA_ADDR} · ${PIDEYA_EMAIL}</span>
+        <span>${invoiceNum} · Generada ${issueDate}</span>
+      </div>
+    </div>
+  `;
+  document.getElementById('invModal').classList.add('open');
+}
+function closeInv(){document.getElementById('invModal').classList.remove('open');}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+function exportCSV(){
+  const pct=getCommPct();
+  const headers=['Período','Órdenes','Ingresos','Tax NJ','Gestión','Stripe Fee','Subtotal','Comisión PIDEYA','Neto Restaurante'];
+  const rows=monthlyData.map(m=>[
+    fmtMonth(m.key),m.orders.length,m.total.toFixed(2),m.tax.toFixed(2),
+    m.gestion.toFixed(2),m.stripeFee.toFixed(2),m.subtotal.toFixed(2),
+    m.commission.toFixed(2),(m.total-m.commission).toFixed(2)
+  ]);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`PIDEYA_Facturacion_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>

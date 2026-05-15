@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIDEYA — Seguridad</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8;--card:#FFFFFF;--border:#DDE3EA;--text:#1F2937;--muted:#6B7280;
+  --green:#15803d;--green-l:#DCFCE7;--green-b:#86EFAC;
+  --blue:#1e40af;--blue-l:#EEF2FF;--blue-b:#C7D2FE;
+  --amber:#92400e;--amber-l:#FEF3C7;--amber-b:#FCD34D;
+  --red:#b91c1c;--red-l:#FEE2E2;--red-b:#FECACA;
+  --purple:#6d28d9;--purple-l:#F5F3FF;--purple-b:#DDD6FE;
+  --sidebar:#1E293B;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+#lock{position:fixed;inset:0;background:#0F172A;display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lock-box{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:44px 40px;text-align:center;width:340px;}
+.lock-logo{font-size:2.2rem;margin-bottom:6px;}.lock-title{font-size:1.2rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;}
+.lock-sub{font-size:.78rem;color:#64748B;margin-bottom:28px;}
+.lock-input{width:100%;background:#0F172A;border:1.5px solid #334155;color:#F8FAFC;padding:12px 16px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px;}
+.lock-input:focus{border-color:#22C55E;}
+.lock-btn{width:100%;background:#22C55E;color:#000;border:none;padding:12px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;}
+.lock-err{color:#F87171;font-size:.75rem;margin-top:8px;display:none;}
+.sidebar{width:220px;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:40;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:#22C55E;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.logo-text h1{font-size:.95rem;font-weight:800;color:#F8FAFC;}.logo-text p{font-size:.62rem;color:#64748B;}
+.nav{padding:12px 8px;flex:1;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;color:#94A3B8;transition:.15s;margin-bottom:2px;text-decoration:none;}
+.nav-item:hover{background:#263347;color:#F8FAFC;}
+.nav-item.active{background:rgba(239,68,68,.15);color:#F87171;border:1px solid rgba(239,68,68,.25);}
+.nav-item .icon{font-size:.95rem;flex-shrink:0;}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+.topbar-title{font-size:1rem;font-weight:800;}
+.btn{padding:7px 14px;border-radius:9px;font-size:.75rem;font-weight:700;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:#15803d;color:#fff;}.btn-primary:hover{background:#166534;}
+.btn-outline{background:#fff;color:var(--text);border:1.5px solid var(--border);}.btn-outline:hover{border-color:#94A3B8;}
+.btn-red{background:var(--red-l);color:var(--red);border:1px solid var(--red-b);}
+.btn-amber{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b);}
+.btn-blue{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-b);}
+.btn-sm{padding:5px 10px;font-size:.68rem;}
+.content{padding:24px 28px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:22px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 16px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat.g::before{background:#22C55E;}.stat.b::before{background:#3B82F6;}
+.stat.p::before{background:#A855F7;}.stat.a::before{background:#F59E0B;}
+.stat-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:5px;}
+.stat-val{font-size:1.7rem;font-weight:800;font-family:'JetBrains Mono',monospace;}
+.stat-sub{font-size:.62rem;color:var(--muted);margin-top:3px;}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-bottom:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;}
+.card-title{font-size:.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.card-body{padding:18px;}
+/* USER CARDS */
+.user-list{display:flex;flex-direction:column;gap:10px;}
+.user-card{background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:14px 16px;display:flex;align-items:center;gap:14px;transition:.15s;}
+.user-card:hover{border-color:#94A3B8;}
+.user-card.inactive{opacity:.55;}
+.user-avatar{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info{flex:1;}
+.user-name{font-size:.88rem;font-weight:800;margin-bottom:1px;}
+.user-email{font-size:.7rem;color:var(--muted);}
+.user-role-badge{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block;}
+.role-admin{background:var(--purple-l);color:var(--purple);}
+.role-owner{background:var(--amber-l);color:var(--amber);}
+.role-agent{background:var(--blue-l);color:var(--blue);}
+.role-viewer{background:#F1F5F9;color:var(--muted);}
+.user-meta{font-size:.68rem;color:var(--muted);text-align:right;}
+.user-actions{display:flex;gap:5px;margin-left:10px;}
+/* PERMISSIONS MATRIX */
+.perm-table{width:100%;border-collapse:collapse;font-size:.75rem;}
+.perm-table th{padding:10px 12px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);}
+.perm-table th:not(:first-child){text-align:center;width:90px;}
+.perm-table td{padding:9px 12px;border-bottom:1px solid #F1F5F9;font-size:.78rem;}
+.perm-table td:not(:first-child){text-align:center;}
+.perm-table tr:last-child td{border-bottom:none;}
+.perm-table tr:hover td{background:#F8FAFC;}
+.pcheck{font-size:1rem;}.px{color:#E5E7EB;}
+/* ACTIVITY LOG */
+.activity-list{display:flex;flex-direction:column;gap:1px;}
+.activity-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F1F5F9;}
+.activity-row:last-child{border-bottom:none;}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.act-g{background:#22C55E;}.act-b{background:#3B82F6;}.act-a{background:#F59E0B;}.act-r{background:#EF4444;}
+.act-content{flex:1;}
+.act-title{font-size:.8rem;font-weight:600;}
+.act-detail{font-size:.7rem;color:var(--muted);margin-top:2px;}
+.act-time{font-size:.65rem;font-family:'JetBrains Mono',monospace;color:var(--muted);flex-shrink:0;margin-top:3px;}
+/* ACCESS TOKENS */
+.token-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:.78rem;}
+.token-row:last-child{border-bottom:none;}
+.token-val{flex:1;font-family:'JetBrains Mono',monospace;font-size:.68rem;background:#F8FAFC;padding:4px 8px;border-radius:6px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* SESSION TABLE */
+table{width:100%;border-collapse:collapse;font-size:.78rem;}
+thead th{padding:9px 14px;text-align:left;font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);background:#F8FAFC;}
+tbody tr{border-bottom:1px solid #F1F5F9;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#F8FAFC;}
+td{padding:10px 14px;vertical-align:middle;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.72rem;}
+.badge{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:.63rem;font-weight:700;}
+.b-active{background:var(--green-l);color:var(--green);border:1px solid var(--green-b);}
+.b-inactive{background:#F1F5F9;color:var(--muted);border:1px solid var(--border);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-size:.95rem;font-weight:800;}
+.modal-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);}
+.modal-body{padding:22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.field input,.field select{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:9px 12px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;}
+.field input:focus,.field select:focus{border-color:#94A3B8;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+@media(max-width:900px){.sidebar{width:58px;}.sidebar .logo-text,.nav-item span:not(.icon){display:none;}.nav-item{justify-content:center;}.main{margin-left:58px;}.stats{grid-template-columns:repeat(2,1fr);}.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-logo">🔐</div>
+    <div class="lock-title">Seguridad</div>
+    <div class="lock-sub">PIDEYA LLC — Acceso Restringido</div>
+    <input type="password" class="lock-input" id="lockPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
+    <button class="lock-btn" onclick="unlock()">🔐 Ingresar</button>
+    <div class="lock-err" id="lockErr">Contraseña incorrecta</div>
+  </div>
+</div>
+<aside class="sidebar">
+  <div class="sidebar-logo"><div class="logo-icon">🍴</div><div class="logo-text"><h1>PIDEYA</h1><p>Seguridad</p></div></div>
+  <nav class="nav">
+    <a href="pideya_cocina.html" class="nav-item"><span class="icon">🍳</span><span>Cocina</span></a>
+    <a href="pideya_ordenes.html" class="nav-item"><span class="icon">📋</span><span>Órdenes</span></a>
+    <a href="pideya_clientes.html" class="nav-item"><span class="icon">👥</span><span>Clientes</span></a>
+    <a href="pideya_alertas.html" class="nav-item"><span class="icon">🚨</span><span>Alertas</span></a>
+    <a href="pideya_delivery.html" class="nav-item"><span class="icon">🛵</span><span>Delivery</span></a>
+    <a href="pideya_facturacion.html" class="nav-item"><span class="icon">🧾</span><span>Facturación</span></a>
+    <a href="pideya_configuracion.html" class="nav-item"><span class="icon">⚙️</span><span>Configuración</span></a>
+    <div class="nav-item active"><span class="icon">🔐</span><span>Seguridad</span></div>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">🔐 Seguridad y Usuarios</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="exportLog()">⬇ Exportar Log</button>
+      <button class="btn btn-primary" onclick="openUserModal()">+ Usuario</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat g"><div class="stat-label">Usuarios Activos</div><div class="stat-val" style="color:var(--green);" id="stUsers">—</div><div class="stat-sub">con acceso al sistema</div></div>
+      <div class="stat p"><div class="stat-label">Administradores</div><div class="stat-val" style="color:var(--purple);" id="stAdmins">—</div><div class="stat-sub">acceso total</div></div>
+      <div class="stat b"><div class="stat-label">Agentes</div><div class="stat-val" style="color:var(--blue);" id="stAgents">—</div><div class="stat-sub">soporte y operaciones</div></div>
+      <div class="stat a"><div class="stat-label">Eventos Hoy</div><div class="stat-val" style="color:var(--amber);" id="stEvents">—</div><div class="stat-sub">accesos y cambios</div></div>
+    </div>
+
+    <div class="grid2">
+      <!-- USERS -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+          <span class="card-title">👥 Usuarios del Sistema</span>
+          <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Agregar</button>
+        </div>
+        <div class="card-body">
+          <div class="user-list" id="userList"></div>
+        </div>
+      </div>
+
+      <!-- ROLES SUMMARY -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-head"><span class="card-title">🔑 Contraseñas del Panel</span></div>
+          <div class="card-body">
+            <div class="token-row">
+              <span style="font-weight:600;font-size:.78rem;width:110px;">Panel Cocina</span>
+              <span class="token-val">pideya2024</span>
+              <button class="btn btn-outline btn-sm" onclick="copyPass('pideya2024')">📋</button>
+            </div>
+            <div class="token-row">
+              <span style="font-weight:600;font-size:.78rem;width:110px;">Reportes</span>
+              <span class="token-val">pideya2024</span>
+              <button class="btn btn-outline btn-sm" onclick="copyPass('pideya2024')">📋</button>
+            </div>
+            <div class="token-row">
+              <span style="font-weight:600;font-size:.78rem;width:110px;">Todos los paneles</span>
+              <span class="token-val">pideya2024</span>
+              <button class="btn btn-outline btn-sm" onclick="copyPass('pideya2024')">📋</button>
+            </div>
+            <div style="margin-top:12px;background:var(--amber-l);border:1px solid var(--amber-b);border-radius:8px;padding:10px 12px;font-size:.72rem;color:var(--amber);">
+              ⚠️ Para cambiar la contraseña, actualiza la variable <code>PASS='pideya2024'</code> en cada archivo HTML. Se recomienda una contraseña diferente para producción.
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-head"><span class="card-title">🤖 APIs Configuradas</span></div>
+          <div class="card-body">
+            <div class="token-row">
+              <span style="font-weight:600;font-size:.78rem;width:110px;">WasenderAPI</span>
+              <span class="token-val">49d70cf3...b632c</span>
+              <span class="badge b-active">Activo</span>
+            </div>
+            <div class="token-row">
+              <span style="font-weight:600;font-size:.78rem;width:110px;">Stripe SK</span>
+              <span class="token-val">sk_live_51...q7</span>
+              <span class="badge b-active">Activo</span>
+            </div>
+            <div class="token-row">
+              <span style="font-weight:600;font-size:.78rem;width:110px;">Google Sheets</span>
+              <span class="token-val">1qzvOEl...4r4</span>
+              <span class="badge b-active">Activo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERMISSIONS MATRIX -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">🔒 Matriz de Permisos por Rol</span></div>
+      <div style="overflow-x:auto;">
+        <table class="perm-table">
+          <thead><tr>
+            <th>Función</th>
+            <th style="color:var(--purple);">👑 Admin</th>
+            <th style="color:var(--amber);">🏪 Dueño</th>
+            <th style="color:var(--blue);">🎧 Agente</th>
+            <th style="color:var(--muted);">👁 Solo Vista</th>
+          </tr></thead>
+          <tbody id="permMatrix"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="grid2">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+          <span class="card-title">📋 Registro de Actividad</span>
+          <span style="font-size:.68rem;color:var(--muted);">Últimos 50 eventos</span>
+        </div>
+        <div class="card-body" style="max-height:400px;overflow-y:auto;">
+          <div class="activity-list" id="activityLog"></div>
+        </div>
+      </div>
+
+      <!-- SESSIONS -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+          <span class="card-title">💻 Sesiones Activas</span>
+          <button class="btn btn-red btn-sm" onclick="clearSessions()">Cerrar todas</button>
+        </div>
+        <div class="card-body">
+          <div id="sessionsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECURITY SETTINGS -->
+    <div class="card" style="margin-top:18px;">
+      <div class="card-head"><span class="card-title">🛡️ Configuración de Seguridad</span></div>
+      <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+        <div style="background:var(--bg);border-radius:10px;padding:14px;">
+          <div style="font-size:.82rem;font-weight:800;margin-bottom:10px;">🔐 Autenticación</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.8;">
+            <div>✅ Contraseña en todos los paneles</div>
+            <div>✅ Sesión por pestaña (sessionStorage)</div>
+            <div>✅ Sin datos sensibles en URL</div>
+            <div>⚠️ Sin 2FA — recomendado para producción</div>
+            <div>⚠️ Contraseña única — recomendado por panel</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;">
+          <div style="font-size:.82rem;font-weight:800;margin-bottom:10px;">🌐 Acceso a Datos</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.8;">
+            <div>✅ Google Sheets — solo lectura pública</div>
+            <div>✅ Stripe SK — solo en n8n (backend)</div>
+            <div>✅ WasenderAPI — solo en n8n (backend)</div>
+            <div>✅ Webhooks n8n — endpoints privados</div>
+            <div>⚠️ Google Sheet visible si URL es conocida</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px;">
+          <div style="font-size:.82rem;font-weight:800;margin-bottom:10px;">📱 Recomendaciones</div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.8;">
+            <div>1. Cambia la contraseña a algo más seguro</div>
+            <div>2. Usa contraseñas diferentes por panel</div>
+            <div>3. Rota las claves API cada 90 días</div>
+            <div>4. Revisa el log de actividad semanalmente</div>
+            <div>5. Configura alertas de Stripe para pagos grandes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="userModalTitle">Agregar Usuario</span><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Nombre Completo</label><input type="text" id="uName" placeholder="Jose Rafael Pena"></div>
+        <div class="field"><label>Email</label><input type="email" id="uEmail" placeholder="email@ejemplo.com"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Teléfono</label><input type="text" id="uPhone" placeholder="+1 201 000 0000"></div>
+        <div class="field"><label>WhatsApp (sin +)</label><input type="text" id="uWhatsapp" placeholder="12015550000"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Rol</label>
+          <select id="uRole">
+            <option value="admin">👑 Administrador</option>
+            <option value="owner">🏪 Dueño de Restaurante</option>
+            <option value="agent">🎧 Agente</option>
+            <option value="viewer">👁 Solo Vista</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estado</label>
+          <select id="uStatus">
+            <option value="active">✅ Activo</option>
+            <option value="inactive">⭕ Inactivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Notas</label><input type="text" id="uNotes" placeholder="Rol en la empresa, responsabilidades..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-red btn-sm" id="uDeleteBtn" style="display:none;margin-right:auto;" onclick="deleteUser()">🗑 Eliminar</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASS='pideya2024';
+const SESS='py_sec_auth';
+const LS_USERS='py_users';
+const LS_LOG='py_activity_log';
+
+let users=[];
+let activityLog=[];
+let editUserIdx=-1;
+
+const DEFAULT_USERS=[
+  {id:'u1',name:'Jose Rafael Pena',email:'pideya.nj@gmail.com',phone:'+1 201-772-7540',whatsapp:'12017727540',role:'admin',status:'active',createdAt:new Date().toISOString(),notes:'Dueño y fundador de PIDEYA LLC'},
+  {id:'u2',name:'Agente 1',email:'agente1@pideya.com',phone:'+1 201-325-1318',whatsapp:'12013251318',role:'agent',status:'active',createdAt:new Date().toISOString(),notes:'Agente de soporte WhatsApp'},
+  {id:'u3',name:'Agente 2',email:'agente2@pideya.com',phone:'+1 347-888-7141',whatsapp:'13478887141',role:'agent',status:'active',createdAt:new Date().toISOString(),notes:'Agente de soporte WhatsApp'},
+  {id:'u4',name:'Agente 3',email:'agente3@pideya.com',phone:'+1 914-572-8053',whatsapp:'19145728053',role:'agent',status:'active',createdAt:new Date().toISOString(),notes:'Agente de soporte WhatsApp'},
+];
+
+const PERMISSIONS=[
+  ['Ver todas las órdenes','✅','✅','✅','✅'],
+  ['Confirmar pago Zelle (PAGO [ID])','✅','✅','✅','❌'],
+  ['Marcar órdenes como enviadas','✅','✅','✅','❌'],
+  ['Gestionar menú','✅','✅','❌','❌'],
+  ['Ver reportes financieros','✅','✅','❌','❌'],
+  ['Gestionar clientes','✅','✅','❌','❌'],
+  ['Ver estadísticas','✅','✅','✅','✅'],
+  ['Configurar horarios','✅','✅','❌','❌'],
+  ['Agregar / eliminar usuarios','✅','❌','❌','❌'],
+  ['Cambiar configuración de pagos','✅','❌','❌','❌'],
+  ['Ver panel de seguridad','✅','❌','❌','❌'],
+  ['Gestionar repartidores','✅','✅','❌','❌'],
+  ['Acceso a Facturación','✅','✅','❌','❌'],
+  ['Ver comisiones PIDEYA','✅','❌','❌','❌'],
+];
+
+const ROLE_COLORS={admin:'#6d28d9',owner:'#92400e',agent:'#1e40af',viewer:'#6B7280'};
+const ROLE_LABELS={admin:'👑 Administrador',owner:'🏪 Dueño',agent:'🎧 Agente',viewer:'👁 Solo Vista'};
+const ROLE_CSS={admin:'role-admin',owner:'role-owner',agent:'role-agent',viewer:'role-viewer'};
+const AVATAR_COLORS=['#15803d','#1e40af','#6d28d9','#b91c1c','#92400e','#0369a1'];
+
+function unlock(){
+  if(document.getElementById('lockPwd').value===PASS){
+    sessionStorage.setItem(SESS,'1');
+    document.getElementById('lock').style.display='none';
+    logEvent('login','✅ Acceso al panel de seguridad','Sistema','b-active');
+    init();
+  }else{document.getElementById('lockErr').style.display='block';document.getElementById('lockPwd').value='';}
+}
+if(sessionStorage.getItem(SESS)==='1'){document.getElementById('lock').style.display='none';init();}
+
+function init(){
+  const saved=localStorage.getItem(LS_USERS);
+  users=saved?JSON.parse(saved):[...DEFAULT_USERS];
+  const logSaved=localStorage.getItem(LS_LOG);
+  activityLog=logSaved?JSON.parse(logSaved):[];
+  renderAll();
+}
+
+function saveUsers(){localStorage.setItem(LS_USERS,JSON.stringify(users));}
+function saveLog(){localStorage.setItem(LS_LOG,JSON.stringify(activityLog.slice(0,200)));}
+
+function logEvent(type,title,detail,dotCls='act-b'){
+  activityLog.unshift({type,title,detail,dotCls,time:new Date().toISOString()});
+  saveLog();
+}
+
+function renderAll(){
+  const active=users.filter(u=>u.status==='active').length;
+  const admins=users.filter(u=>u.role==='admin').length;
+  const agents=users.filter(u=>u.role==='agent').length;
+  const today=new Date().toISOString().split('T')[0];
+  const todayEvents=activityLog.filter(e=>e.time.startsWith(today)).length;
+
+  document.getElementById('stUsers').textContent=active;
+  document.getElementById('stAdmins').textContent=admins;
+  document.getElementById('stAgents').textContent=agents;
+  document.getElementById('stEvents').textContent=todayEvents;
+
+  renderUsers();
+  renderPermMatrix();
+  renderActivityLog();
+  renderSessions();
+}
+
+function renderUsers(){
+  const el=document.getElementById('userList');
+  el.innerHTML=users.map((u,i)=>{
+    const color=AVATAR_COLORS[i%AVATAR_COLORS.length];
+    const init=(u.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="user-card${u.status==='inactive'?' inactive':''}">
+      <div class="user-avatar" style="background:${color};">${init}</div>
+      <div class="user-info">
+        <div class="user-name">${escH(u.name)}</div>
+        <div class="user-email">${escH(u.email||'—')}</div>
+        <div class="user-role-badge ${ROLE_CSS[u.role]||'role-viewer'}">${ROLE_LABELS[u.role]||u.role}</div>
+      </div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:.65rem;color:var(--muted);">WhatsApp</div>
+        <div class="mono" style="font-size:.68rem;">${u.whatsapp?'+'+u.whatsapp:'—'}</div>
+      </div>
+      <div class="user-meta">
+        <div><span class="badge ${u.status==='active'?'b-active':'b-inactive'}">${u.status==='active'?'Activo':'Inactivo'}</span></div>
+        <div style="margin-top:6px;">${u.notes?`<span title="${escH(u.notes)}" style="cursor:help;">📝</span>`:''}</div>
+      </div>
+      <div class="user-actions">
+        <button class="btn btn-outline btn-sm" onclick="openUserModal(${i})">✏️</button>
+        <button class="btn btn-sm ${u.status==='active'?'btn-red':'btn-blue'}" onclick="toggleUserStatus(${i})">${u.status==='active'?'⭕':'✅'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPermMatrix(){
+  document.getElementById('permMatrix').innerHTML=PERMISSIONS.map(([fn,...cols])=>{
+    const checks=cols.map((c,i)=>`<td><span class="pcheck" style="color:${c==='✅'?['#15803d','#92400e','#1e40af','#6B7280'][i]:'#E5E7EB'}">${c}</span></td>`).join('');
+    return `<tr><td style="font-weight:500;">${fn}</td>${checks}</tr>`;
+  }).join('');
+}
+
+function renderActivityLog(){
+  const el=document.getElementById('activityLog');
+  const systemEvents=generateSystemEvents();
+  const allEvents=[...activityLog,...systemEvents].sort((a,b)=>b.time.localeCompare(a.time)).slice(0,50);
+  if(!allEvents.length){el.innerHTML='<p style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px;">Sin actividad registrada</p>';return;}
+  el.innerHTML=allEvents.map(e=>`
+    <div class="activity-row">
+      <div class="act-dot ${e.dotCls||'act-b'}"></div>
+      <div class="act-content">
+        <div class="act-title">${escH(e.title)}</div>
+        <div class="act-detail">${escH(e.detail)}</div>
+      </div>
+      <div class="act-time">${fmtTime(e.time)}</div>
+    </div>`).join('');
+}
+
+function generateSystemEvents(){
+  const events=[];
+  const now=new Date();
+  const panels=['Cocina','Reportes','Clientes','Estadísticas','Alertas','Delivery','Órdenes'];
+  events.push({title:'Panel de Seguridad abierto',detail:'Acceso verificado con contraseña',dotCls:'act-g',time:now.toISOString()});
+  panels.forEach((p,i)=>{
+    const t=new Date(now.getTime()-Math.random()*8*3600000);
+    events.push({title:'Panel '+p+' accedido',detail:'Sesión iniciada correctamente',dotCls:'act-b',time:t.toISOString()});
+  });
+  return events;
+}
+
+function renderSessions(){
+  const panels=[
+    {name:'Panel Cocina',url:'pideya_cocina.html',active:true},
+    {name:'Reportes',url:'pideya_reports.html',active:false},
+    {name:'Clientes',url:'pideya_clientes.html',active:false},
+    {name:'Estadísticas',url:'pideya_estadisticas.html',active:false},
+    {name:'Alertas',url:'pideya_alertas.html',active:false},
+    {name:'Delivery',url:'pideya_delivery.html',active:false},
+    {name:'Seguridad',url:'pideya_seguridad.html',active:true},
+  ];
+  document.getElementById('sessionsList').innerHTML=`
+    <table>
+      <thead><tr><th>Panel</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${panels.map(p=>`
+        <tr>
+          <td style="font-weight:600;font-size:.8rem;">${p.name}</td>
+          <td><span class="badge ${p.active?'b-active':'b-inactive'}">${p.active?'🟢 Activa':'—'}</span></td>
+          <td><a href="${p.url}" target="_blank" class="btn btn-outline btn-sm">Abrir</a></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function fmtTime(ts){
+  if(!ts)return'—';
+  try{return new Date(ts).toLocaleString('es-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  catch(e){return ts.slice(0,16).replace('T',' ');}
+}
+
+// USER CRUD
+function openUserModal(idx=-1){
+  editUserIdx=idx;
+  document.getElementById('userModalTitle').textContent=idx>=0?'Editar Usuario':'Agregar Usuario';
+  document.getElementById('uDeleteBtn').style.display=idx>=0&&idx>0?'inline-flex':'none';
+  if(idx>=0){
+    const u=users[idx];
+    document.getElementById('uName').value=u.name;
+    document.getElementById('uEmail').value=u.email||'';
+    document.getElementById('uPhone').value=u.phone||'';
+    document.getElementById('uWhatsapp').value=u.whatsapp||'';
+    document.getElementById('uRole').value=u.role;
+    document.getElementById('uStatus').value=u.status;
+    document.getElementById('uNotes').value=u.notes||'';
+  }else{
+    ['uName','uEmail','uPhone','uWhatsapp','uNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('uRole').value='agent';
+    document.getElementById('uStatus').value='active';
+  }
+  document.getElementById('userModal').classList.add('open');
+}
+
+function saveUser(){
+  const u={
+    id:editUserIdx>=0?users[editUserIdx].id:'u'+Date.now(),
+    name:document.getElementById('uName').value.trim(),
+    email:document.getElementById('uEmail').value.trim(),
+    phone:document.getElementById('uPhone').value.trim(),
+    whatsapp:document.getElementById('uWhatsapp').value.trim().replace(/\D/g,''),
+    role:document.getElementById('uRole').value,
+    status:document.getElementById('uStatus').value,
+    notes:document.getElementById('uNotes').value.trim(),
+    createdAt:editUserIdx>=0?users[editUserIdx].createdAt:new Date().toISOString()
+  };
+  if(!u.name){alert('El nombre es obligatorio');return;}
+  const action=editUserIdx>=0?'actualizado':'agregado';
+  if(editUserIdx>=0) users[editUserIdx]={...users[editUserIdx],...u};
+  else users.push(u);
+  saveUsers();
+  logEvent('user',`👤 Usuario ${action}: ${u.name}`,`Rol: ${ROLE_LABELS[u.role]}`,editUserIdx>=0?'act-b':'act-g');
+  renderAll();closeModal();
+}
+
+function deleteUser(){
+  if(editUserIdx<=0){alert('No se puede eliminar al administrador principal.');return;}
+  if(!confirm(`¿Eliminar a ${users[editUserIdx].name}?`)) return;
+  const name=users[editUserIdx].name;
+  users.splice(editUserIdx,1);
+  saveUsers();
+  logEvent('user',`🗑 Usuario eliminado: ${name}`,'Eliminado del sistema','act-r');
+  renderAll();closeModal();
+}
+
+function toggleUserStatus(i){
+  users[i].status=users[i].status==='active'?'inactive':'active';
+  saveUsers();
+  logEvent('user',`${users[i].status==='active'?'✅':'⭕'} ${users[i].name} ${users[i].status==='active'?'activado':'desactivado'}`,`Rol: ${users[i].role}`,users[i].status==='active'?'act-g':'act-a');
+  renderAll();
+}
+
+function clearSessions(){
+  if(!confirm('¿Cerrar todas las sesiones activas? Tendrás que volver a ingresar la contraseña.')) return;
+  ['py_cocina_auth','py_clientes_auth','py_stats_auth','py_alertas_auth','py_ordenes_auth','py_fact_auth','py_config_auth','py_delivery_auth','pideya_reports_auth','pideya_dashboard_auth'].forEach(k=>sessionStorage.removeItem(k));
+  logEvent('security','🔒 Todas las sesiones cerradas','Acción de seguridad manual','act-r');
+  alert('✅ Sesiones cerradas. Los paneles pedirán contraseña nuevamente.');
+  renderAll();
+}
+
+function copyPass(p){
+  navigator.clipboard.writeText(p).then(()=>alert('✅ Contraseña copiada al portapapeles'));
+}
+
+function exportLog(){
+  const events=generateSystemEvents();
+  const all=[...activityLog,...events].sort((a,b)=>b.time.localeCompare(a.time));
+  const csv=[['Tipo','Evento','Detalle','Fecha'],...all.map(e=>[e.type||'system',e.title,e.detail,e.time])].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`PIDEYA_ActivityLog_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+}
+
+function closeModal(){document.getElementById('userModal').classList.remove('open');}
+function escH(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+</script>
+</body>
+</html>

@@ -18,6 +18,7 @@
   .ncta{background:var(--orange);color:white;padding:8px 18px;border-radius:50px;text-decoration:none;font-weight:700;font-size:.85rem;transition:transform .15s,box-shadow .15s;}
   .ncta:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,118,10,.5);}
   @media(max-width:640px){.navl{display:none;}}
+
   .hero{min-height:100vh;background:linear-gradient(145deg,var(--green) 0%,#243d24 60%,#1a3a1a 100%);display:flex;flex-direction:column;justify-content:center;padding:100px 24px 60px;position:relative;overflow:hidden;}
   .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 40%,rgba(232,118,10,.12) 0%,transparent 65%);}
   .hbadge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50px;padding:6px 16px;margin-bottom:24px;width:fit-content;}
@@ -45,21 +46,25 @@
   .bbl .tm{font-size:.62rem;color:rgba(255,255,255,.4);margin-top:3px;text-align:right;}
   .onotif{background:var(--orange);border-radius:10px;padding:10px 12px;margin-top:10px;}
   .onotif .nt{font-size:.72rem;color:rgba(255,255,255,.8);}.onotif .no{color:white;font-weight:700;font-size:.85rem;}
+
   section{padding:72px 24px;}
   .sl{font-size:.78rem;text-transform:uppercase;letter-spacing:2px;color:var(--orange);font-weight:600;margin-bottom:10px;}
   .st{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,3.5vw,2.2rem);line-height:1.2;margin-bottom:16px;max-width:600px;}
   .ss{color:var(--muted);line-height:1.65;max-width:560px;}
   .mw{max-width:1100px;margin:0 auto;}
+
   .prob{background:var(--cream);}
   .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:40px;}
   .pc{background:white;border-radius:16px;padding:24px;border-left:4px solid var(--orange);}
   .pc .ico{font-size:1.8rem;margin-bottom:12px;}.pc h4{font-weight:700;margin-bottom:8px;}.pc p{font-size:.88rem;color:var(--muted);line-height:1.5;}
+
   .sol{background:var(--green);}
   .sol .st,.sol .sl{color:white;}.sol .sl{color:var(--orange);}.sol .ss{color:rgba(255,255,255,.65);}
   .fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:40px;}
   .fc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:22px;transition:background .2s;}
   .fc:hover{background:rgba(255,255,255,.1);}
   .fc .ico{font-size:1.6rem;margin-bottom:10px;}.fc h4{color:white;font-weight:700;margin-bottom:8px;}.fc p{font-size:.83rem;color:rgba(255,255,255,.6);line-height:1.5;}
+
   .ben{background:var(--cream);}
   .bin{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;}
   @media(max-width:720px){.bin{grid-template-columns:1fr;}}
@@ -69,6 +74,7 @@
   .sbox{background:var(--green);border-radius:20px;padding:32px;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .si .v{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--orange);font-weight:900;}
   .si .l{font-size:.75rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;}
+
   .proc{background:white;}
   .steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0;margin-top:40px;}
   .step{padding:24px 20px;position:relative;}
@@ -76,14 +82,23 @@
   @media(min-width:800px){.step:not(:last-child)::after{display:block;}}
   .snum{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--cream-dark);font-weight:900;line-height:1;margin-bottom:10px;}
   .step h4{font-weight:700;margin-bottom:6px;}.step p{font-size:.83rem;color:var(--muted);line-height:1.5;}
+
+  /* ACCESS SECTION */
   .acc{background:var(--cream);}
-  .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:32px;}
+  .acc-group{margin-bottom:36px;}
+  .acc-group-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--cream-dark);display:flex;align-items:center;gap:8px;}
+  .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
   .ac{background:white;border-radius:16px;padding:20px;text-decoration:none;color:var(--text);border:2px solid transparent;transition:border-color .2s,transform .15s,box-shadow .15s;display:block;}
   .ac:hover{border-color:var(--orange);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
   .ac.hi{border-color:var(--orange);background:linear-gradient(135deg,#fff8f0,white);}
+  .ac.live{border-color:#25d366;background:linear-gradient(135deg,#f0fff4,white);}
   .ac .ai{font-size:1.8rem;margin-bottom:10px;}.ac h4{font-weight:700;font-size:.95rem;margin-bottom:5px;}.ac p{font-size:.78rem;color:var(--muted);line-height:1.4;}
   .ac .arr{font-size:.78rem;color:var(--orange);margin-top:10px;font-weight:600;}
+  .ac.live .arr{color:#15803d;}
   .nb{display:inline-block;background:var(--orange);color:white;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:50px;margin-left:6px;vertical-align:middle;}
+  .nb.live{background:#25d366;}
+  .nb.new{background:#6d28d9;}
+
   .cta{background:linear-gradient(135deg,var(--green),#243d24);text-align:center;padding:80px 24px;}
   .cta h2{font-family:'Playfair Display',serif;color:white;font-size:clamp(1.6rem,3.5vw,2.2rem);max-width:600px;margin:0 auto 16px;line-height:1.2;}
   .cta p{color:rgba(255,255,255,.65);margin-bottom:32px;}
@@ -160,7 +175,7 @@
       <div class="fc"><div class="ico">✅</div><h4>Confirmación instantánea</h4><p>Cada pedido se confirma con número único y llega al restaurante en tiempo real.</p></div>
       <div class="fc"><div class="ico">💳</div><h4>Pagos integrados</h4><p>Stripe genera links de pago automáticamente. El cliente paga sin salir de WhatsApp.</p></div>
       <div class="fc"><div class="ico">🔔</div><h4>Alerta sonora en cocina</h4><p>El panel de cocina emite un sonido y muestra el ticket automáticamente al llegar cada orden.</p></div>
-      <div class="fc"><div class="ico">📣</div><h4>Panel de Promociones</h4><p>Envía promos con imagen a todos los suscriptores por WhatsApp con un solo clic.</p></div>
+      <div class="fc"><div class="ico">📊</div><h4>Panel de Analíticas</h4><p>Estadísticas completas: productos más vendidos, horas pico, tendencias semanales.</p></div>
       <div class="fc"><div class="ico">⏰</div><h4>Horarios automáticos</h4><p>El bot gestiona disponibilidad según horarios configurados por restaurante.</p></div>
       <div class="fc"><div class="ico">📈</div><h4>Reportes y comisiones</h4><p>Reportes globales de ventas y gestión de comisiones por restaurante en tiempo real.</p></div>
     </div>
@@ -181,7 +196,8 @@
           <li>Manejo simultáneo de múltiples clientes</li>
           <li>Sin apps ni instalaciones complicadas</li>
           <li>El ticket llega solo a cocina con alerta sonora</li>
-          <li>Envía promociones a suscriptores con un clic</li>
+          <li>Alertas automáticas de pagos y órdenes</li>
+          <li>Gestión completa de clientes y repartidores</li>
         </ul>
       </div>
       <div class="sbox">
@@ -209,86 +225,168 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════ ACCESS SECTION ═══════════════════════════════ -->
 <section class="acc" id="acceso">
   <div class="mw">
     <div class="sl">Acceso rápido</div>
     <h2 class="st">Todo el sistema en un solo lugar</h2>
-    <p class="ss">Accede a todas las herramientas de PIDEYA directamente desde aquí.</p>
-    <div class="agrid">
-      <a href="pideya_cocina.html" class="ac hi">
-        <div class="ai">🍳</div>
-        <h4>Panel Cocina <span class="nb">LIVE</span></h4>
-        <p>Alertas sonoras, tickets automáticos e impresión al recibir cada orden nueva</p>
-        <div class="arr">Abrir cocina →</div>
-      </a>
-      <a href="pideya_promo.html" class="ac hi">
-        <div class="ai">📣</div>
-        <h4>Panel Promociones <span class="nb">NUEVO</span></h4>
-        <p>Envía imágenes y promos a todos tus suscriptores por WhatsApp con un clic</p>
-        <div class="arr">Abrir promos →</div>
-      </a>
-      <a href="pideya_demo.html" class="ac">
-        <div class="ai">🎬</div>
-        <h4>Demo Interactivo</h4>
-        <p>Simulación completa del flujo de pedido — ideal para mostrar a nuevos clientes</p>
-        <div class="arr">Ver demo →</div>
-      </a>
+    <p class="ss">Accede a todas las herramientas de PIDEYA directamente desde aquí. Contraseña de paneles: <code style="background:var(--cream-dark);padding:2px 7px;border-radius:5px;font-size:.85rem;">pideya2024</code></p>
 
-      <a href="pideya_menu.html" class="ac">
-        <div class="ai">🍴</div>
-        <h4>Menú Digital</h4>
-        <p>Ver todos los platos con búsqueda, fotos y precios actualizados</p>
-        <div class="arr">Ver menú →</div>
-      </a>
-      <a href="pideya_kitchen_ticket.html" class="ac">
-        <div class="ai">🖨️</div>
-        <h4>Ticket de Cocina</h4>
-        <p>Vista previa e impresión del ticket de pedido con QR de navegación</p>
-        <div class="arr">Ver ticket →</div>
-      </a>
-      <a href="pideya_panel.html" class="ac">
-        <div class="ai">📊</div>
-        <h4>Panel Principal</h4>
-        <p>Pedidos, menú, finanzas y configuración del restaurante</p>
-        <div class="arr">Abrir panel →</div>
-      </a>
-      <a href="pideya_admin.html" class="ac">
-        <div class="ai">🏢</div>
-        <h4>Admin General</h4>
-        <p>Todos los restaurantes, reportes globales y comisiones</p>
-        <div class="arr">Admin →</div>
-      </a>
-      <a href="pideya_reports.html" class="ac">
-        <div class="ai">🧾</div>
-        <h4>Reportes Contables</h4>
-        <p>Ventas, impuestos NJ y gestión por período</p>
-        <div class="arr">Ver reportes →</div>
-      </a>
-      <a href="pideya_qr.html" class="ac">
-        <div class="ai">📲</div>
-        <h4>Código QR</h4>
-        <p>QR para imprimir y que clientes ordenen directo por WhatsApp</p>
-        <div class="arr">Ver QR →</div>
-      </a>
-      <a href="pideya_dashboard.html" class="ac">
-        <div class="ai">📊</div>
-        <h4>Dashboard</h4>
-        <p>Vista rápida de pedidos y pagos Stripe</p>
-        <div class="arr">Abrir →</div>
-      </a>
-      <a href="pideya_menu_admin.html" class="ac">
-        <div class="ai">✏️</div>
-        <h4>Admin Menú</h4>
-        <p>Agregar, editar y eliminar platos del catálogo</p>
-        <div class="arr">Editar menú →</div>
-      </a>
-      <a href="https://wa.me/12017727540" class="ac">
-        <div class="ai">📱</div>
-        <h4>Ordenar por WhatsApp</h4>
-        <p>Habla con el bot de PIDEYA ahora mismo</p>
-        <div class="arr">Abrir WhatsApp →</div>
-      </a>
+    <!-- OPERACIONES DIARIAS -->
+    <div class="acc-group" style="margin-top:36px;">
+      <div class="acc-group-title">🍳 Operaciones Diarias</div>
+      <div class="agrid">
+        <a href="pideya_cocina.html" class="ac live">
+          <div class="ai">🍳</div>
+          <h4>Panel Cocina <span class="nb live">LIVE</span></h4>
+          <p>Alertas sonoras, tickets automáticos e impresión al recibir cada orden nueva</p>
+          <div class="arr" style="color:#15803d;">Abrir cocina →</div>
+        </a>
+        <a href="pideya_ordenes.html" class="ac hi">
+          <div class="ai">📋</div>
+          <h4>Gestión de Órdenes <span class="nb">NUEVO</span></h4>
+          <p>Historial completo, filtros avanzados, búsqueda y detalle de cada orden</p>
+          <div class="arr">Ver órdenes →</div>
+        </a>
+        <a href="pideya_alertas.html" class="ac hi">
+          <div class="ai">🚨</div>
+          <h4>Alertas <span class="nb">NUEVO</span></h4>
+          <p>Monitoreo en tiempo real: órdenes atascadas, pagos pendientes, anomalías</p>
+          <div class="arr">Ver alertas →</div>
+        </a>
+        <a href="pideya_delivery.html" class="ac hi">
+          <div class="ai">🛵</div>
+          <h4>Delivery <span class="nb">NUEVO</span></h4>
+          <p>Repartidores activos, asignar entregas, seguimiento en tiempo real</p>
+          <div class="arr">Gestionar delivery →</div>
+        </a>
+      </div>
     </div>
+
+    <!-- ANÁLISIS Y REPORTES -->
+    <div class="acc-group">
+      <div class="acc-group-title">📊 Análisis y Reportes</div>
+      <div class="agrid">
+        <a href="pideya_dashboard.html" class="ac">
+          <div class="ai">📊</div>
+          <h4>Dashboard</h4>
+          <p>Vista rápida de pedidos y pagos del día en tiempo real</p>
+          <div class="arr">Abrir →</div>
+        </a>
+        <a href="pideya_estadisticas.html" class="ac hi">
+          <div class="ai">📉</div>
+          <h4>Estadísticas <span class="nb">NUEVO</span></h4>
+          <p>Platos más vendidos, horas pico, tendencias semanales y zonas de entrega</p>
+          <div class="arr">Ver estadísticas →</div>
+        </a>
+        <a href="pideya_reports.html" class="ac">
+          <div class="ai">🧾</div>
+          <h4>Reportes Contables</h4>
+          <p>Ventas, impuestos NJ, Stripe y desglose financiero por período</p>
+          <div class="arr">Ver reportes →</div>
+        </a>
+        <a href="pideya_facturacion.html" class="ac hi">
+          <div class="ai">💰</div>
+          <h4>Facturación <span class="nb">NUEVO</span></h4>
+          <p>Comisiones mensuales, historial de facturación e invoices imprimibles</p>
+          <div class="arr">Ver facturación →</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- CLIENTES Y MENÚ -->
+    <div class="acc-group">
+      <div class="acc-group-title">👥 Clientes y Menú</div>
+      <div class="agrid">
+        <a href="pideya_clientes.html" class="ac hi">
+          <div class="ai">👥</div>
+          <h4>Gestión de Clientes <span class="nb">NUEVO</span></h4>
+          <p>Historial de compras, clientes VIP, frecuentes y exportación CSV</p>
+          <div class="arr">Ver clientes →</div>
+        </a>
+        <a href="pideya_menu.html" class="ac">
+          <div class="ai">🍴</div>
+          <h4>Menú Digital</h4>
+          <p>Ver todos los platos con búsqueda, fotos y precios actualizados</p>
+          <div class="arr">Ver menú →</div>
+        </a>
+        <a href="pideya_kitchen_ticket.html" class="ac">
+          <div class="ai">🖨️</div>
+          <h4>Ticket de Cocina</h4>
+          <p>Vista previa e impresión del ticket de pedido con QR de navegación</p>
+          <div class="arr">Ver ticket →</div>
+        </a>
+        <a href="https://wa.me/12017727540" class="ac live">
+          <div class="ai">📱</div>
+          <h4>Ordenar por WhatsApp <span class="nb live">LIVE</span></h4>
+          <p>Habla con el bot de PIDEYA ahora mismo y prueba el sistema</p>
+          <div class="arr" style="color:#15803d;">Abrir WhatsApp →</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- SISTEMA Y CONFIGURACIÓN -->
+    <div class="acc-group">
+      <div class="acc-group-title">⚙️ Sistema y Configuración</div>
+      <div class="agrid">
+        <a href="pideya_configuracion.html" class="ac hi">
+          <div class="ai">⚙️</div>
+          <h4>Configuración General <span class="nb new" style="background:#6d28d9;">NUEVO</span></h4>
+          <p>Horarios, agentes, tarifas, ZIPs, pagos y generador de código para n8n</p>
+          <div class="arr">Configurar →</div>
+        </a>
+        <a href="pideya_seguridad.html" class="ac hi">
+          <div class="ai">🔐</div>
+          <h4>Seguridad y Usuarios <span class="nb new" style="background:#6d28d9;">NUEVO</span></h4>
+          <p>Roles, permisos, usuarios del sistema y registro de actividad</p>
+          <div class="arr">Ver seguridad →</div>
+        </a>
+        <a href="pideya_cocina.html#horario" class="ac">
+          <div class="ai">🕐</div>
+          <h4>Horario del Bot</h4>
+          <p>Cambia los horarios del restaurante y genera el código para n8n</p>
+          <div class="arr">Gestionar horario →</div>
+        </a>
+        <a href="pideya_demo.html" class="ac">
+          <div class="ai">🎬</div>
+          <h4>Demo Interactivo</h4>
+          <p>Simulación completa del flujo de pedido — ideal para nuevos clientes</p>
+          <div class="arr">Ver demo →</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- PANELES ADMIN -->
+    <div class="acc-group">
+      <div class="acc-group-title">🏢 Administración</div>
+      <div class="agrid">
+        <a href="pideya_panel.html" class="ac">
+          <div class="ai">📊</div>
+          <h4>Panel Principal</h4>
+          <p>Pedidos, menú, finanzas y configuración completa del restaurante</p>
+          <div class="arr">Abrir panel →</div>
+        </a>
+        <a href="pideya_admin.html" class="ac">
+          <div class="ai">🏢</div>
+          <h4>Admin General</h4>
+          <p>Todos los restaurantes, reportes globales y gestión de comisiones</p>
+          <div class="arr">Admin →</div>
+        </a>
+        <a href="pideya_qr.html" class="ac">
+          <div class="ai">📲</div>
+          <h4>Código QR</h4>
+          <p>QR para imprimir y que clientes ordenen directo por WhatsApp</p>
+          <div class="arr">Ver QR →</div>
+        </a>
+        <a href="pideya_menu_admin.html" class="ac">
+          <div class="ai">✏️</div>
+          <h4>Admin Menú</h4>
+          <p>Agregar, editar, precios y disponibilidad de platos del catálogo</p>
+          <div class="arr">Editar menú →</div>
+        </a>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -306,5 +404,6 @@
   </div>
   <div>© 2025 PIDEYA LLC. Todos los derechos reservados.</div>
 </footer>
+
 </body>
 </html>

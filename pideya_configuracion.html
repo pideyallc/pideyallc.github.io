@@ -377,7 +377,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
           <div class="cfg-card-body">
             <div class="field">
               <label>Bearer Token</label>
-              <input type="password" id="wasenderToken" value="49d70cf399c1982a325feb81a265eaaaf41f7605b5ae8ed9236b2976bbbb632c">
+              <input type="password" id="wasenderToken" placeholder="Bearer token..." value="">
               <div class="field-note">Token de autenticación para enviar mensajes de WhatsApp via WasenderAPI</div>
             </div>
             <div class="field">
@@ -488,8 +488,8 @@ Tu pedido está siendo preparado ahora mismo. Tiempo estimado: 20-30 min 🚀
           <div class="cfg-card-body">
             <div class="field">
               <label>Secret Key (sk_live_...)</label>
-              <input type="password" id="stripeSk" value="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">
-              <div class="field-note">⚠️ Nunca compartas esta clave. Solo se usa en n8n, no en el frontend.</div>
+              <input type="password" id="stripeSk" placeholder="sk_live_..." value="">
+              <div class="field-note" style="color:#b91c1c;font-weight:700;">⚠️ NUNCA pongas la clave aquí. Las claves secretas van SOLO en n8n, nunca en archivos HTML públicos. Este campo es solo informativo.</div>
             </div>
             <div class="field">
               <label>Webhook Endpoint en Stripe</label>

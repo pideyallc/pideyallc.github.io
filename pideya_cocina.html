@@ -99,7 +99,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
 .order-card:hover{border-color:#94A3B8;box-shadow:0 4px 12px rgba(0,0,0,.1);}
 .order-card.type-c{border-left:3px solid var(--green);}
 .order-card.type-z{border-left:3px solid var(--yellow);}
-.order-card.type-d{border-left:3px solid var(--blue);opacity:.65;}
+.order-card.type-d{border-left:3px solid var(--blue);opacity:.75;}
 .card-row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
 .card-id{font-size:.67rem;font-weight:800;color:#6B7280;letter-spacing:.8px;}
 .badge{font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
@@ -254,6 +254,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span>Dashboard</div>
     <div class="nav-item" onclick="showPage('cocina')"><span class="nav-icon">🍳</span>Cocina<span class="nav-badge" id="nb-cocina">0</span></div>
     <div class="nav-item" onclick="showPage('zelle')"><span class="nav-icon">💸</span>Zelle Pendiente<span class="nav-badge" id="nb-zelle" style="background:var(--yellow)">0</span></div>
+    <div class="nav-item" onclick="showPage('despachados')"><span class="nav-icon">🛵</span>Despachados<span class="nav-badge" id="nb-despachados" style="background:var(--blue)">0</span></div>
     <div class="nav-item" onclick="showPage('ordenes')"><span class="nav-icon">📋</span>Todas las Órdenes</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="nav-icon">📈</span>Reportes</div>
     <div class="nav-item" onclick="showPage('menu_mgmt')"><span class="nav-icon">📋</span>Menú</div>
@@ -311,7 +312,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
     <div class="sec-head">
       <div class="sec-title"><div class="sec-dot dot-g"></div>Órdenes Confirmadas — Preparar ahora<span class="sec-cnt" id="cnt-cocina">0</span></div>
     </div>
-    <p style="font-size:.78rem;color:#4B5563;margin-bottom:16px;">🖨️ Haz clic en <strong style="color:#166534">Imprimir Ticket</strong> para imprimir el recibo con QR. Solo se muestran órdenes de <strong>hoy</strong> con pago confirmado.</p>
+    <p style="font-size:.78rem;color:#4B5563;margin-bottom:16px;">🖨️ Haz clic en <strong style="color:#166534">Imprimir Ticket</strong> para imprimir el recibo con QR. Solo se muestran órdenes de <strong>hoy</strong> con pago confirmado y <strong>pendientes de envío</strong>. Las ya enviadas aparecen en 🛵 Despachados.</p>
     <div id="list-cocina"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
   </div>
 
@@ -324,6 +325,15 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
     <div id="list-zelle"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
   </div>
 
+  <!-- DESPACHADOS -->
+  <div class="page" id="page-despachados">
+    <div class="sec-head">
+      <div class="sec-title"><div class="sec-dot dot-b"></div>Pedidos Despachados<span class="sec-cnt" id="cnt-despachados" style="background:#DBEAFE;color:#1E40AF">0</span></div>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;">Órdenes ya enviadas al cliente hoy. Historial de despachos del día.</p>
+    <div id="list-despachados"><div class="loading-state"><div class="spin"></div><p>Cargando...</p></div></div>
+  </div>
+
   <!-- TODAS LAS ÓRDENES -->
   <div class="page" id="page-ordenes">
     <div class="filter-bar">
@@ -332,6 +342,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
         <option value="">Todos los estados</option>
         <option value="Confirmed">✅ Confirmadas</option>
         <option value="Zelle-Pending">💸 Zelle Pendiente</option>
+        <option value="Enviado">🛵 Enviadas</option>
       </select>
       <select id="dateFilter" onchange="filterOrders()">
         <option value="today">Hoy</option>
@@ -441,7 +452,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
       </div>
       <button onclick="generateZipCode(document.getElementById('sDeliveryRadius').value)"
         style="width:100%;margin-top:12px;background:#166534;color:white;border:none;border-radius:8px;padding:10px 18px;font-family:Outfit,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .2s;"
-        onmouseover="this.style.background='#15803D'" onmouseout="this.style.background='#166534'">
+        onmouseover="this.style.background='#15803D'" onmouseout="this.style.background='#166634'">
         📋 Generar código ZIP para n8n
       </button>
       <div class="zip-code-box" id="zipCodeBox">
@@ -481,7 +492,7 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
       <div class="setting-row"><div class="setting-label">Restaurante</div><div style="font-size:.82rem;color:var(--muted)">El Conuco Restaurante</div></div>
       <div class="setting-row"><div class="setting-label">Dirección</div><div style="font-size:.82rem;color:var(--muted)">715 Summit Ave, Union City, NJ 07087</div></div>
       <div class="setting-row"><div class="setting-label">WhatsApp Bot</div><div style="font-size:.82rem;color:var(--green)">+1 (201) 772-7540</div></div>
-      <div class="setting-row"><div class="setting-label">Panel versión</div><div style="font-size:.82rem;color:var(--muted)">PIDEYA v3.0</div></div>
+      <div class="setting-row"><div class="setting-label">Panel versión</div><div style="font-size:.82rem;color:var(--muted)">PIDEYA v3.1</div></div>
     </div>
   </div>
 
@@ -623,13 +634,13 @@ function doLogin(){
   }else{document.getElementById('loginErr').style.display='block';}
 }
 
-const pageTitles={dashboard:'📊 Dashboard',cocina:'🍳 Cocina — Preparar ahora',zelle:'💸 Zelle Pendiente',ordenes:'📋 Todas las Órdenes',reportes:'📈 Reportes',horario:'🕐 Horario',menu_mgmt:'📋 Gestión del Menú',ajustes:'⚙️ Ajustes'};
+const pageTitles={dashboard:'📊 Dashboard',cocina:'🍳 Cocina — Preparar ahora',zelle:'💸 Zelle Pendiente',despachados:'🛵 Pedidos Despachados',ordenes:'📋 Todas las Órdenes',reportes:'📈 Reportes',horario:'🕐 Horario',menu_mgmt:'📋 Gestión del Menú',ajustes:'⚙️ Ajustes'};
 
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item')[['dashboard','cocina','zelle','ordenes','reportes','horario','menu_mgmt','ajustes'].indexOf(id)]?.classList.add('active');
+  document.querySelectorAll('.nav-item')[['dashboard','cocina','zelle','despachados','ordenes','reportes','menu_mgmt','horario','ajustes'].indexOf(id)]?.classList.add('active');
   document.getElementById('pageTitle').textContent=pageTitles[id];
   currentPage=id;
   if(id==='ordenes')filterOrders();
@@ -639,7 +650,6 @@ function showPage(id){
 }
 
 // ── DELIVERY RADIUS ZIP GENERATOR ──────────────────────────────────────────
-// Real NJ ZIPs within N miles of 715 Summit Ave, Union City NJ (40.7459, -74.0323)
 const ZIP_BY_RADIUS={
   3:['07030','07031','07086','07087','07093','07097','07302','07303','07306','07307','07308','07309','07310','07311','07395','07399'],
   5:['07030','07031','07047','07086','07087','07093','07094','07097','07302','07303','07304','07305','07306','07307','07308','07309','07310','07311','07395','07399'],
@@ -673,7 +683,7 @@ function copyZipCode(){
   const ta=document.getElementById('zipCodeTA');if(!ta)return;
   navigator.clipboard.writeText(ta.value).then(()=>{
     const btn=document.getElementById('copyZipBtn');
-    if(btn){btn.textContent='✅ Copiado!';btn.style.background='#15803D';setTimeout(()=>{btn.textContent='📋 Copiar';btn.style.background='#166534';},2000);}
+    if(btn){btn.textContent='✅ Copiado!';btn.style.background='#15803D';setTimeout(()=>{btn.textContent='📋 Copiar';btn.style.background='#166634';},2000);}
   }).catch(()=>{ta.select();document.execCommand('copy');});
 }
 
@@ -805,13 +815,19 @@ async function loadAll(){
 
 function updateAll(conn){
   const today=new Date().toISOString().slice(0,10);
-  const confToday=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===today);
+
+  // ── COCINA: only Confirmed orders for today that are NOT yet dispatched ──
   const conf=allOrders.filter(o=>o.Status==='Confirmed').reverse();
-  const confRecent=conf.filter(o=>toDateStr(o.Timestamp)===today);
+  const confToday=conf.filter(o=>toDateStr(o.Timestamp)===today);
+
   const zel=allOrders.filter(o=>o.Status==='Zelle-Pending').reverse();
+
+  // ── DESPACHADOS: Enviado orders for today ──
+  const despachados=allOrders.filter(o=>o.Status==='Enviado'&&toDateStr(o.Timestamp)===today).reverse();
+
   const todayRev=confToday.reduce((s,o)=>s+parseFloat(o.Total||0),0);
   const todayFees=confToday.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0);
-  const enviadasToday=allOrders.filter(o=>o.Status==='Enviado'&&toDateStr(o.Timestamp)===today);
+  const enviadasToday=despachados; // same filter
 
   document.getElementById('kpiConf').textContent=confToday.length;
   document.getElementById('kpiEnviadas').textContent=enviadasToday.length;
@@ -820,26 +836,32 @@ function updateAll(conn){
   document.getElementById('kpiRev').textContent='$'+todayRev.toFixed(2);
   document.getElementById('kpiTotal').textContent=allOrders.length;
   document.getElementById('kpiFees').textContent='$'+todayFees.toFixed(2);
-  document.getElementById('nb-cocina').textContent=confRecent.length;
+  document.getElementById('nb-cocina').textContent=confToday.length;
   document.getElementById('nb-zelle').textContent=zel.length;
+  document.getElementById('nb-despachados').textContent=despachados.length;
   document.getElementById('sbConn').textContent=conn;
 
-  document.getElementById('dash-conf').innerHTML=conf.length?conf.slice(0,5).map(o=>card(o,'c',true)).join(''):'<div class="empty"><em>✅</em>Sin órdenes hoy</div>';
+  document.getElementById('dash-conf').innerHTML=confToday.length?confToday.slice(0,5).map(o=>card(o,'c',true)).join(''):'<div class="empty"><em>✅</em>Sin órdenes hoy</div>';
   document.getElementById('dash-zelle').innerHTML=zel.length?zel.slice(0,5).map(o=>card(o,'z',true)).join(''):'<div class="empty"><em>💸</em>Sin pendientes</div>';
 
-  const cocinaList=confRecent.length?confRecent:conf.slice(0,20);
-  document.getElementById('cnt-cocina').textContent=confRecent.length;
-  document.getElementById('list-cocina').innerHTML=cocinaList.length?cocinaList.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas hoy</div>';
+  // Cocina: show today's confirmed (not dispatched). If none today, show last 20 confirmed.
+  const cocinaList=confToday.length?confToday:conf.slice(0,20);
+  document.getElementById('cnt-cocina').textContent=confToday.length;
+  document.getElementById('list-cocina').innerHTML=cocinaList.length?cocinaList.map(o=>card(o,'c',false)).join(''):'<div class="empty"><em>✅</em>No hay órdenes confirmadas pendientes de envío</div>';
 
   document.getElementById('cnt-zelle').textContent=zel.length;
   document.getElementById('list-zelle').innerHTML=zel.length?zel.map(o=>card(o,'z',false)).join(''):'<div class="empty"><em>💸</em>No hay órdenes Zelle pendientes</div>';
+
+  // Despachados section
+  document.getElementById('cnt-despachados').textContent=despachados.length;
+  document.getElementById('list-despachados').innerHTML=despachados.length?despachados.map(o=>cardDispatched(o)).join(''):'<div class="empty"><em>🛵</em>No hay pedidos despachados hoy</div>';
 
   renderChart('revenueChart',7);
   if(currentPage==='ordenes')filterOrders();
   if(currentPage==='reportes')renderReports();
 }
 
-// ── ORDER CARD ─────────────────────────────────────────────────────────────
+// ── ORDER CARD (active orders with action buttons) ─────────────────────────
 function card(o,type,compact){
   try{
     const items=(o.Items||'').split(' | ').map(i=>'<div class="card-item">'+escH(i)+'</div>').join('');
@@ -857,12 +879,35 @@ function card(o,type,compact){
         +'<div class="card-btns">'
           +'<button class="btn-xs '+(type==='c'?'bx-g':'bx-y')+'" onclick="openTicketByIdx('+idx+')">🖨️ Ticket</button>'
           +'<button class="btn-xs bx-b" onclick="openMaps('+idx+')">🗺️</button>'
-          +(type==='c'?'<button class="btn-xs" style="background:#DCFCE7;color:#166534;border:1px solid #86EFAC" onclick="markDispatched('+idx+')">🛵</button>':'')
+          +(type==='c'?'<button class="btn-xs" style="background:#DCFCE7;color:#166534;border:1px solid #86EFAC" onclick="markDispatched('+idx+')">🛵 Despachar</button>':'')
           +'<button class="btn-xs" style="background:#EEF2FF;color:#3730A3;border:1px solid #C7D2FE" onclick="openEdit('+idx+')">✏️</button>'
         +'</div>'
       +'</div>'
     +'</div>';
   }catch(e){return '<div class="order-card type-'+type+'"><div class="card-name" style="color:var(--red)">⚠️ Error: '+e.message+'</div></div>';}
+}
+
+// ── DISPATCHED CARD (read-only, ticket + maps only) ────────────────────────
+function cardDispatched(o){
+  try{
+    const items=(o.Items||'').split(' | ').map(i=>'<div class="card-item">'+escH(i)+'</div>').join('');
+    const time=o.Timestamp?new Date(o.Timestamp).toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}):'—';
+    const phone=o.Phone?('<br>📱 +'+escH((o.Phone||'').replace(/^whatsapp:/i,''))):'';
+    const idx=allOrders.indexOf(o);
+    return '<div class="order-card type-d">'
+      +'<div class="card-row1"><span class="card-id">#'+escH(o['Order ID']||'—')+'</span><span class="badge bg-b">🛵 Enviado</span></div>'
+      +'<div class="card-name">'+escH(o.Name||'—')+'</div>'
+      +'<div class="card-meta">📍 '+escH(o.Address||'—')+phone+'</div>'
+      +'<div class="card-items">'+(items||'(sin items)')+'</div>'
+      +'<div class="card-foot">'
+        +'<div><div class="card-total">$'+parseFloat(o.Total||0).toFixed(2)+'</div><div class="card-time">⏰ '+time+'</div></div>'
+        +'<div class="card-btns">'
+          +'<button class="btn-xs bx-ghost" onclick="openTicketByIdx('+idx+')">🖨️ Ticket</button>'
+          +'<button class="btn-xs bx-ghost" onclick="openMaps('+idx+')">🗺️</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }catch(e){return '<div class="order-card type-d"><div class="card-name" style="color:var(--red)">⚠️ Error: '+e.message+'</div></div>';}
 }
 
 function escH(s){s=s||'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -929,7 +974,7 @@ function openTicket(o){
   document.getElementById('tkPhone').textContent=o.Phone?'+'+(o.Phone+'').replace(/^whatsapp:/i,''):'—';
   document.getElementById('tkAddr').textContent=addr;
   document.getElementById('tkTime').textContent=o.Timestamp?new Date(o.Timestamp).toLocaleString('es-DO',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/New_York'}):'—';
-  document.getElementById('tkPay').textContent=o.Status==='Zelle-Pending'?'💸 Zelle (Pendiente)':'✅ Tarjeta — Pagado';
+  document.getElementById('tkPay').textContent=o.Status==='Zelle-Pending'?'💸 Zelle (Pendiente)':o.Status==='Enviado'?'✅ Pagado — Enviado':'✅ Tarjeta — Pagado';
   document.getElementById('tkSub').textContent='$'+parseFloat(o.Subtotal||0).toFixed(2);
   document.getElementById('tkTax').textContent='$'+parseFloat(o.Tax||0).toFixed(2);
   document.getElementById('tkGes').textContent='$'+parseFloat(o.Gestion||0).toFixed(2);
@@ -1060,7 +1105,7 @@ function checkAndAutoPrint(orders){
     const isZelleConfirmed=status==='Confirmed'&&parseFloat(o.StripeFee||0)===0;
     if((isStripeConfirmed&&autoPrint)||(isZelleConfirmed&&autoPrintZelle)){
       _printedOrders.add(id);lsSet('py_printed',JSON.stringify([..._printedOrders].slice(-100)));
-      const tUrl='https://pideyallc.github.io/pideya_kitchen_ticket.html?order='+id
+      const tUrl='https://pideyanj-ai.github.io/pideya_kitchen_ticket.html?order='+id
         +'&name='+encodeURIComponent(o.Name||'')+'&phone='+encodeURIComponent(o.Phone||'')
         +'&address='+encodeURIComponent(o.Address||'')+'&items='+encodeURIComponent((o.Items||'').replace(/\s*\|\s*/g,'|'))
         +'&subtotal='+parseFloat(o.Subtotal||0).toFixed(2)+'&tax='+parseFloat(o.Tax||0).toFixed(2)
@@ -1086,7 +1131,12 @@ async function markDispatched(idx){
   if(!confirm('¿Marcar orden #'+(o['Order ID']||'—')+' de '+(o.Name||'el cliente')+' como ENVIADA?'))return;
   try{
     const r=await fetch(N8N_DISPATCH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:o['Order ID'],phone:(o.Phone||'').replace(/^whatsapp:/i,''),name:o.Name||'',address:o.Address||'',total:o.Total||0,estTime:estTime||'20-30'})});
-    if(r.ok){o.Status='Enviado';setTimeout(loadAll,800);}else throw new Error('Error '+r.status);
+    if(r.ok){
+      o.Status='Enviado';
+      // Re-render immediately without waiting for API reload
+      updateAll(parseInt(document.getElementById('sbConn').textContent)||0);
+      setTimeout(loadAll,1500);
+    }else throw new Error('Error '+r.status);
   }catch(e){alert('Error al marcar como enviada: '+e.message);}
 }
 

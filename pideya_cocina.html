@@ -355,20 +355,67 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
 
   <!-- REPORTES -->
   <div class="page" id="page-reportes">
-    <div class="kpi-grid" style="margin-bottom:20px">
-      <div class="kpi g"><div class="kpi-icon">💰</div><div class="kpi-val" id="rpRevHoy">—</div><div class="kpi-lbl">Ingresos hoy</div></div>
-      <div class="kpi o"><div class="kpi-icon">📅</div><div class="kpi-val" id="rpRevSem">—</div><div class="kpi-lbl">Esta semana</div></div>
-      <div class="kpi g"><div class="kpi-icon">📦</div><div class="kpi-val" id="rpRevAll">—</div><div class="kpi-lbl">Total histórico</div></div>
-      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripe">—</div><div class="kpi-lbl">Comisión Stripe</div></div>
-      <div class="kpi b"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestion">—</div><div class="kpi-lbl">Comisión Gestión</div></div>
+    <!-- Date range picker -->
+    <div style="background:#FFF;border:1px solid #E2E8F0;border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div style="font-size:.8rem;font-weight:700;color:#374151;white-space:nowrap;">📅 Período:</div>
+      <select id="rpRange" onchange="onRangeChange()" style="background:#F8FAFC;border:1px solid #CBD5E1;color:#1E293B;border-radius:8px;padding:7px 12px;font-family:Outfit,sans-serif;font-size:.82rem;outline:none;">
+        <option value="today">Hoy</option>
+        <option value="yesterday">Ayer</option>
+        <option value="week" selected>Esta semana</option>
+        <option value="month">Este mes</option>
+        <option value="lastmonth">Mes anterior</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <div id="rpCustomDates" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="date" id="rpFrom" style="background:#F8FAFC;border:1px solid #CBD5E1;color:#1E293B;border-radius:8px;padding:7px 10px;font-family:Outfit,sans-serif;font-size:.82rem;outline:none;">
+        <span style="color:#64748B;font-size:.8rem;">→</span>
+        <input type="date" id="rpTo" style="background:#F8FAFC;border:1px solid #CBD5E1;color:#1E293B;border-radius:8px;padding:7px 10px;font-family:Outfit,sans-serif;font-size:.82rem;outline:none;">
+        <button onclick="renderReports()" style="background:#166534;color:white;border:none;border-radius:8px;padding:7px 14px;font-family:Outfit,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;">Aplicar</button>
+      </div>
     </div>
+    <!-- KPIs -->
+    <div class="kpi-grid" style="margin-bottom:16px">
+      <div class="kpi g"><div class="kpi-icon">💰</div><div class="kpi-val" id="rpRevPeriod">—</div><div class="kpi-lbl">Ingresos período</div></div>
+      <div class="kpi o"><div class="kpi-icon">📦</div><div class="kpi-val" id="rpOrdersPeriod">—</div><div class="kpi-lbl">Órdenes período</div></div>
+      <div class="kpi b"><div class="kpi-icon">💸</div><div class="kpi-val" id="rpZellePeriod">—</div><div class="kpi-lbl">Ingresos Zelle</div></div>
+      <div class="kpi g"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripePeriod">—</div><div class="kpi-lbl">Ingresos Stripe</div></div>
+      <div class="kpi p"><div class="kpi-icon">🏛️</div><div class="kpi-val" id="rpTaxPeriod">—</div><div class="kpi-lbl">Tax cobrado</div></div>
+      <div class="kpi g"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestionPeriod">—</div><div class="kpi-lbl">Com. Gestión</div></div>
+      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripeFeePeriod">—</div><div class="kpi-lbl">Com. Stripe</div></div>
+      <div class="kpi b"><div class="kpi-icon">📈</div><div class="kpi-val" id="rpAvgOrder">—</div><div class="kpi-lbl">Ticket promedio</div></div>
+    </div>
+    <!-- Revenue chart -->
     <div class="chart-box">
-      <div class="chart-title">Ingresos por día — últimos 14 días</div>
+      <div class="chart-title" id="rpChartTitle">Ingresos por día</div>
       <div class="bar-chart" id="reportChart" style="height:140px"></div>
     </div>
+    <!-- Two col: breakdown table + top items -->
+    <div class="two-col" style="margin-bottom:16px;">
+      <div class="chart-box" style="margin-bottom:0">
+        <div class="chart-title">Desglose del período</div>
+        <table class="report-table"><thead><tr><th>Concepto</th><th>Cant.</th><th>Monto</th></tr></thead><tbody id="reportTbody"></tbody></table>
+      </div>
+      <div class="chart-box" style="margin-bottom:0">
+        <div class="chart-title">🏆 Top platos más vendidos</div>
+        <div id="rpTopItems"><div class="empty" style="padding:16px"><em>📊</em>Sin datos</div></div>
+      </div>
+    </div>
+    <!-- Daily breakdown table -->
     <div class="chart-box">
-      <div class="chart-title">Resumen del día</div>
-      <table class="report-table"><thead><tr><th>Concepto</th><th>Cantidad</th><th>Monto</th></tr></thead><tbody id="reportTbody"></tbody></table>
+      <div class="chart-title">Ventas por día — detalle</div>
+      <div style="overflow-x:auto;">
+        <table class="report-table" id="rpDailyTable">
+          <thead><tr><th>Fecha</th><th>Órdenes</th><th>Subtotal</th><th>Tax</th><th>Gestión</th><th>Stripe Fee</th><th>Total</th></tr></thead>
+          <tbody id="rpDailyTbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Historical totals -->
+    <div class="kpi-grid">
+      <div class="kpi g"><div class="kpi-icon">📦</div><div class="kpi-val" id="rpRevAll">—</div><div class="kpi-lbl">Total histórico</div></div>
+      <div class="kpi o"><div class="kpi-icon">🧾</div><div class="kpi-val" id="rpOrdersAll">—</div><div class="kpi-lbl">Órdenes totales</div></div>
+      <div class="kpi p"><div class="kpi-icon">💳</div><div class="kpi-val" id="rpStripeAll">—</div><div class="kpi-lbl">Com. Stripe total</div></div>
+      <div class="kpi b"><div class="kpi-icon">💼</div><div class="kpi-val" id="rpGestionAll">—</div><div class="kpi-lbl">Com. Gestión total</div></div>
     </div>
   </div>
 
@@ -485,6 +532,29 @@ body{font-family:'Outfit',sans-serif;background:#F0F4F8;color:#1E293B;display:fl
       <div style="margin-top:10px;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:10px 12px;font-size:.72rem;color:#3730A3;">
         💡 El ticket se abre en una nueva ventana lista para imprimir.
       </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>💸 Métodos de Pago</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Pago por Zelle</div>
+          <div class="setting-desc">Activar o desactivar Zelle como opción de pago en el bot</div>
+        </div>
+        <div class="setting-control">
+          <select id="sZelleEnabled">
+            <option value="true">✅ Activado</option>
+            <option value="false">🔴 Desactivado</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <button onclick="saveZelleSetting()" id="zelleToggleBtn"
+          style="flex:1;background:#166534;color:white;border:none;border-radius:9px;padding:11px;font-family:Outfit,sans-serif;font-size:.88rem;font-weight:800;cursor:pointer;">
+          💾 Guardar Configuración de Pago
+        </button>
+      </div>
+      <div id="zelleToggleMsg" style="margin-top:8px;font-size:.78rem;text-align:center;display:none;"></div>
     </div>
 
     <div class="setting-group">
@@ -609,6 +679,7 @@ const CSV_MENU=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=o
 const N8N_EDIT_ORDER='https://pideya.app.n8n.cloud/webhook/pideya-edit';
 const N8N_MENU_TOGGLE='https://pideya.app.n8n.cloud/webhook/pideya-menu-toggle';
 const N8N_DISPATCH='https://pideya.app.n8n.cloud/webhook/pideya-dispatch';
+const N8N_UPDATE_SETTINGS='https://pideya.app.n8n.cloud/webhook/pideya-update-settings';
 
 function lsGet(k,def){try{const v=localStorage.getItem(k);return v!==null?v:def;}catch(e){return def;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
@@ -933,37 +1004,131 @@ function filterOrders(){
 }
 
 // ── REPORTS ────────────────────────────────────────────────────────────────
-function renderReports(){
+function onRangeChange(){
+  const v=document.getElementById('rpRange').value;
+  const cd=document.getElementById('rpCustomDates');
+  if(cd)cd.style.display=(v==='custom'?'flex':'none');
+  if(v!=='custom')renderReports();
+}
+
+function getReportDateRange(){
+  const v=document.getElementById('rpRange')?.value||'week';
   const today=new Date().toISOString().slice(0,10);
-  const weekAgo=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
-  const conf=allOrders.filter(o=>o.Status==='Confirmed');
-  const todayO=conf.filter(o=>toDateStr(o.Timestamp)===today);
-  const weekO=conf.filter(o=>toDateStr(o.Timestamp)>=weekAgo);
-  document.getElementById('rpRevHoy').textContent='$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
-  document.getElementById('rpRevSem').textContent='$'+weekO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
-  document.getElementById('rpRevAll').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2);
-  document.getElementById('rpStripe').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2);
-  document.getElementById('rpGestion').textContent='$'+conf.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2);
-  const zelleToday=allOrders.filter(o=>o.Status==='Zelle-Pending'&&toDateStr(o.Timestamp)===today);
+  if(v==='today')return{from:today,to:today,label:'Hoy'};
+  if(v==='yesterday'){const y=new Date(Date.now()-86400000).toISOString().slice(0,10);return{from:y,to:y,label:'Ayer'};}
+  if(v==='week'){const w=new Date(Date.now()-6*86400000).toISOString().slice(0,10);return{from:w,to:today,label:'Esta semana'};}
+  if(v==='month'){const d=new Date();const f=new Date(d.getFullYear(),d.getMonth(),1).toISOString().slice(0,10);return{from:f,to:today,label:'Este mes'};}
+  if(v==='lastmonth'){const d=new Date();const f=new Date(d.getFullYear(),d.getMonth()-1,1).toISOString().slice(0,10);const t=new Date(d.getFullYear(),d.getMonth(),0).toISOString().slice(0,10);return{from:f,to:t,label:'Mes anterior'};}
+  if(v==='custom'){const f=document.getElementById('rpFrom')?.value||today;const t=document.getElementById('rpTo')?.value||today;return{from:f,to:t,label:f+' → '+t};}
+  return{from:today,to:today,label:'Hoy'};
+}
+
+function renderReports(){
+  const{from,to,label}=getReportDateRange();
+  const allConf=allOrders.filter(o=>o.Status==='Confirmed'||o.Status==='Enviado');
+  const zelleConf=allOrders.filter(o=>o.Status==='Confirmed'&&parseFloat(o.StripeFee||0)===0);
+  const stripeConf=allOrders.filter(o=>o.Status==='Confirmed'&&parseFloat(o.StripeFee||0)>0);
+
+  // Period filter
+  const periodOrders=allConf.filter(o=>{const d=toDateStr(o.Timestamp);return d>=from&&d<=to;});
+  const periodZelle=periodOrders.filter(o=>parseFloat(o.StripeFee||0)===0);
+  const periodStripe=periodOrders.filter(o=>parseFloat(o.StripeFee||0)>0);
+
+  const sum=(arr,key)=>arr.reduce((s,o)=>s+parseFloat(o[key]||0),0);
+
+  // KPIs
+  const periodRev=sum(periodOrders,'Total');
+  const periodZelleRev=sum(periodZelle,'Total');
+  const periodStripeRev=sum(periodStripe,'Total');
+  const periodTax=sum(periodOrders,'Tax');
+  const periodGestion=sum(periodOrders,'Gestion');
+  const periodStripeFee=sum(periodStripe,'StripeFee');
+  const avgOrder=periodOrders.length?periodRev/periodOrders.length:0;
+
+  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setEl('rpRevPeriod','$'+periodRev.toFixed(2));
+  setEl('rpOrdersPeriod',periodOrders.length);
+  setEl('rpZellePeriod','$'+periodZelleRev.toFixed(2));
+  setEl('rpStripePeriod','$'+periodStripeRev.toFixed(2));
+  setEl('rpTaxPeriod','$'+periodTax.toFixed(2));
+  setEl('rpGestionPeriod','$'+periodGestion.toFixed(2));
+  setEl('rpStripeFeePeriod','$'+periodStripeFee.toFixed(2));
+  setEl('rpAvgOrder','$'+avgOrder.toFixed(2));
+
+  // Historical
+  setEl('rpRevAll','$'+sum(allConf,'Total').toFixed(2));
+  setEl('rpOrdersAll',allConf.length);
+  setEl('rpStripeAll','$'+sum(stripeConf,'StripeFee').toFixed(2));
+  setEl('rpGestionAll','$'+sum(allConf,'Gestion').toFixed(2));
+
+  // Chart title
+  const ct=document.getElementById('rpChartTitle');if(ct)ct.textContent='Ingresos por día — '+label;
+
+  // Breakdown table
+  const zelleAmt=periodZelle.length;const stripeAmt=periodStripe.length;
   const rows=[
-    ['Órdenes tarjeta hoy',todayO.length,'$'+todayO.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
-    ['Órdenes Zelle hoy',zelleToday.length,'$'+zelleToday.reduce((s,o)=>s+parseFloat(o.Total||0),0).toFixed(2)],
-    ['Subtotal bruto',todayO.length+zelleToday.length,'$'+[...todayO,...zelleToday].reduce((s,o)=>s+parseFloat(o.Subtotal||0),0).toFixed(2)],
-    ['Tax NJ cobrado','—','$'+[...todayO,...zelleToday].reduce((s,o)=>s+parseFloat(o.Tax||0),0).toFixed(2)],
-    ['Comisión Gestión','—','$'+todayO.reduce((s,o)=>s+parseFloat(o.Gestion||0),0).toFixed(2)],
-    ['Comisión Stripe','—','$'+todayO.reduce((s,o)=>s+parseFloat(o.StripeFee||0),0).toFixed(2)],
+    ['💳 Órdenes Stripe',stripeAmt,'$'+periodStripeRev.toFixed(2)],
+    ['💸 Órdenes Zelle',zelleAmt,'$'+periodZelleRev.toFixed(2)],
+    ['📦 Total órdenes',periodOrders.length,'$'+periodRev.toFixed(2)],
+    ['🧾 Subtotal bruto','—','$'+sum(periodOrders,'Subtotal').toFixed(2)],
+    ['🏛️ Tax NJ (6.625%)','—','$'+periodTax.toFixed(2)],
+    ['💼 Comisión Gestión','—','$'+periodGestion.toFixed(2)],
+    ['💳 Comisión Stripe','—','$'+periodStripeFee.toFixed(2)],
+    ['💰 Neto estimado','—','$'+(periodRev-periodStripeFee).toFixed(2)],
   ];
-  document.getElementById('reportTbody').innerHTML=rows.map(([c,n,m])=>`<tr><td>${c}</td><td style="font-weight:700">${n}</td><td style="font-weight:700;color:var(--green)">${m}</td></tr>`).join('');
-  renderChart('reportChart',14);
+  const tbody=document.getElementById('reportTbody');
+  if(tbody)tbody.innerHTML=rows.map(([c,n,m])=>`<tr><td>${c}</td><td style="font-weight:700">${n}</td><td style="font-weight:700;color:var(--green)">${m}</td></tr>`).join('');
+
+  // Top items
+  const itemCount={};
+  periodOrders.forEach(o=>{(o.Items||'').split(' | ').forEach(line=>{const m=line.match(/^(\d+)x (.+?) - \$/);if(m){const name=m[2].trim();const qty=parseInt(m[1]);itemCount[name]=(itemCount[name]||0)+qty;}});});
+  const sorted=Object.entries(itemCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxQty=sorted.length?sorted[0][1]:1;
+  const topEl=document.getElementById('rpTopItems');
+  if(topEl){
+    if(!sorted.length){topEl.innerHTML='<div class="empty" style="padding:16px"><em>📊</em>Sin datos en este período</div>';}
+    else{topEl.innerHTML=sorted.map(([name,qty],i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid #F1F5F9;">
+        <span style="font-size:.68rem;font-weight:800;color:#94A3B8;width:18px;">#${i+1}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.78rem;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+          <div style="background:#E2E8F0;border-radius:3px;height:4px;margin-top:3px;"><div style="background:var(--green);height:4px;border-radius:3px;width:${Math.round((qty/maxQty)*100)}%"></div></div>
+        </div>
+        <span style="font-size:.78rem;font-weight:800;color:var(--green);white-space:nowrap;">${qty} uds</span>
+      </div>`).join('');}
+  }
+
+  // Daily breakdown table
+  const dayMap={};
+  periodOrders.forEach(o=>{const d=toDateStr(o.Timestamp);if(!dayMap[d])dayMap[d]={orders:0,subtotal:0,tax:0,gestion:0,stripefee:0,total:0};dayMap[d].orders++;dayMap[d].subtotal+=parseFloat(o.Subtotal||0);dayMap[d].tax+=parseFloat(o.Tax||0);dayMap[d].gestion+=parseFloat(o.Gestion||0);dayMap[d].stripefee+=parseFloat(o.StripeFee||0);dayMap[d].total+=parseFloat(o.Total||0);});
+  const days=Object.keys(dayMap).sort().reverse();
+  const dtbody=document.getElementById('rpDailyTbody');
+  if(dtbody){dtbody.innerHTML=days.length?days.map(d=>{const r=dayMap[d];return`<tr><td style="font-weight:600">${d}</td><td style="font-weight:700">${r.orders}</td><td>$${r.subtotal.toFixed(2)}</td><td>$${r.tax.toFixed(2)}</td><td>$${r.gestion.toFixed(2)}</td><td>$${r.stripefee.toFixed(2)}</td><td style="font-weight:700;color:var(--green)">$${r.total.toFixed(2)}</td></tr>`;}).join(''):'<tr><td colspan="7" style="text-align:center;color:#94A3B8;padding:16px;">Sin órdenes en este período</td></tr>';}
+
+  // Chart — determine granularity
+  renderChart('reportChart',14,from,to);
 }
 
 // ── CHART ──────────────────────────────────────────────────────────────────
-function renderChart(id,days){
+function renderChart(id,days,fromDate,toDate){
   const el=document.getElementById(id);if(!el)return;
   const data=[];
-  for(let i=days-1;i>=0;i--){const d=new Date(Date.now()-i*86400000);const ds=d.toISOString().slice(0,10);const lbl=d.toLocaleDateString('es-DO',{weekday:'short',day:'numeric'});const rev=allOrders.filter(o=>o.Status==='Confirmed'&&toDateStr(o.Timestamp)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);data.push({lbl,rev});}
+  if(fromDate&&toDate){
+    // Build day-by-day from fromDate to toDate
+    let cur=new Date(fromDate+'T12:00:00Z');const end=new Date(toDate+'T12:00:00Z');
+    while(cur<=end){
+      const ds=cur.toISOString().slice(0,10);
+      const lbl=cur.toLocaleDateString('es-DO',{weekday:'short',day:'numeric'});
+      const rev=allOrders.filter(o=>(o.Status==='Confirmed'||o.Status==='Enviado')&&toDateStr(o.Timestamp)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);
+      data.push({lbl,rev});cur=new Date(cur.getTime()+86400000);
+    }
+  }else{
+    for(let i=days-1;i>=0;i--){const d=new Date(Date.now()-i*86400000);const ds=d.toISOString().slice(0,10);const lbl=d.toLocaleDateString('es-DO',{weekday:'short',day:'numeric'});const rev=allOrders.filter(o=>(o.Status==='Confirmed'||o.Status==='Enviado')&&toDateStr(o.Timestamp)===ds).reduce((s,o)=>s+parseFloat(o.Total||0),0);data.push({lbl,rev});}
+  }
   const max=Math.max(...data.map(d=>d.rev),1);
-  el.innerHTML=data.map(d=>`<div class="bar-wrap"><div class="bar-val">${d.rev>0?'$'+d.rev.toFixed(0):''}</div><div class="bar" style="height:${Math.max((d.rev/max)*100,d.rev>0?8:2)}%" title="$${d.rev.toFixed(2)}"></div><div class="bar-lbl">${d.lbl}</div></div>`).join('');
+  // If many days, skip some labels
+  const skip=data.length>30?4:data.length>14?2:1;
+  el.innerHTML=data.map((d,i)=>`<div class="bar-wrap"><div class="bar-val">${d.rev>0&&i%skip===0?'$'+d.rev.toFixed(0):''}</div><div class="bar" style="height:${Math.max((d.rev/max)*100,d.rev>0?8:2)}%" title="${d.lbl}: $${d.rev.toFixed(2)}"></div><div class="bar-lbl">${i%skip===0?d.lbl:''}</div></div>`).join('');
 }
 
 // ── TICKET MODAL ───────────────────────────────────────────────────────────
@@ -1063,6 +1228,37 @@ async function toggleMenuItem(id,name,newAvail){
   }catch(e){alert('Error al actualizar: '+e.message);}
 }
 
+// ── ZELLE TOGGLE ──────────────────────────────────────────────────────────
+async function loadZelleSetting(){
+  // Read from settingsMap if available after loadAll, else call panel
+  // We'll just set based on localStorage cache; actual truth is in Settings sheet
+  const cached=lsGet('py_zelle_enabled','true');
+  const sel=document.getElementById('sZelleEnabled');
+  if(sel)sel.value=cached;
+}
+
+async function saveZelleSetting(){
+  const sel=document.getElementById('sZelleEnabled');
+  const btn=document.getElementById('zelleToggleBtn');
+  const msg=document.getElementById('zelleToggleMsg');
+  if(!sel)return;
+  const val=sel.value;
+  btn.textContent='⏳ Guardando...';btn.disabled=true;
+  try{
+    const r=await fetch(N8N_UPDATE_SETTINGS,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'zelle_enabled',value:val})});
+    if(r.ok){
+      lsSet('py_zelle_enabled',val);
+      msg.style.display='block';msg.style.color='#166534';
+      msg.textContent=val==='true'?'✅ Zelle activado — el bot mostrará Zelle como opción de pago.':'🔴 Zelle desactivado — el bot solo mostrará Stripe.';
+      btn.textContent='💾 Guardar Configuración de Pago';btn.disabled=false;
+      setTimeout(()=>{msg.style.display='none';},4000);
+    }else throw new Error('Error '+r.status);
+  }catch(e){
+    msg.style.display='block';msg.style.color='#DC2626';msg.textContent='❌ Error: '+e.message;
+    btn.textContent='💾 Guardar Configuración de Pago';btn.disabled=false;
+  }
+}
+
 // ── SETTINGS ───────────────────────────────────────────────────────────────
 function loadSettings(){
   document.getElementById('sBellOn').value=S.bellOn?'yes':'no';
@@ -1077,6 +1273,7 @@ function loadSettings(){
   if(zc){const zips=ZIP_BY_RADIUS[parseInt(radius)]||ZIP_BY_RADIUS[5];zc.textContent=zips.length+' códigos ZIP cubiertos.';}
   const ap=document.getElementById('sAutoPrint');if(ap)ap.value=lsGet('py_autoprint','yes');
   const apz=document.getElementById('sAutoPrintZelle');if(apz)apz.value=lsGet('py_autoprint_zelle','yes');
+  loadZelleSetting();
 }
 function saveSettings(){
   S.bellOn=document.getElementById('sBellOn').value==='yes';
